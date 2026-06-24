@@ -13,6 +13,8 @@ var laravelChainedGroupPrefixPattern = regexp.MustCompile(`Route::.*?prefix\(\s*
 var laravelArrayGroupPrefixPattern = regexp.MustCompile(`Route::group\(\s*\[[^\]]*["']prefix["']\s*=>\s*["']([^"']+)["'][^\]]*\]\s*,\s*function\b`)
 var laravelResourceOnlyPattern = regexp.MustCompile(`->only\(\s*(\[[^\]]*\]|["'][^"']+["'])\s*\)`)
 var laravelResourceExceptPattern = regexp.MustCompile(`->except\(\s*(\[[^\]]*\]|["'][^"']+["'])\s*\)`)
+var laravelResourceParametersPattern = regexp.MustCompile(`->parameters\(\s*\[([^\]]*)\]\s*\)`)
+var laravelAssocStringPairPattern = regexp.MustCompile(`["']([^"']+)["']\s*=>\s*["']([^"']+)["']`)
 var laravelStringPattern = regexp.MustCompile(`["']([^"']+)["']`)
 
 type laravelRouteGroup struct {
@@ -96,7 +98,7 @@ func laravelRouteGroupPath(groups []laravelRouteGroup) string {
 func laravelResourceRoutes(path string, line int, evidence string, groupPrefix string, resourceType string, resourcePath string, controller string) []ir.APIRoute {
 	controllerName := laravelHandler(controller)
 	resourceBase := joinRoutePath(groupPrefix, resourcePath)
-	resourceParam := "{" + singularLaravelResourceName(resourcePath) + "}"
+	resourceParam := "{" + laravelResourceParameterName(evidence, resourcePath) + "}"
 	memberPath := joinRoutePath(resourceBase, resourceParam)
 
 	definitions := []laravelRouteDefinition{
@@ -180,6 +182,26 @@ func singularLaravelResourceName(resourcePath string) string {
 		return strings.TrimSuffix(name, "s")
 	}
 	return name
+}
+
+func laravelResourceParameterName(line string, resourcePath string) string {
+	resourceName := laravelResourceSegment(resourcePath)
+	if match := laravelResourceParametersPattern.FindStringSubmatch(line); len(match) == 2 {
+		for _, pair := range laravelAssocStringPairPattern.FindAllStringSubmatch(match[1], -1) {
+			if len(pair) == 3 && strings.Trim(pair[1], "/") == resourceName {
+				return strings.Trim(pair[2], "{}")
+			}
+		}
+	}
+	return singularLaravelResourceName(resourcePath)
+}
+
+func laravelResourceSegment(resourcePath string) string {
+	parts := strings.Split(strings.Trim(resourcePath, "/"), "/")
+	if len(parts) == 0 {
+		return ""
+	}
+	return parts[len(parts)-1]
 }
 
 func laravelHandler(value string) string {
