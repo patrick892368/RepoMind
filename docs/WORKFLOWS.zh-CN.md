@@ -54,15 +54,15 @@ eval/preflight/summary.md
 
 固定问题集 ask evaluation：
 
+```bash
+go run ./cmd/repomind eval ask --cases docs/examples/ask-cases.example.json --strict
+```
+
+preflight 内部使用 Go CLI 评估器：
+
 ```powershell
 .\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider offline -AskStrict
 .\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider mock -AskStrict -AskCasesPath docs\examples\ask-cases.example.json
-```
-
-跨平台 Go CLI 等价命令：
-
-```bash
-go run ./cmd/repomind eval ask --cases docs/examples/ask-cases.example.json --strict
 ```
 
 ask evaluation 会用英文和中文问题检查预期文件、处理函数、路由、模型、调用链、证据类型和证据数量，并输出：
@@ -84,7 +84,7 @@ eval/preflight/ask-evaluation/summary.md
 
 它会运行默认 preflight，并额外运行：
 
-- offline strict ask evaluation
+- 通过 Go CLI 运行 offline strict ask evaluation
 - 当前平台 release binary smoke
 - 跨平台 release manifest build and verification
 - 真实仓库 benchmark

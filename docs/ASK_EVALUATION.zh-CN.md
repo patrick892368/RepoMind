@@ -2,7 +2,7 @@
 
 **语言：** [English](ASK_EVALUATION.md) | 简体中文
 
-`scripts/evaluate-ask.ps1` 用可重复的仓库问题验证 `repomind ask`。它会检查预期文件、处理函数、路由、模型、调用链、证据类型和证据数量。
+`repomind eval ask` 用可重复的仓库问题验证 `repomind ask`。它会检查预期文件、处理函数、路由、模型、调用链、证据类型和证据数量。`scripts/evaluate-ask.ps1` 保留为兼容入口。
 
 运行跨平台 Go CLI 评估器：
 
@@ -16,7 +16,13 @@ repomind eval ask --cases docs/examples/ask-cases.example.json --strict
 go run ./cmd/repomind eval ask --cases docs/examples/ask-cases.example.json --strict
 ```
 
-运行内置 case：
+通过 preflight 运行内置 case：
+
+```powershell
+.\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider offline -AskStrict
+```
+
+运行旧 PowerShell 兼容评估器：
 
 ```powershell
 .\scripts\evaluate-ask.ps1 -Provider offline -Strict
@@ -34,7 +40,7 @@ go run ./cmd/repomind eval ask --cases docs/examples/ask-cases.example.json --st
 .\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider mock -AskStrict -AskCasesPath docs\examples\ask-cases.example.json
 ```
 
-`scripts/release-gate.ps1` 默认会运行内置 offline strict ask evaluation。可以用 `-AskCasesPath` 指定 release gate 自定义 case，或在排查时用 `-SkipAskEvaluation` 跳过：
+`scripts/preflight.ps1` 和 `scripts/release-gate.ps1` 默认通过 Go CLI 运行 ask evaluation。`-Proxy` 会通过 `HTTPS_PROXY`、`HTTP_PROXY` 和 `ALL_PROXY` 转发给 Go CLI 子进程。可以用 `-AskCasesPath` 指定 release gate 自定义 case，或在排查时用 `-SkipAskEvaluation` 跳过：
 
 ```powershell
 .\scripts\release-gate.ps1 -Proxy http://127.0.0.1:10809 -AskCasesPath docs\examples\ask-cases.example.json

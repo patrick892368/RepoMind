@@ -2,7 +2,7 @@
 
 **Language:** English | [简体中文](ASK_EVALUATION.zh-CN.md)
 
-`scripts/evaluate-ask.ps1` validates `repomind ask` with repeatable repository questions. It checks expected files, handlers, routes, models, call-chain edges, evidence types, and evidence counts.
+`repomind eval ask` validates `repomind ask` with repeatable repository questions. It checks expected files, handlers, routes, models, call-chain edges, evidence types, and evidence counts. `scripts/evaluate-ask.ps1` remains available as a compatibility runner.
 
 Run the cross-platform Go CLI evaluator:
 
@@ -16,7 +16,13 @@ From source:
 go run ./cmd/repomind eval ask --cases docs/examples/ask-cases.example.json --strict
 ```
 
-Run the built-in cases:
+Run built-in cases through preflight:
+
+```powershell
+.\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider offline -AskStrict
+```
+
+Run the legacy PowerShell compatibility runner:
 
 ```powershell
 .\scripts\evaluate-ask.ps1 -Provider offline -Strict
@@ -34,7 +40,7 @@ Run custom cases through preflight:
 .\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider mock -AskStrict -AskCasesPath docs\examples\ask-cases.example.json
 ```
 
-`scripts/release-gate.ps1` runs the built-in offline strict ask evaluation by default. Use `-AskCasesPath` for custom release-gate cases or `-SkipAskEvaluation` during investigation:
+`scripts/preflight.ps1` and `scripts/release-gate.ps1` run ask evaluation through the Go CLI by default. `-Proxy` is forwarded to the Go CLI process through `HTTPS_PROXY`, `HTTP_PROXY`, and `ALL_PROXY`. Use `-AskCasesPath` for custom release-gate cases or `-SkipAskEvaluation` during investigation:
 
 ```powershell
 .\scripts\release-gate.ps1 -Proxy http://127.0.0.1:10809 -AskCasesPath docs\examples\ask-cases.example.json

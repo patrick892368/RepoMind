@@ -95,10 +95,10 @@ Pass criteria:
 Ask evaluation:
 
 ```powershell
+go run ./cmd/repomind eval ask --cases docs/examples/ask-cases.example.json --strict
 .\scripts\evaluate-ask.ps1 -Provider offline -Strict
 .\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider mock -AskStrict
 .\scripts\evaluate-ask.ps1 -Provider offline -Strict -CasesPath docs\examples\ask-cases.example.json
-go run ./cmd/repomind eval ask --cases docs/examples/ask-cases.example.json --strict
 ```
 
 Pass criteria:
@@ -108,6 +108,8 @@ Pass criteria:
 - [ ] Expected evidence types are present.
 - [ ] Custom case files load successfully when used.
 - [ ] Go CLI `eval ask` path passes for custom case files.
+- [ ] Preflight ask evaluation uses the Go CLI runner.
+- [ ] PowerShell `evaluate-ask.ps1` compatibility runner still passes for at least one smoke.
 - [ ] Strict mode returns local evidence for every ask case.
 - [ ] `summary.json` and `summary.md` are generated.
 

@@ -42,7 +42,8 @@ function Invoke-CapturedCommand {
         [string[]]$ArgumentList,
         [string]$LogPath,
         [string]$WorkingDirectory = (Get-Location).Path,
-        [int]$TimeoutSeconds = 300
+        [int]$TimeoutSeconds = 300,
+        [hashtable]$EnvironmentVariables = @{}
     )
 
     $psi = [System.Diagnostics.ProcessStartInfo]::new()
@@ -53,6 +54,9 @@ function Invoke-CapturedCommand {
     $psi.RedirectStandardError = $true
     $psi.UseShellExecute = $false
     $psi.CreateNoWindow = $true
+    foreach ($key in $EnvironmentVariables.Keys) {
+        $psi.Environment[$key] = [string]$EnvironmentVariables[$key]
+    }
 
     $process = [System.Diagnostics.Process]::new()
     $process.StartInfo = $psi
@@ -166,21 +170,24 @@ if ($IncludeEvaluation) {
 }
 
 if ($IncludeAskEvaluation) {
-    $askEvaluationArgs = @("-ExecutionPolicy", "Bypass", "-File", "scripts\evaluate-ask.ps1", "-OutputDir", (Join-Path $outputRoot "ask-evaluation"), "-Provider", $AskProvider, "-MinimumScore", "$MinimumAskScore", "-TimeoutSeconds", "$TimeoutSeconds")
+    $askEvaluationArgs = @("run", "./cmd/repomind", "eval", "ask", "--output", (Join-Path $outputRoot "ask-evaluation"), "--ai", $AskProvider, "--minimum-score", "$MinimumAskScore")
     if ($AskModel) {
-        $askEvaluationArgs += @("-Model", $AskModel)
+        $askEvaluationArgs += @("--ai-model", $AskModel)
     }
     if ($AskCasesPath) {
-        $askEvaluationArgs += @("-CasesPath", $AskCasesPath)
+        $askEvaluationArgs += @("--cases", $AskCasesPath)
     }
     if ($AskStrict) {
-        $askEvaluationArgs += "-Strict"
+        $askEvaluationArgs += "--strict"
     }
+    $askEvaluationEnv = @{}
     if ($Proxy) {
-        $askEvaluationArgs += @("-Proxy", $Proxy)
+        $askEvaluationEnv["HTTPS_PROXY"] = $Proxy
+        $askEvaluationEnv["HTTP_PROXY"] = $Proxy
+        $askEvaluationEnv["ALL_PROXY"] = $Proxy
     }
-    $steps += Invoke-PreflightStep -Name "evaluate ask" -Action {
-        Invoke-CapturedCommand -FilePath "powershell" -ArgumentList $askEvaluationArgs -LogPath (Join-Path $outputRoot "ask-evaluation.log") -TimeoutSeconds ($TimeoutSeconds * 3)
+    $steps += Invoke-PreflightStep -Name "evaluate ask (go cli)" -Action {
+        Invoke-CapturedCommand -FilePath "go" -ArgumentList $askEvaluationArgs -LogPath (Join-Path $outputRoot "ask-evaluation.log") -TimeoutSeconds ($TimeoutSeconds * 3) -EnvironmentVariables $askEvaluationEnv
     }
 }
 
@@ -217,6 +224,7 @@ $summary = [ordered]@{
     include_benchmark = [bool]$IncludeBenchmark
     include_evaluation = [bool]$IncludeEvaluation
     include_ask_evaluation = [bool]$IncludeAskEvaluation
+    ask_evaluation_runner = if ($IncludeAskEvaluation) { "go-cli" } else { "" }
     ask_cases_path = $AskCasesPath
     include_ai_smoke = [bool]$IncludeAISmoke
     include_release_smoke = [bool]$IncludeReleaseSmoke

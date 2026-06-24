@@ -91,10 +91,10 @@ go run ./cmd/repomind analyze --lang zh --output .repomind .
 Ask 问答评估：
 
 ```powershell
+go run ./cmd/repomind eval ask --cases docs/examples/ask-cases.example.json --strict
 .\scripts\evaluate-ask.ps1 -Provider offline -Strict
 .\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider mock -AskStrict
 .\scripts\evaluate-ask.ps1 -Provider offline -Strict -CasesPath docs\examples\ask-cases.example.json
-go run ./cmd/repomind eval ask --cases docs/examples/ask-cases.example.json --strict
 ```
 
 通过标准：
@@ -104,6 +104,8 @@ go run ./cmd/repomind eval ask --cases docs/examples/ask-cases.example.json --st
 - 预期证据类型存在。
 - 使用自定义 case 文件时能够成功加载。
 - Go CLI `eval ask` 自定义 case 路径通过。
+- preflight ask evaluation 使用 Go CLI runner。
+- PowerShell `evaluate-ask.ps1` 兼容 runner 至少有一次 smoke 通过。
 - strict 模式下每个 ask case 都有本地证据。
 - 生成 `summary.json` 和 `summary.md`。
 

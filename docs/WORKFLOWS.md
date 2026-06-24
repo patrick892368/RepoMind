@@ -54,15 +54,15 @@ Run real repository evaluation:
 
 Run ask evaluation with fixed repository questions:
 
+```bash
+go run ./cmd/repomind eval ask --cases docs/examples/ask-cases.example.json --strict
+```
+
+Preflight uses the Go CLI evaluator internally:
+
 ```powershell
 .\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider offline -AskStrict
 .\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider mock -AskStrict -AskCasesPath docs\examples\ask-cases.example.json
-```
-
-Cross-platform Go CLI equivalent:
-
-```bash
-go run ./cmd/repomind eval ask --cases docs/examples/ask-cases.example.json --strict
 ```
 
 Ask evaluation validates English and Chinese questions for expected files, handlers, routes, models, call-chain edges, evidence types, and evidence counts. It writes:
@@ -88,7 +88,7 @@ Run before creating a release tag:
 
 This runs the default preflight plus:
 
-- offline strict ask evaluation
+- offline strict ask evaluation through the Go CLI
 - current-platform release binary smoke
 - cross-platform release manifest build and verification
 - real repository benchmark
