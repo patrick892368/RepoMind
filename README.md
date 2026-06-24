@@ -187,7 +187,7 @@ Stack detection:
 - JavaScript / TypeScript: React, Vue, Next.js, Express, NestJS, BullMQ
 - PHP: Laravel, Symfony, ThinkPHP
 - Java: Spring Boot
-- Go: Gin, Chi, Echo, Fiber
+- Go: Gin, Chi, Echo, Fiber, net/http
 - Databases: Postgres, MySQL, SQLite, MongoDB
 - Cache: Redis
 - Package managers: npm, pnpm, yarn, pip, poetry, composer, Maven, Gradle, Go modules
@@ -211,7 +211,7 @@ API route extraction:
 - NestJS controllers
 - Laravel routes
 - Spring controllers
-- Go router calls
+- Go router calls and `net/http` mux routes
 
 ## AI Coding Tool Export
 

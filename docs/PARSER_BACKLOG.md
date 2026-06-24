@@ -130,6 +130,7 @@ Current coverage:
 - Same-package `Mount("/prefix", routeFactory())` route factory prefix propagation.
 - Same-package `Mount("/prefix", resource{}.Routes())` receiver method route factory prefix propagation.
 - Common middleware-wrapped handler calls such as `requireAuth(handler)` and `middleware.Require(controller.Action)`.
+- Standard library `net/http` mux routes, including `HandleFunc`, `Handle`, and Go 1.22 method patterns such as `GET /path`.
 - GORM models through Go AST.
 - Go callgraph through Go AST.
 
@@ -139,7 +140,6 @@ Backlog:
 - Middleware chains or wrapper expressions without a direct handler argument.
 - Handler method type resolution from selector variables.
 - Advanced chi route factories with runtime arguments.
-- Standard library `net/http` mux routes.
 - sqlc query file detection.
 - GORM relation tags and foreign key metadata.
 - Go callgraph receiver method names and cross-file linking.

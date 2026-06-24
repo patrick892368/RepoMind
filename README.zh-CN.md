@@ -187,7 +187,7 @@ preflight 和 release gate 的 ask evaluation 默认使用 Go CLI 评估器。`s
 - JavaScript / TypeScript：React、Vue、Next.js、Express、NestJS、BullMQ
 - PHP：Laravel、Symfony、ThinkPHP
 - Java：Spring Boot
-- Go：Gin、Chi、Echo、Fiber
+- Go：Gin、Chi、Echo、Fiber、net/http
 - 数据库：Postgres、MySQL、SQLite、MongoDB
 - 缓存：Redis
 - 包管理器：npm、pnpm、yarn、pip、poetry、composer、Maven、Gradle、Go modules
@@ -211,7 +211,7 @@ API 路由抽取：
 - NestJS controllers
 - Laravel routes
 - Spring controllers
-- Go router calls
+- Go router calls 和 `net/http` mux routes
 
 ## AI Coding 工具导出
 

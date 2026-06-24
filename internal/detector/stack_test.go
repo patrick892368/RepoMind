@@ -195,6 +195,61 @@ go 1.24
 	}
 }
 
+func TestDetectStackFromNetHTTPSource(t *testing.T) {
+	root := t.TempDir()
+	writeFile(t, root, "go.mod", `module example.com/nethttp
+
+go 1.22
+`)
+	writeFile(t, root, "main.go", `package main
+
+import "net/http"
+
+func main() {
+	http.HandleFunc("/health", func(http.ResponseWriter, *http.Request) {})
+}
+`)
+
+	scanResult := mustScan(t, root)
+	stack, errors := DetectStack(root, scanResult)
+	if len(errors) != 0 {
+		t.Fatalf("DetectStack errors = %v, want none", errors)
+	}
+
+	if stack.Backend != "Go" {
+		t.Fatalf("Backend = %q, want Go", stack.Backend)
+	}
+	if !slices.Contains(stack.PackageManager, "go") {
+		t.Fatalf("PackageManager = %v, want go", stack.PackageManager)
+	}
+}
+
+func TestDetectStackPrefersGoFrameworkOverGenericNetHTTP(t *testing.T) {
+	root := t.TempDir()
+	writeFile(t, root, "go.mod", `module example.com/ginapp
+
+go 1.22
+
+require github.com/gin-gonic/gin v1.10.0
+`)
+	writeFile(t, root, "main.go", `package main
+
+import "net/http"
+
+func health(http.ResponseWriter, *http.Request) {}
+`)
+
+	scanResult := mustScan(t, root)
+	stack, errors := DetectStack(root, scanResult)
+	if len(errors) != 0 {
+		t.Fatalf("DetectStack errors = %v, want none", errors)
+	}
+
+	if stack.Backend != "Gin" {
+		t.Fatalf("Backend = %q, want Gin", stack.Backend)
+	}
+}
+
 func mustScan(t *testing.T, root string) ir.ScanSummary {
 	t.Helper()
 

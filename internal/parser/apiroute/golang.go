@@ -105,18 +105,11 @@ func collectGoRoutesInBlock(fileSet *token.FileSet, path string, content string,
 			}
 			return true
 		}
-		if len(call.Args) < 2 {
-			return true
-		}
-		method, ok := goHTTPMethod(selector.Sel.Name)
+		method, routePath, handlerExpr, ok := goRouteCall(selector.Sel.Name, call.Args)
 		if !ok {
 			return true
 		}
-		routePath, ok := goStringLiteral(call.Args[0])
-		if !ok {
-			return true
-		}
-		handler := goHandlerName(call.Args[1])
+		handler := goHandlerName(handlerExpr)
 		if handler == "" {
 			return true
 		}
@@ -178,11 +171,57 @@ func goMountedRouterVariablePrefixes(block *ast.BlockStmt) map[string][]string {
 
 func goHTTPMethod(name string) (string, bool) {
 	switch strings.ToUpper(name) {
-	case "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD", "ANY", "ALL":
+	case "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD", "CONNECT", "TRACE", "ANY", "ALL":
 		return strings.ToUpper(name), true
 	default:
 		return "", false
 	}
+}
+
+func goRouteCall(selectorName string, args []ast.Expr) (string, string, ast.Expr, bool) {
+	if method, ok := goHTTPMethod(selectorName); ok && len(args) >= 2 {
+		routePath, ok := goStringLiteral(args[0])
+		if !ok {
+			return "", "", nil, false
+		}
+		return method, routePath, args[1], true
+	}
+
+	switch selectorName {
+	case "Handle", "HandleFunc":
+		if len(args) >= 3 {
+			methodLiteral, ok := goStringLiteral(args[0])
+			if ok {
+				if method, methodOK := goHTTPMethod(methodLiteral); methodOK {
+					routePath, pathOK := goStringLiteral(args[1])
+					if pathOK {
+						return method, routePath, args[2], true
+					}
+				}
+			}
+		}
+		if len(args) >= 2 {
+			pattern, ok := goStringLiteral(args[0])
+			if !ok {
+				return "", "", nil, false
+			}
+			method, routePath := goNetHTTPPattern(pattern)
+			return method, routePath, args[1], true
+		}
+	}
+
+	return "", "", nil, false
+}
+
+func goNetHTTPPattern(pattern string) (string, string) {
+	trimmed := strings.TrimSpace(pattern)
+	parts := strings.Fields(trimmed)
+	if len(parts) >= 2 {
+		if method, ok := goHTTPMethod(parts[0]); ok {
+			return method, parts[1]
+		}
+	}
+	return "ANY", trimmed
 }
 
 func goRouteGroup(name string) bool {

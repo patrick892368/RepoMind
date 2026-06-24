@@ -25,6 +25,15 @@ func DetectStack(root string, scan ir.ScanSummary) (ir.StackInfo, []ir.ScanError
 	var errors []ir.ScanError
 
 	for _, file := range scan.Files {
+		if strings.EqualFold(filepath.Ext(file.Path), ".go") {
+			content, err := readTextFile(root, file.Path)
+			if err != nil {
+				errors = append(errors, toScanError(file.Path, err))
+				continue
+			}
+			detectGoSource(content, collector)
+			continue
+		}
 		switch strings.ToLower(filepath.Base(file.Path)) {
 		case "package.json":
 			collector.addConfigFile(file.Path)
@@ -115,8 +124,9 @@ func DetectStack(root string, scan ir.ScanSummary) (ir.StackInfo, []ir.ScanError
 		}
 	}
 
+	backends := effectiveBackends(collector.backends)
 	return ir.StackInfo{
-		Backend:        joinKnown(collector.backends, []string{"Django", "FastAPI", "Spring Boot", "Laravel", "Symfony", "ThinkPHP", "Gin", "Chi", "Echo", "Fiber", "NestJS", "Express"}),
+		Backend:        joinKnown(backends, []string{"Django", "FastAPI", "Spring Boot", "Laravel", "Symfony", "ThinkPHP", "Gin", "Chi", "Echo", "Fiber", "Go", "NestJS", "Express"}),
 		Frontend:       joinKnown(collector.frontends, []string{"Next.js", "Vue", "React"}),
 		Database:       joinKnown(collector.databases, []string{"Postgres", "MySQL", "SQLite", "MongoDB"}),
 		Cache:          joinKnown(collector.caches, []string{"Redis"}),
@@ -165,6 +175,20 @@ func (c *stackCollector) addPackageManager(value string) {
 
 func (c *stackCollector) addConfigFile(value string) {
 	c.configFiles[value] = struct{}{}
+}
+
+func effectiveBackends(backends map[string]struct{}) map[string]struct{} {
+	result := map[string]struct{}{}
+	for value := range backends {
+		result[value] = struct{}{}
+	}
+	for _, framework := range []string{"Gin", "Chi", "Echo", "Fiber"} {
+		if _, ok := result[framework]; ok {
+			delete(result, "Go")
+			break
+		}
+	}
+	return result
 }
 
 func detectPackageJSON(content []byte, collector *stackCollector) {
@@ -356,6 +380,13 @@ func detectGoMod(content []byte, collector *stackCollector) {
 	}
 	if strings.Contains(lower, "github.com/redis/go-redis") || strings.Contains(lower, "github.com/go-redis/redis") {
 		collector.addCache("Redis")
+	}
+}
+
+func detectGoSource(content []byte, collector *stackCollector) {
+	text := string(content)
+	if strings.Contains(text, `"net/http"`) || strings.Contains(text, "`net/http`") {
+		collector.addBackend("Go")
 	}
 }
 

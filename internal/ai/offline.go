@@ -199,17 +199,20 @@ func limitStrings(values []string, limit int) []string {
 }
 
 func uniqueSorted(values []string) []string {
-	seen := map[string]struct{}{}
+	seen := map[string]string{}
 	for _, value := range values {
 		value = strings.TrimSpace(value)
 		if value == "" {
 			continue
 		}
-		seen[value] = struct{}{}
+		key := strings.ToLower(value)
+		if _, ok := seen[key]; !ok {
+			seen[key] = value
+		}
 	}
 
 	result := make([]string, 0, len(seen))
-	for value := range seen {
+	for _, value := range seen {
 		result = append(result, value)
 	}
 	sort.Strings(result)

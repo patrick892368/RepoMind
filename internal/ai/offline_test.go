@@ -57,6 +57,26 @@ func TestOfflineProviderSupportsChineseSummary(t *testing.T) {
 	}
 }
 
+func TestOfflineProviderDeduplicatesStackCaseInsensitively(t *testing.T) {
+	summary, err := OfflineProvider{}.Summarize(context.Background(), ir.Analysis{
+		Repository: ir.RepositoryInfo{Name: "nethttp-repo"},
+		Stack: ir.StackInfo{
+			Backend:        "Go",
+			PackageManager: []string{"go"},
+		},
+		Scan: ir.ScanSummary{TotalFiles: 2},
+	})
+	if err != nil {
+		t.Fatalf("Summarize returned error: %v", err)
+	}
+	if strings.Contains(summary.Overview, "Go, go") {
+		t.Fatalf("overview = %q, want case-insensitive stack dedupe", summary.Overview)
+	}
+	if len(summary.Stack) != 1 || summary.Stack[0] != "Go" {
+		t.Fatalf("stack = %v, want [Go]", summary.Stack)
+	}
+}
+
 func TestNewProviderSupportsOfflineAndMock(t *testing.T) {
 	for _, name := range []string{"", "offline", "mock"} {
 		provider, err := NewProvider(Config{Provider: name})

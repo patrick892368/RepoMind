@@ -71,6 +71,33 @@ func register(router Router, controller OrderController, wallet WalletController
 	assertRoute(t, routes, "PATCH", "/order/:id", "controller.Update", "go")
 }
 
+func TestParseGoRoutesWithNetHTTPMux(t *testing.T) {
+	content := `package main
+
+import "net/http"
+
+func register(mux *http.ServeMux, router Router) {
+	http.HandleFunc("/login", login)
+	mux.HandleFunc("GET /wallet/info", walletInfo)
+	mux.Handle("POST /order/create", http.HandlerFunc(createOrder))
+	mux.Handle("/metrics", metricsHandler)
+	mux.HandleFunc("DELETE /order/{id}", requireAuth(deleteOrder))
+	mux.Handle("GET /inline", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
+	router.Handle("PUT", "/order/{id}", updateOrder)
+}
+`
+	routes := parseGoRoutes("cmd/api/main.go", content)
+
+	assertRoute(t, routes, "ANY", "/login", "login", "go")
+	assertRoute(t, routes, "GET", "/wallet/info", "walletInfo", "go")
+	assertRoute(t, routes, "POST", "/order/create", "createOrder", "go")
+	assertRoute(t, routes, "ANY", "/metrics", "metricsHandler", "go")
+	assertRoute(t, routes, "DELETE", "/order/{id}", "deleteOrder", "go")
+	assertRoute(t, routes, "GET", "/inline", "inline", "go")
+	assertRoute(t, routes, "PUT", "/order/{id}", "updateOrder", "go")
+	assertNoRoute(t, routes, "ANY", "/GET", "/wallet/info", "go")
+}
+
 func TestParseGoRoutesWithChiRoutePrefix(t *testing.T) {
 	content := `package main
 

@@ -197,6 +197,39 @@ func TestAnalyzeIncludesAPIRoutesAndDiagram(t *testing.T) {
 	}
 }
 
+func TestAnalyzeIncludesNetHTTPRoutes(t *testing.T) {
+	repoPath := filepath.Join("..", "..", "testdata", "fixtures", "nethttp-repo")
+	outputDir := t.TempDir()
+
+	result, err := Analyze(context.Background(), Options{
+		RepoPath:  repoPath,
+		OutputDir: outputDir,
+	})
+	if err != nil {
+		t.Fatalf("Analyze returned error: %v", err)
+	}
+
+	analysis := result.Analysis
+	if analysis.Stack.Backend != "Go" {
+		t.Fatalf("Backend = %q, want Go", analysis.Stack.Backend)
+	}
+	if analysis.Diagrams.API == "" {
+		t.Fatal("expected non-empty API diagram")
+	}
+	for _, want := range []ir.APIRoute{
+		{Method: "ANY", Path: "/login", Handler: "login", Source: "go"},
+		{Method: "GET", Path: "/wallet/info", Handler: "walletInfo", Source: "go"},
+		{Method: "POST", Path: "/order/create", Handler: "createOrder", Source: "go"},
+		{Method: "ANY", Path: "/metrics", Handler: "metricsHandler", Source: "go"},
+	} {
+		if !slices.ContainsFunc(analysis.Routes, func(route ir.APIRoute) bool {
+			return route.Method == want.Method && route.Path == want.Path && route.Handler == want.Handler && route.Source == want.Source
+		}) {
+			t.Fatalf("routes did not contain %#v: %+v", want, analysis.Routes)
+		}
+	}
+}
+
 func TestAnalyzeIncludesWorkspacePackages(t *testing.T) {
 	repoPath := filepath.Join("..", "..", "testdata", "fixtures", "monorepo")
 	outputDir := t.TempDir()
