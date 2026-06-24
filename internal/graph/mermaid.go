@@ -4,7 +4,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/repomind/repomind/internal/ir"
+	"github.com/patrick892368/RepoMind/internal/ir"
 )
 
 func GenerateER(models []ir.DBModel) string {

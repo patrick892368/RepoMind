@@ -6,8 +6,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/repomind/repomind/internal/i18n"
-	"github.com/repomind/repomind/internal/ir"
+	"github.com/patrick892368/RepoMind/internal/i18n"
+	"github.com/patrick892368/RepoMind/internal/ir"
 )
 
 type OfflineProvider struct {

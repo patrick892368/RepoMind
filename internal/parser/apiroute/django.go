@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/repomind/repomind/internal/ir"
+	"github.com/patrick892368/RepoMind/internal/ir"
 )
 
 var djangoModuleIncludePattern = regexp.MustCompile(`include\(\s*["']([^"']+)["']`)

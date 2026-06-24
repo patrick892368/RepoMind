@@ -4,8 +4,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/repomind/repomind/internal/ir"
-	"github.com/repomind/repomind/internal/scanner"
+	"github.com/patrick892368/RepoMind/internal/ir"
+	"github.com/patrick892368/RepoMind/internal/scanner"
 )
 
 func TestExtractDatabaseModelsFromFixture(t *testing.T) {

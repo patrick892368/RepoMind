@@ -39,7 +39,7 @@ macOS 或 Linux：
 仓库发布后可通过 module path 安装：
 
 ```bash
-go install github.com/repomind/repomind/cmd/repomind@latest
+go install github.com/patrick892368/RepoMind/cmd/repomind@latest
 ```
 
 确保 Go binary 目录在 `PATH` 中。

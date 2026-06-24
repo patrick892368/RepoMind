@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/repomind/repomind/internal/ir"
+	"github.com/patrick892368/RepoMind/internal/ir"
 )
 
 var prismaModelPattern = regexp.MustCompile(`(?s)\bmodel\s+([A-Za-z_][A-Za-z0-9_]*)\s*\{(.*?)\}`)

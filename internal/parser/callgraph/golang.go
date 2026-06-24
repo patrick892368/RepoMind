@@ -5,7 +5,7 @@ import (
 	goparser "go/parser"
 	"go/token"
 
-	"github.com/repomind/repomind/internal/ir"
+	"github.com/patrick892368/RepoMind/internal/ir"
 )
 
 func parseGo(path string, content string) []ir.CallEdge {

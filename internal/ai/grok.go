@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/repomind/repomind/internal/ir"
+	"github.com/patrick892368/RepoMind/internal/ir"
 )
 
 const defaultGrokBaseURL = "https://api.x.ai/v1"

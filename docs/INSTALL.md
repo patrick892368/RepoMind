@@ -39,7 +39,7 @@ On macOS or Linux:
 After the repository is published, install from the module path:
 
 ```bash
-go install github.com/repomind/repomind/cmd/repomind@latest
+go install github.com/patrick892368/RepoMind/cmd/repomind@latest
 ```
 
 Make sure your Go binary directory is on `PATH`.

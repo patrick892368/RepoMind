@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/repomind/repomind/internal/ir"
-	"github.com/repomind/repomind/internal/storage"
+	"github.com/patrick892368/RepoMind/internal/ir"
+	"github.com/patrick892368/RepoMind/internal/storage"
 )
 
 func TestRunAnalyzeCreatesAnalysisFile(t *testing.T) {

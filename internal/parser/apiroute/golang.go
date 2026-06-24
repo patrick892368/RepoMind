@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/repomind/repomind/internal/ir"
+	"github.com/patrick892368/RepoMind/internal/ir"
 )
 
 var goRoutePattern = regexp.MustCompile(`(?:\w+)\.(GET|POST|PUT|DELETE|PATCH|OPTIONS|HEAD|Any|All)\(\s*"([^"]+)"\s*,\s*([A-Za-z_][A-Za-z0-9_]*)`)

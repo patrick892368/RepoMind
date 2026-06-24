@@ -6,9 +6,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/repomind/repomind/internal/graph"
-	"github.com/repomind/repomind/internal/ir"
-	"github.com/repomind/repomind/internal/storage"
+	"github.com/patrick892368/RepoMind/internal/graph"
+	"github.com/patrick892368/RepoMind/internal/ir"
+	"github.com/patrick892368/RepoMind/internal/storage"
 )
 
 type Options struct {

@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/repomind/repomind/internal/analyzer"
+	"github.com/patrick892368/RepoMind/internal/analyzer"
 )
 
 func TestDiagnoseFindsStateDatabaseCacheAndQueue(t *testing.T) {

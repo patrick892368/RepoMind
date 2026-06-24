@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/repomind/repomind/internal/ir"
+	"github.com/patrick892368/RepoMind/internal/ir"
 )
 
 func TestExportCodexWritesContextFiles(t *testing.T) {

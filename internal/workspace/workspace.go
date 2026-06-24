@@ -8,8 +8,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/repomind/repomind/internal/detector"
-	"github.com/repomind/repomind/internal/ir"
+	"github.com/patrick892368/RepoMind/internal/detector"
+	"github.com/patrick892368/RepoMind/internal/ir"
 )
 
 type packageCandidate struct {

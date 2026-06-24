@@ -9,13 +9,13 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/repomind/repomind/internal/analyzer"
-	"github.com/repomind/repomind/internal/diagnose"
-	"github.com/repomind/repomind/internal/exporter"
-	"github.com/repomind/repomind/internal/ir"
-	"github.com/repomind/repomind/internal/query"
-	"github.com/repomind/repomind/internal/repository"
-	"github.com/repomind/repomind/internal/trace"
+	"github.com/patrick892368/RepoMind/internal/analyzer"
+	"github.com/patrick892368/RepoMind/internal/diagnose"
+	"github.com/patrick892368/RepoMind/internal/exporter"
+	"github.com/patrick892368/RepoMind/internal/ir"
+	"github.com/patrick892368/RepoMind/internal/query"
+	"github.com/patrick892368/RepoMind/internal/repository"
+	"github.com/patrick892368/RepoMind/internal/trace"
 )
 
 const version = "0.1.0-dev"
