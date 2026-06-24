@@ -33,7 +33,9 @@ func parseLaravel(path string, content string) []ir.APIRoute {
 	var routes []ir.APIRoute
 	var groups []laravelRouteGroup
 	braceDepth := 0
-	for index, line := range strings.Split(content, "\n") {
+	lines := strings.Split(content, "\n")
+	for index := 0; index < len(lines); index++ {
+		line := lines[index]
 		groups = activeLaravelRouteGroups(groups, braceDepth)
 		if prefix := laravelRouteGroupPrefix(line); prefix != "" {
 			groupDepth := braceDepth + strings.Count(line, "{")
@@ -55,8 +57,11 @@ func parseLaravel(path string, content string) []ir.APIRoute {
 				Evidence:   evidenceFromLine(line),
 			})
 		}
-		if match := laravelResourceRoutePattern.FindStringSubmatch(line); len(match) == 4 {
-			routes = append(routes, laravelResourceRoutes(path, index+1, line, groupPrefix, match[1], match[2], match[3])...)
+		if statement, endIndex := laravelResourceStatement(lines, index); statement != "" {
+			if match := laravelResourceRoutePattern.FindStringSubmatch(statement); len(match) == 4 {
+				routes = append(routes, laravelResourceRoutes(path, index+1, statement, groupPrefix, match[1], match[2], match[3])...)
+				index = endIndex
+			}
 		}
 		braceDepth += strings.Count(line, "{")
 		braceDepth -= strings.Count(line, "}")
@@ -65,6 +70,31 @@ func parseLaravel(path string, content string) []ir.APIRoute {
 		}
 	}
 	return routes
+}
+
+func laravelResourceStatement(lines []string, start int) (string, int) {
+	line := strings.TrimSpace(lines[start])
+	if !strings.Contains(line, "Route::resource(") && !strings.Contains(line, "Route::apiResource(") {
+		return "", start
+	}
+	parts := []string{line}
+	if strings.Contains(line, ";") {
+		return strings.Join(parts, " "), start
+	}
+	end := start
+	for next := start + 1; next < len(lines) && next <= start+8; next++ {
+		part := strings.TrimSpace(lines[next])
+		if part == "" {
+			end = next
+			continue
+		}
+		parts = append(parts, part)
+		end = next
+		if strings.Contains(part, ";") {
+			break
+		}
+	}
+	return strings.Join(parts, " "), end
 }
 
 func activeLaravelRouteGroups(groups []laravelRouteGroup, braceDepth int) []laravelRouteGroup {

@@ -94,8 +94,8 @@ Current coverage:
 - Laravel routes.
 - Laravel static route groups and prefixes for chained `Route::prefix(...)->group(...)` and array `Route::group(["prefix" => ...], ...)` forms.
 - Laravel static `Route::resource(...)` and `Route::apiResource(...)` expansion.
-- Laravel static resource route `only` / `except` options.
-- Laravel static resource route custom `parameters` options.
+- Laravel static resource route `only` / `except` options, including multiline chained calls.
+- Laravel static resource route custom `parameters` options, including multiline chained calls.
 - Laravel Eloquent models with `$table`, `$fillable`, `$casts`, and common relation methods.
 - Laravel/Symfony/ThinkPHP stack detection.
 

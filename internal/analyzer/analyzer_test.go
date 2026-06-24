@@ -439,6 +439,43 @@ func TestAnalyzeIncludesLaravelResourceRouteParameters(t *testing.T) {
 	}
 }
 
+func TestAnalyzeIncludesLaravelMultilineResourceRoutes(t *testing.T) {
+	repoPath := filepath.Join("..", "..", "testdata", "fixtures", "laravel-resource-multiline-repo")
+	outputDir := t.TempDir()
+
+	result, err := Analyze(context.Background(), Options{
+		RepoPath:  repoPath,
+		OutputDir: outputDir,
+	})
+	if err != nil {
+		t.Fatalf("Analyze returned error: %v", err)
+	}
+
+	analysis := result.Analysis
+	if analysis.Stack.Backend != "Laravel" {
+		t.Fatalf("Backend = %q, want Laravel", analysis.Stack.Backend)
+	}
+	if analysis.Diagrams.API == "" {
+		t.Fatal("expected non-empty API diagram")
+	}
+	for _, want := range []ir.APIRoute{
+		{Method: "GET", Path: "/orders/{order_uuid}", Handler: "OrderController@show", Source: "laravel"},
+		{Method: "PATCH", Path: "/orders/{order_uuid}", Handler: "OrderController@update", Source: "laravel"},
+		{Method: "GET", Path: "/api/v1/wallets/{wallet_slug}", Handler: "WalletController@show", Source: "laravel"},
+	} {
+		if !slices.ContainsFunc(analysis.Routes, func(route ir.APIRoute) bool {
+			return route.Method == want.Method && route.Path == want.Path && route.Handler == want.Handler && route.Source == want.Source
+		}) {
+			t.Fatalf("routes did not contain %#v: %+v", want, analysis.Routes)
+		}
+	}
+	if slices.ContainsFunc(analysis.Routes, func(route ir.APIRoute) bool {
+		return route.Method == "DELETE" && route.Path == "/api/v1/wallets/{wallet_slug}" && route.Handler == "WalletController@destroy" && route.Source == "laravel"
+	}) {
+		t.Fatalf("routes contained excepted multiline resource action: %+v", analysis.Routes)
+	}
+}
+
 func TestAnalyzeIncludesLaravelEloquentModels(t *testing.T) {
 	repoPath := filepath.Join("..", "..", "testdata", "fixtures", "laravel-eloquent-repo")
 	outputDir := t.TempDir()
