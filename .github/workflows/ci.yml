@@ -28,6 +28,10 @@ jobs:
       - name: Go vet
         run: go vet ./...
 
+      - name: Safety boundary
+        shell: pwsh
+        run: ./scripts/verify-safety-boundary.ps1
+
       - name: Analyze smoke English
         run: |
           OUT="$RUNNER_TEMP/repomind-analyze-en"

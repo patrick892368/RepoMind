@@ -11,6 +11,7 @@
 - `ASK_EVALUATION.md` / `ASK_EVALUATION.zh-CN.md`：可重复的 `repomind ask` 质量评估 case 和自定义 case 配置。
 - `RELEASE_CHECKLIST.md` / `RELEASE_CHECKLIST.zh-CN.md`：发布前检查清单。
 - `RELEASE_GATE_RESULTS.md` / `RELEASE_GATE_RESULTS.zh-CN.md`：最新组合 release gate 结果。
+- `SAFETY_BOUNDARY.md` / `SAFETY_BOUNDARY.zh-CN.md`：ignored 路径、密钥处理和可执行安全检查。
 - `PARSER_BACKLOG.md` / `PARSER_BACKLOG.zh-CN.md`：parser 质量 backlog 和 tree-sitter 引入边界。
 - `ROUTE_PREFIX_STRATEGY.md` / `ROUTE_PREFIX_STRATEGY.zh-CN.md`：跨文件 route prefix 解析策略。
 

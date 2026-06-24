@@ -88,6 +88,7 @@ Run before creating a release tag:
 
 This runs the default preflight plus:
 
+- safety boundary verification
 - trace and diagnose CLI smoke through the default preflight
 - offline strict ask evaluation through the Go CLI
 - remote Git URL analyze smoke
@@ -141,6 +142,7 @@ It runs:
 
 - `go test ./...`
 - `go vet ./...`
+- safety boundary verification
 - English analyze smoke
 - Chinese analyze smoke
 - trace and diagnose smoke
@@ -177,6 +179,7 @@ The local binary smoke equivalent is:
 It runs the local release gate on `windows-latest`:
 
 - default preflight
+- safety boundary verification
 - trace and diagnose CLI smoke
 - offline strict ask evaluation
 - release binary smoke

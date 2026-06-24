@@ -138,6 +138,9 @@ $outputRoot = (Resolve-Path $OutputDir).Path
 $sharedRepoCache = if ($RepoCacheDir) { $RepoCacheDir } else { Join-Path $outputRoot "repo-cache" }
 
 $steps = @()
+$steps += Invoke-PreflightStep -Name "safety boundary" -Action {
+    Invoke-CapturedCommand -FilePath "powershell" -ArgumentList @("-ExecutionPolicy", "Bypass", "-File", "scripts\verify-safety-boundary.ps1") -LogPath (Join-Path $outputRoot "safety-boundary.log") -TimeoutSeconds $TimeoutSeconds
+}
 $steps += Invoke-PreflightStep -Name "go test ./..." -Action {
     Invoke-CapturedCommand -FilePath "go" -ArgumentList @("test", "./...") -LogPath (Join-Path $outputRoot "go-test.log") -TimeoutSeconds $TimeoutSeconds
 }
