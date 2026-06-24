@@ -11,7 +11,7 @@ Date: 2026-06-24
 Command:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 -OutputDir eval\m101-release-gate -Proxy http://127.0.0.1:10809 -TimeoutSeconds 300 -CloneRetries 5 -RepoCacheDir eval\release-gate\repo-cache -AskCasesPath docs\examples\ask-cases.example.json -SkipManifestBuild
+powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 -OutputDir eval\m102-full-release-gate -Proxy http://127.0.0.1:10809 -TimeoutSeconds 300 -CloneRetries 5 -RepoCacheDir eval\release-gate\repo-cache -AskCasesPath docs\examples\ask-cases.example.json
 ```
 
 Status: PASS
@@ -20,14 +20,15 @@ Status: PASS
 
 | Step | Status | Seconds |
 |---|---:|---:|
-| `go test ./...` | PASS | 4.52 |
-| `go vet ./...` | PASS | 2.96 |
-| English analyze smoke | PASS | 0.24 |
-| Chinese analyze smoke | PASS | 0.27 |
-| Real repository benchmark | PASS | 1.93 |
-| Real repository evaluation | PASS | 5.92 |
-| Ask evaluation | PASS | 0.21 |
-| Release artifact smoke | PASS | 9.57 |
+| `go test ./...` | PASS | 5.09 |
+| `go vet ./...` | PASS | 3.03 |
+| English analyze smoke | PASS | 0.25 |
+| Chinese analyze smoke | PASS | 0.25 |
+| Real repository benchmark | PASS | 1.86 |
+| Real repository evaluation | PASS | 5.85 |
+| Ask evaluation | PASS | 0.22 |
+| Release artifact smoke | PASS | 9.23 |
+| Release manifest build and verification | PASS | 14.12 |
 
 ## Ask Evaluation Summary
 
@@ -50,11 +51,11 @@ Target: 30 seconds per repository.
 
 | Repository | Seconds | Under Target | Routes | Models | Call Edges |
 |---|---:|---:|---:|---:|---:|
-| Laravel | 0.22 | true | 1 | 0 | 0 |
+| Laravel | 0.19 | true | 1 | 0 | 0 |
 | Spring REST service | 0.16 | true | 1 | 0 | 0 |
-| Gin examples | 0.19 | true | 69 | 0 | 748 |
-| FastAPI full-stack template | 0.26 | true | 23 | 2 | 851 |
-| Prisma examples | 0.57 | true | 42 | 145 | 1764 |
+| Gin examples | 0.20 | true | 69 | 0 | 748 |
+| FastAPI full-stack template | 0.27 | true | 23 | 2 | 851 |
+| Prisma examples | 0.55 | true | 42 | 145 | 1764 |
 
 ## Evaluation Summary
 
@@ -83,13 +84,24 @@ Minimum quality score: 1.0.
 | TypeORM Sample | 1.00 | 0 | 2 | 15 |
 | Cookiecutter Django | 1.00 | 9 | 0 | 571 |
 
-## Release Artifact Smoke
+## Release Artifact Smoke And Manifest
 
-Release artifact smoke passed. Manifest build and verification were intentionally skipped in this run with `-SkipManifestBuild`; the latest full manifest verification remains the M80 run.
+Release artifact smoke passed.
+
+Release manifest build and verification passed for all six archives:
+
+| Archive | Exists | Size OK | SHA256 OK |
+|---|---:|---:|---:|
+| `repomind-v0.0.0-release-gate-windows-amd64.zip` | true | true | true |
+| `repomind-v0.0.0-release-gate-windows-arm64.zip` | true | true | true |
+| `repomind-v0.0.0-release-gate-darwin-amd64.tar.gz` | true | true | true |
+| `repomind-v0.0.0-release-gate-darwin-arm64.tar.gz` | true | true | true |
+| `repomind-v0.0.0-release-gate-linux-amd64.tar.gz` | true | true | true |
+| `repomind-v0.0.0-release-gate-linux-arm64.tar.gz` | true | true | true |
 
 ## Notes
 
 - Benchmark/evaluation share a repository cache through `RepoCacheDir`.
 - The latest run includes 20 real repository evaluation samples.
 - The latest run includes offline strict ask evaluation with 2 external example cases.
-- Raw run outputs are under ignored `eval/m101-release-gate/`.
+- Raw run outputs are under ignored `eval/m102-full-release-gate/`.

@@ -11,7 +11,7 @@
 命令：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 -OutputDir eval\m101-release-gate -Proxy http://127.0.0.1:10809 -TimeoutSeconds 300 -CloneRetries 5 -RepoCacheDir eval\release-gate\repo-cache -AskCasesPath docs\examples\ask-cases.example.json -SkipManifestBuild
+powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 -OutputDir eval\m102-full-release-gate -Proxy http://127.0.0.1:10809 -TimeoutSeconds 300 -CloneRetries 5 -RepoCacheDir eval\release-gate\repo-cache -AskCasesPath docs\examples\ask-cases.example.json
 ```
 
 状态：PASS
@@ -20,14 +20,15 @@ powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 -OutputDir eva
 
 | 步骤 | 状态 | 秒 |
 |---|---:|---:|
-| `go test ./...` | PASS | 4.52 |
-| `go vet ./...` | PASS | 2.96 |
-| 英文 analyze smoke | PASS | 0.24 |
-| 中文 analyze smoke | PASS | 0.27 |
-| 真实仓库 benchmark | PASS | 1.93 |
-| 真实仓库 evaluation | PASS | 5.92 |
-| Ask evaluation | PASS | 0.21 |
-| Release artifact smoke | PASS | 9.57 |
+| `go test ./...` | PASS | 5.09 |
+| `go vet ./...` | PASS | 3.03 |
+| 英文 analyze smoke | PASS | 0.25 |
+| 中文 analyze smoke | PASS | 0.25 |
+| 真实仓库 benchmark | PASS | 1.86 |
+| 真实仓库 evaluation | PASS | 5.85 |
+| Ask evaluation | PASS | 0.22 |
+| Release artifact smoke | PASS | 9.23 |
+| Release manifest build and verification | PASS | 14.12 |
 
 ## Ask Evaluation 摘要
 
@@ -50,11 +51,11 @@ Overall score：1.0。
 
 | 仓库 | 秒 | 低于目标 | Routes | Models | Call Edges |
 |---|---:|---:|---:|---:|---:|
-| Laravel | 0.22 | true | 1 | 0 | 0 |
+| Laravel | 0.19 | true | 1 | 0 | 0 |
 | Spring REST service | 0.16 | true | 1 | 0 | 0 |
-| Gin examples | 0.19 | true | 69 | 0 | 748 |
-| FastAPI full-stack template | 0.26 | true | 23 | 2 | 851 |
-| Prisma examples | 0.57 | true | 42 | 145 | 1764 |
+| Gin examples | 0.20 | true | 69 | 0 | 748 |
+| FastAPI full-stack template | 0.27 | true | 23 | 2 | 851 |
+| Prisma examples | 0.55 | true | 42 | 145 | 1764 |
 
 ## Evaluation 摘要
 
@@ -83,13 +84,24 @@ Overall score：1.0。
 | TypeORM Sample | 1.00 | 0 | 2 | 15 |
 | Cookiecutter Django | 1.00 | 9 | 0 | 571 |
 
-## Release Artifact Smoke
+## Release Artifact Smoke 和 Manifest
 
-Release artifact smoke 已通过。本次通过 `-SkipManifestBuild` 明确跳过 manifest build 和 verification；最近一次完整 manifest verification 仍是 M80 运行。
+Release artifact smoke 已通过。
+
+Release manifest build and verification 已通过，覆盖全部 6 个归档：
+
+| Archive | Exists | Size OK | SHA256 OK |
+|---|---:|---:|---:|
+| `repomind-v0.0.0-release-gate-windows-amd64.zip` | true | true | true |
+| `repomind-v0.0.0-release-gate-windows-arm64.zip` | true | true | true |
+| `repomind-v0.0.0-release-gate-darwin-amd64.tar.gz` | true | true | true |
+| `repomind-v0.0.0-release-gate-darwin-arm64.tar.gz` | true | true | true |
+| `repomind-v0.0.0-release-gate-linux-amd64.tar.gz` | true | true | true |
+| `repomind-v0.0.0-release-gate-linux-arm64.tar.gz` | true | true | true |
 
 ## 备注
 
 - benchmark/evaluation 通过 `RepoCacheDir` 共享 repository cache。
 - 最新运行包含 20 个真实仓库 evaluation 样本。
 - 最新运行包含 offline strict ask evaluation，共 2 个外部示例 case。
-- 原始输出位于被 Git 忽略的 `eval/m101-release-gate/`。
+- 原始输出位于被 Git 忽略的 `eval/m102-full-release-gate/`。
