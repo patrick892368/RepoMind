@@ -148,6 +148,34 @@ $steps += Invoke-PreflightStep -Name "analyze smoke en" -Action {
 $steps += Invoke-PreflightStep -Name "analyze smoke zh" -Action {
     Invoke-CapturedCommand -FilePath "go" -ArgumentList @("run", "./cmd/repomind", "analyze", "--output", (Join-Path $outputRoot "analyze-zh"), "--lang", "zh", ".") -LogPath (Join-Path $outputRoot "analyze-zh.log") -TimeoutSeconds $TimeoutSeconds
 }
+$steps += Invoke-PreflightStep -Name "trace and diagnose smoke" -Action {
+    $smokeDir = Join-Path $outputRoot "trace-diagnose"
+    New-Item -ItemType Directory -Force -Path $smokeDir | Out-Null
+    $fixtureRepo = "testdata\fixtures\diagnose-repo"
+    $analysisOutput = Join-Path $smokeDir "analysis"
+    $analysisPath = Join-Path $analysisOutput "analysis.json"
+    $traceLog = Join-Path $smokeDir "trace.log"
+    $diagnoseLog = Join-Path $smokeDir "diagnose.log"
+
+    Invoke-CapturedCommand -FilePath "go" -ArgumentList @("run", "./cmd/repomind", "analyze", "--output", $analysisOutput, $fixtureRepo) -LogPath (Join-Path $smokeDir "analyze.log") -TimeoutSeconds $TimeoutSeconds
+    Invoke-CapturedCommand -FilePath "go" -ArgumentList @("run", "./cmd/repomind", "trace", $fixtureRepo, "--analysis", $analysisPath, "--symbol", "update_order_status") -LogPath $traceLog -TimeoutSeconds $TimeoutSeconds
+    $traceOutput = Get-Content -Path $traceLog -Raw
+    if ($traceOutput -notmatch "update_order_status -> save") {
+        throw "trace smoke did not find update_order_status -> save"
+    }
+    if ($traceOutput -notmatch "Mermaid") {
+        throw "trace smoke did not print Mermaid diagram"
+    }
+
+    Invoke-CapturedCommand -FilePath "go" -ArgumentList @("run", "./cmd/repomind", "diagnose", $fixtureRepo, "--analysis", $analysisPath, "--issue", "order status error") -LogPath $diagnoseLog -TimeoutSeconds $TimeoutSeconds
+    $diagnoseOutput = Get-Content -Path $diagnoseLog -Raw
+    if ($diagnoseOutput -notmatch "\[state\]") {
+        throw "diagnose smoke did not find state finding"
+    }
+    if ($diagnoseOutput -notmatch "\[database\]") {
+        throw "diagnose smoke did not find database finding"
+    }
+}
 
 if ($IncludeBenchmark) {
     $benchmarkArgs = @("-ExecutionPolicy", "Bypass", "-File", "scripts\benchmark-repos.ps1", "-OutputDir", (Join-Path $outputRoot "benchmark"), "-TimeoutSeconds", "$TimeoutSeconds", "-TargetSeconds", "$BenchmarkTargetSeconds", "-CloneRetries", "$CloneRetries", "-RepoCacheDir", $sharedRepoCache)

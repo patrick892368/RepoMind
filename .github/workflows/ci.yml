@@ -42,3 +42,14 @@ jobs:
           test -f "$OUT/analysis.json"
           test -f "$OUT/report.html"
           grep -q '"language": "zh"' "$OUT/analysis.json"
+
+      - name: Trace and diagnose smoke
+        run: |
+          OUT="$RUNNER_TEMP/repomind-trace-diagnose"
+          go run ./cmd/repomind analyze --output "$OUT" testdata/fixtures/diagnose-repo
+          go run ./cmd/repomind trace testdata/fixtures/diagnose-repo --analysis "$OUT/analysis.json" --symbol update_order_status | tee "$RUNNER_TEMP/repomind-trace.txt"
+          grep -q 'update_order_status -> save' "$RUNNER_TEMP/repomind-trace.txt"
+          grep -q 'Mermaid:' "$RUNNER_TEMP/repomind-trace.txt"
+          go run ./cmd/repomind diagnose testdata/fixtures/diagnose-repo --analysis "$OUT/analysis.json" --issue "order status error" | tee "$RUNNER_TEMP/repomind-diagnose.txt"
+          grep -q '\[state\]' "$RUNNER_TEMP/repomind-diagnose.txt"
+          grep -q '\[database\]' "$RUNNER_TEMP/repomind-diagnose.txt"

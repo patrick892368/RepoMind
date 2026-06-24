@@ -67,6 +67,7 @@ Pass criteria:
 - [ ] `go vet ./...` exits 0.
 - [ ] `eval/preflight/summary.md` reports PASS when using the preflight script.
 - [ ] `eval/release-gate/summary.md` reports PASS when using the release gate script.
+- [ ] Preflight/release gate includes trace and diagnose smoke.
 - [ ] Release gate includes ask evaluation unless `-SkipAskEvaluation` is intentionally used for investigation.
 - [ ] Release gate includes manifest build unless `-SkipManifestBuild` is intentionally used for investigation.
 

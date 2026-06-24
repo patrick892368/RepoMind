@@ -65,6 +65,7 @@ go vet ./...
 - `go vet ./...` 返回 0。
 - preflight summary 为 PASS。
 - release gate summary 为 PASS。
+- preflight/release gate 包含 trace 和 diagnose smoke。
 - release gate 包含 ask evaluation，除非排查时明确使用 `-SkipAskEvaluation`。
 
 ## 3. CLI Smoke

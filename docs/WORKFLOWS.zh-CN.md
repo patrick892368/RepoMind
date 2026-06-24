@@ -84,6 +84,7 @@ eval/preflight/ask-evaluation/summary.md
 
 它会运行默认 preflight，并额外运行：
 
+- 默认 preflight 中的 trace 和 diagnose CLI smoke
 - 通过 Go CLI 运行 offline strict ask evaluation
 - 当前平台 release binary smoke
 - 跨平台 release manifest build and verification
@@ -117,6 +118,7 @@ GitHub Actions CI 运行：
 - `go vet ./...`
 - 英文 analyze smoke
 - 中文 analyze smoke
+- trace 和 diagnose smoke
 
 ## Release Workflow
 

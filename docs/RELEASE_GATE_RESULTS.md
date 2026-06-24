@@ -11,7 +11,7 @@ Date: 2026-06-24
 Command:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 -OutputDir eval\m102-full-release-gate -Proxy http://127.0.0.1:10809 -TimeoutSeconds 300 -CloneRetries 5 -RepoCacheDir eval\release-gate\repo-cache -AskCasesPath docs\examples\ask-cases.example.json
+powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 -OutputDir eval\m103-release-gate -Proxy http://127.0.0.1:10809 -TimeoutSeconds 300 -CloneRetries 5 -RepoCacheDir eval\release-gate\repo-cache -AskCasesPath docs\examples\ask-cases.example.json
 ```
 
 Status: PASS
@@ -20,15 +20,16 @@ Status: PASS
 
 | Step | Status | Seconds |
 |---|---:|---:|
-| `go test ./...` | PASS | 5.09 |
-| `go vet ./...` | PASS | 3.03 |
+| `go test ./...` | PASS | 4.59 |
+| `go vet ./...` | PASS | 3.09 |
 | English analyze smoke | PASS | 0.25 |
-| Chinese analyze smoke | PASS | 0.25 |
-| Real repository benchmark | PASS | 1.86 |
-| Real repository evaluation | PASS | 5.85 |
-| Ask evaluation | PASS | 0.22 |
-| Release artifact smoke | PASS | 9.23 |
-| Release manifest build and verification | PASS | 14.12 |
+| Chinese analyze smoke | PASS | 0.24 |
+| Trace and diagnose smoke | PASS | 0.52 |
+| Real repository benchmark | PASS | 1.91 |
+| Real repository evaluation | PASS | 5.91 |
+| Ask evaluation | PASS | 0.23 |
+| Release artifact smoke | PASS | 9.05 |
+| Release manifest build and verification | PASS | 12.36 |
 
 ## Ask Evaluation Summary
 
@@ -51,11 +52,11 @@ Target: 30 seconds per repository.
 
 | Repository | Seconds | Under Target | Routes | Models | Call Edges |
 |---|---:|---:|---:|---:|---:|
-| Laravel | 0.19 | true | 1 | 0 | 0 |
-| Spring REST service | 0.16 | true | 1 | 0 | 0 |
+| Laravel | 0.21 | true | 1 | 0 | 0 |
+| Spring REST service | 0.17 | true | 1 | 0 | 0 |
 | Gin examples | 0.20 | true | 69 | 0 | 748 |
 | FastAPI full-stack template | 0.27 | true | 23 | 2 | 851 |
-| Prisma examples | 0.55 | true | 42 | 145 | 1764 |
+| Prisma examples | 0.57 | true | 42 | 145 | 1764 |
 
 ## Evaluation Summary
 
@@ -104,4 +105,4 @@ Release manifest build and verification passed for all six archives:
 - Benchmark/evaluation share a repository cache through `RepoCacheDir`.
 - The latest run includes 20 real repository evaluation samples.
 - The latest run includes offline strict ask evaluation with 2 external example cases.
-- Raw run outputs are under ignored `eval/m102-full-release-gate/`.
+- Raw run outputs are under ignored `eval/m103-release-gate/`.

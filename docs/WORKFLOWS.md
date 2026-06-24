@@ -88,6 +88,7 @@ Run before creating a release tag:
 
 This runs the default preflight plus:
 
+- trace and diagnose CLI smoke through the default preflight
 - offline strict ask evaluation through the Go CLI
 - current-platform release binary smoke
 - cross-platform release manifest build and verification
@@ -141,6 +142,7 @@ It runs:
 - `go vet ./...`
 - English analyze smoke
 - Chinese analyze smoke
+- trace and diagnose smoke
 
 The local equivalent is:
 
@@ -174,6 +176,7 @@ The local binary smoke equivalent is:
 It runs the local release gate on `windows-latest`:
 
 - default preflight
+- trace and diagnose CLI smoke
 - offline strict ask evaluation
 - release binary smoke
 - release manifest build and verification
