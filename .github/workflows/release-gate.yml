@@ -52,6 +52,8 @@ jobs:
           path: |
             eval/release-gate/summary.json
             eval/release-gate/summary.md
+            eval/release-gate/ask-evaluation/summary.json
+            eval/release-gate/ask-evaluation/summary.md
             eval/release-gate/benchmark/summary.json
             eval/release-gate/benchmark/summary.md
             eval/release-gate/evaluation/summary.json

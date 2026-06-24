@@ -78,6 +78,7 @@ eval/preflight/ask-evaluation/summary.md
 
 它会运行默认 preflight，并额外运行：
 
+- offline strict ask evaluation
 - 当前平台 release binary smoke
 - 跨平台 release manifest build and verification
 - 真实仓库 benchmark
@@ -88,6 +89,18 @@ eval/preflight/ask-evaluation/summary.md
 
 ```powershell
 .\scripts\release-gate.ps1 -Proxy http://127.0.0.1:10809 -CloneRetries 5
+```
+
+使用自定义 ask evaluation case：
+
+```powershell
+.\scripts\release-gate.ps1 -Proxy http://127.0.0.1:10809 -AskCasesPath docs\examples\ask-cases.example.json
+```
+
+排查时跳过 ask evaluation：
+
+```powershell
+.\scripts\release-gate.ps1 -Proxy http://127.0.0.1:10809 -SkipAskEvaluation
 ```
 
 ## CI

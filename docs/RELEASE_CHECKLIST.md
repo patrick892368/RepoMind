@@ -67,6 +67,7 @@ Pass criteria:
 - [ ] `go vet ./...` exits 0.
 - [ ] `eval/preflight/summary.md` reports PASS when using the preflight script.
 - [ ] `eval/release-gate/summary.md` reports PASS when using the release gate script.
+- [ ] Release gate includes ask evaluation unless `-SkipAskEvaluation` is intentionally used for investigation.
 - [ ] Release gate includes manifest build unless `-SkipManifestBuild` is intentionally used for investigation.
 
 ## 3. Local CLI Smoke Tests
@@ -216,7 +217,7 @@ Actions -> Release Gate -> Run workflow
 Pass criteria:
 
 - [ ] The workflow run passes.
-- [ ] The uploaded `release-gate-summary` artifact includes `manifest.json`, `manifest.md`, `manifest-verify.json`, and `manifest-verify.md`.
+- [ ] The uploaded `release-gate-summary` artifact includes ask evaluation summary, `manifest.json`, `manifest.md`, `manifest-verify.json`, and `manifest-verify.md`.
 
 After all checks pass:
 

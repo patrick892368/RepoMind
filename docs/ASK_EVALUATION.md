@@ -22,6 +22,13 @@ Run custom cases through preflight:
 .\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider mock -AskStrict -AskCasesPath docs\examples\ask-cases.example.json
 ```
 
+`scripts/release-gate.ps1` runs the built-in offline strict ask evaluation by default. Use `-AskCasesPath` for custom release-gate cases or `-SkipAskEvaluation` during investigation:
+
+```powershell
+.\scripts\release-gate.ps1 -Proxy http://127.0.0.1:10809 -AskCasesPath docs\examples\ask-cases.example.json
+.\scripts\release-gate.ps1 -Proxy http://127.0.0.1:10809 -SkipAskEvaluation
+```
+
 Outputs:
 
 ```txt

@@ -82,6 +82,7 @@ Run before creating a release tag:
 
 This runs the default preflight plus:
 
+- offline strict ask evaluation
 - current-platform release binary smoke
 - cross-platform release manifest build and verification
 - real repository benchmark
@@ -104,6 +105,18 @@ To include a real AI provider smoke:
 
 ```powershell
 .\scripts\release-gate.ps1 -Proxy http://127.0.0.1:10809 -IncludeAISmoke -AIProvider grok -AIModel grok-4.3
+```
+
+To run release gate with custom ask evaluation cases:
+
+```powershell
+.\scripts\release-gate.ps1 -Proxy http://127.0.0.1:10809 -AskCasesPath docs\examples\ask-cases.example.json
+```
+
+To skip ask evaluation during investigation:
+
+```powershell
+.\scripts\release-gate.ps1 -Proxy http://127.0.0.1:10809 -SkipAskEvaluation
 ```
 
 To skip the cross-platform manifest build during investigation:
@@ -155,12 +168,13 @@ The local binary smoke equivalent is:
 It runs the local release gate on `windows-latest`:
 
 - default preflight
+- offline strict ask evaluation
 - release binary smoke
 - release manifest build and verification
 - real repository benchmark
 - real repository evaluation quality gate
 
-It uploads the release gate summary files, benchmark/evaluation summaries, release smoke summary, and release manifest verification files as a workflow artifact.
+It uploads the release gate summary files, ask evaluation summary, benchmark/evaluation summaries, release smoke summary, and release manifest verification files as a workflow artifact.
 
 ## Artifact Hygiene
 

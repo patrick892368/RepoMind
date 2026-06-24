@@ -261,7 +261,7 @@ go run ./cmd/repomind analyze .
 .\scripts\release-gate.ps1 -Proxy http://127.0.0.1:10809
 ```
 
-release gate 覆盖测试、CLI smoke、release binary smoke、benchmark、evaluation quality checks 和 release manifest verification。
+release gate 覆盖测试、CLI smoke、ask evaluation、release binary smoke、benchmark、evaluation quality checks 和 release manifest verification。
 
 通过本地 HTTP 代理调用网络 AI Provider：
 

@@ -22,6 +22,13 @@
 .\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider mock -AskStrict -AskCasesPath docs\examples\ask-cases.example.json
 ```
 
+`scripts/release-gate.ps1` 默认会运行内置 offline strict ask evaluation。可以用 `-AskCasesPath` 指定 release gate 自定义 case，或在排查时用 `-SkipAskEvaluation` 跳过：
+
+```powershell
+.\scripts\release-gate.ps1 -Proxy http://127.0.0.1:10809 -AskCasesPath docs\examples\ask-cases.example.json
+.\scripts\release-gate.ps1 -Proxy http://127.0.0.1:10809 -SkipAskEvaluation
+```
+
 输出：
 
 ```txt

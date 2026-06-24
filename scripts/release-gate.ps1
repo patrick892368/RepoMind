@@ -7,6 +7,12 @@ param(
     [int]$CloneRetries = 3,
     [string]$RepoCacheDir = "",
     [switch]$SkipManifestBuild,
+    [switch]$SkipAskEvaluation,
+    [string]$AskProvider = "offline",
+    [string]$AskModel = "",
+    [string]$AskCasesPath = "",
+    [double]$MinimumAskScore = 1.0,
+    [switch]$SkipAskStrict,
     [switch]$IncludeAISmoke,
     [string]$AIProvider = "grok",
     [string]$AIModel = "grok-4.3"
@@ -29,6 +35,23 @@ $args = @(
 
 if (-not $SkipManifestBuild) {
     $args += @("-IncludeManifestBuild", "-ManifestVersion", "v0.0.0-release-gate")
+}
+
+if (-not $SkipAskEvaluation) {
+    $args += @(
+        "-IncludeAskEvaluation",
+        "-AskProvider", $AskProvider,
+        "-MinimumAskScore", "$MinimumAskScore"
+    )
+    if ($AskModel) {
+        $args += @("-AskModel", $AskModel)
+    }
+    if ($AskCasesPath) {
+        $args += @("-AskCasesPath", $AskCasesPath)
+    }
+    if (-not $SkipAskStrict) {
+        $args += "-AskStrict"
+    }
 }
 
 if ($RepoCacheDir) {

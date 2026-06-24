@@ -65,6 +65,7 @@ go vet ./...
 - `go vet ./...` 返回 0。
 - preflight summary 为 PASS。
 - release gate summary 为 PASS。
+- release gate 包含 ask evaluation，除非排查时明确使用 `-SkipAskEvaluation`。
 
 ## 3. CLI Smoke
 
@@ -175,6 +176,11 @@ Ask 问答评估：
 ```txt
 Actions -> Release Gate -> Run workflow
 ```
+
+通过标准：
+
+- workflow run 通过。
+- 上传的 `release-gate-summary` artifact 包含 ask evaluation summary、`manifest.json`、`manifest.md`、`manifest-verify.json` 和 `manifest-verify.md`。
 
 全部检查通过后：
 

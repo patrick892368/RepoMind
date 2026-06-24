@@ -267,7 +267,7 @@ Run the full local release gate:
 .\scripts\release-gate.ps1 -Proxy http://127.0.0.1:10809
 ```
 
-The release gate includes tests, CLI smoke, release binary smoke, benchmark, evaluation quality checks, and release manifest verification.
+The release gate includes tests, CLI smoke, ask evaluation, release binary smoke, benchmark, evaluation quality checks, and release manifest verification.
 
 Run with a network AI provider through a local HTTP proxy:
 
