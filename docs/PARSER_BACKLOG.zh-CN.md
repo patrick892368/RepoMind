@@ -74,6 +74,7 @@ Backlog：
 - 文件中没有 FastAPI app/router 信号时，避免把非 FastAPI test helpers 误识别为 FastAPI decorators。
 - Django models。
 - SQLAlchemy models。
+- SQLAlchemy 2.0 `Mapped[]` 和 `mapped_column`。
 - SQLModel table models。
 - 轻量 callgraph。
 
@@ -83,7 +84,6 @@ Backlog：
 - 超出一跳静态 module include 和静态 ViewSet 注册的 DRF cross-file routers。
 - 更复杂的 FastAPI module imports。
 - 动态 path 或超出轻量窗口的 FastAPI decorators。
-- SQLAlchemy 2.0 `Mapped[]` 和 `mapped_column`。
 - Alembic model hints。
 - Celery task discovery。
 - Python class methods 和 imported service callgraph。

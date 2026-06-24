@@ -75,6 +75,7 @@ Current coverage:
 - FastAPI decorator false-positive guard for non-FastAPI test helpers when no FastAPI app/router signal exists in the file.
 - Django models.
 - SQLAlchemy models.
+- SQLAlchemy 2.0 `Mapped[]` and `mapped_column`.
 - SQLModel table models.
 - Lightweight callgraph.
 
@@ -84,7 +85,6 @@ Backlog:
 - Django REST Framework cross-file routers beyond one-hop static module includes and statically registered ViewSets.
 - Cross-file FastAPI module imports beyond direct static router imports and unique static prefix constants.
 - FastAPI decorators whose path is built dynamically or spans more than the lightweight parser window.
-- SQLAlchemy 2.0 `Mapped[]` and `mapped_column`.
 - Alembic model hints.
 - Celery task discovery.
 - Python callgraph for class methods and imported services.

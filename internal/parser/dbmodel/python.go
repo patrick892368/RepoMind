@@ -8,13 +8,15 @@ import (
 )
 
 var (
-	pythonClassPattern      = regexp.MustCompile(`^\s*class\s+([A-Za-z_][A-Za-z0-9_]*)\(([^)]*)\):`)
-	djangoFieldPattern      = regexp.MustCompile(`^\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*models\.([A-Za-z_][A-Za-z0-9_]*)\((.*)\)\s*$`)
-	sqlalchemyColumnPattern = regexp.MustCompile(`^\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:sa\.)?Column\((.*)\)\s*$`)
-	sqlalchemyRelPattern    = regexp.MustCompile(`^\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*relationship\((.*)\)\s*$`)
-	sqlmodelFieldPattern    = regexp.MustCompile(`^\s+([A-Za-z_][A-Za-z0-9_]*)\s*:\s*([^=]+?)(?:\s*=\s*(.*))?$`)
-	tableNamePattern        = regexp.MustCompile(`^\s+__tablename__\s*=\s*["']([^"']+)["']`)
-	dbTablePattern          = regexp.MustCompile(`^\s+db_table\s*=\s*["']([^"']+)["']`)
+	pythonClassPattern            = regexp.MustCompile(`^\s*class\s+([A-Za-z_][A-Za-z0-9_]*)\(([^)]*)\):`)
+	djangoFieldPattern            = regexp.MustCompile(`^\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*models\.([A-Za-z_][A-Za-z0-9_]*)\((.*)\)\s*$`)
+	sqlalchemyColumnPattern       = regexp.MustCompile(`^\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:sa\.)?Column\((.*)\)\s*$`)
+	sqlalchemyRelPattern          = regexp.MustCompile(`^\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*relationship\((.*)\)\s*$`)
+	sqlalchemyMappedColumnPattern = regexp.MustCompile(`^\s+([A-Za-z_][A-Za-z0-9_]*)\s*:\s*Mapped\[(.+)\]\s*=\s*(?:sa\.)?mapped_column\((.*)\)\s*$`)
+	sqlalchemyMappedRelPattern    = regexp.MustCompile(`^\s+([A-Za-z_][A-Za-z0-9_]*)\s*:\s*Mapped\[(.+)\]\s*=\s*relationship\((.*)\)\s*$`)
+	sqlmodelFieldPattern          = regexp.MustCompile(`^\s+([A-Za-z_][A-Za-z0-9_]*)\s*:\s*([^=]+?)(?:\s*=\s*(.*))?$`)
+	tableNamePattern              = regexp.MustCompile(`^\s+__tablename__\s*=\s*["']([^"']+)["']`)
+	dbTablePattern                = regexp.MustCompile(`^\s+db_table\s*=\s*["']([^"']+)["']`)
 )
 
 func parsePythonModels(path string, content string) []ir.DBModel {
@@ -26,7 +28,7 @@ func parsePythonModels(path string, content string) []ir.DBModel {
 	for index, line := range lines {
 		if match := pythonClassPattern.FindStringSubmatch(line); len(match) == 3 {
 			if current != nil {
-				models = append(models, *current)
+				appendPythonModel(&models, current)
 			}
 
 			source := pythonModelSource(match[2])
@@ -57,7 +59,7 @@ func parsePythonModels(path string, content string) []ir.DBModel {
 			continue
 		}
 		if !strings.HasPrefix(line, " ") && !strings.HasPrefix(line, "\t") {
-			models = append(models, *current)
+			appendPythonModel(&models, current)
 			current = nil
 			currentSource = ""
 			continue
@@ -83,10 +85,20 @@ func parsePythonModels(path string, content string) []ir.DBModel {
 	}
 
 	if current != nil {
-		models = append(models, *current)
+		appendPythonModel(&models, current)
 	}
 
 	return models
+}
+
+func appendPythonModel(models *[]ir.DBModel, model *ir.DBModel) {
+	if model == nil {
+		return
+	}
+	if model.Source == "sqlalchemy" && model.Table == "" && len(model.Fields) == 0 && len(model.Relations) == 0 {
+		return
+	}
+	*models = append(*models, *model)
 }
 
 func pythonModelSource(bases string) string {
@@ -171,6 +183,36 @@ func djangoRelationType(fieldType string) string {
 }
 
 func parseSQLAlchemyLine(model *ir.DBModel, line string) {
+	if match := sqlalchemyMappedColumnPattern.FindStringSubmatch(line); len(match) == 4 {
+		name := match[1]
+		typeExpr := match[2]
+		args := match[3]
+		model.Fields = append(model.Fields, ir.DBField{
+			Name:       name,
+			Type:       sqlAlchemyMappedColumnType(typeExpr, args),
+			Required:   sqlAlchemyMappedRequired(typeExpr, args),
+			PrimaryKey: containsAny(args, "primary_key=True", "primary_key = True"),
+			Unique:     containsAny(args, "unique=True", "unique = True"),
+		})
+		if target := sqlAlchemyForeignKeyTarget(args); target != "" {
+			model.Relations = append(model.Relations, ir.DBRelation{
+				Name:   name,
+				Target: target,
+				Type:   "many-to-one",
+			})
+		}
+		return
+	}
+
+	if match := sqlalchemyMappedRelPattern.FindStringSubmatch(line); len(match) == 4 {
+		model.Relations = append(model.Relations, ir.DBRelation{
+			Name:   match[1],
+			Target: sqlAlchemyMappedRelationTarget(match[2], match[3]),
+			Type:   sqlAlchemyMappedRelationType(match[2]),
+		})
+		return
+	}
+
 	if match := sqlalchemyColumnPattern.FindStringSubmatch(line); len(match) == 3 {
 		name := match[1]
 		args := match[2]
@@ -198,6 +240,52 @@ func parseSQLAlchemyLine(model *ir.DBModel, line string) {
 			Type:   "many-to-one",
 		})
 	}
+}
+
+func sqlAlchemyMappedColumnType(typeExpr string, args string) string {
+	first := firstArg(args)
+	if first != "" && !strings.Contains(first, "ForeignKey") {
+		return sqlAlchemyColumnType(args)
+	}
+	return cleanPythonMappedType(typeExpr)
+}
+
+func sqlAlchemyMappedRequired(typeExpr string, args string) bool {
+	if containsAny(args, "nullable=True", "nullable = True", "default=", "server_default=") {
+		return false
+	}
+	if containsAny(typeExpr, "None", "Optional[") {
+		return false
+	}
+	return true
+}
+
+func sqlAlchemyMappedRelationTarget(typeExpr string, args string) string {
+	first := firstArg(args)
+	if first != "" && !strings.Contains(first, "=") {
+		return cleanIdentifier(first)
+	}
+	return cleanPythonMappedType(typeExpr)
+}
+
+func sqlAlchemyMappedRelationType(typeExpr string) string {
+	trimmed := strings.TrimSpace(typeExpr)
+	if strings.HasPrefix(trimmed, "list[") || strings.HasPrefix(trimmed, "List[") || strings.HasPrefix(trimmed, "Sequence[") {
+		return "one-to-many"
+	}
+	return "many-to-one"
+}
+
+func cleanPythonMappedType(value string) string {
+	value = strings.TrimSpace(value)
+	value = strings.TrimPrefix(value, "list[")
+	value = strings.TrimPrefix(value, "List[")
+	value = strings.TrimPrefix(value, "Sequence[")
+	value = strings.TrimPrefix(value, "Optional[")
+	value = strings.TrimSuffix(value, "]")
+	value = strings.ReplaceAll(value, " | None", "")
+	value = strings.ReplaceAll(value, "None | ", "")
+	return cleanIdentifier(strings.Trim(value, ` "'`))
 }
 
 func parseSQLModelLine(model *ir.DBModel, line string) {

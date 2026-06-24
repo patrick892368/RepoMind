@@ -67,6 +67,26 @@ The summary includes a `quality_score` from 0 to 1. The current score checks exp
 
 ## Evaluation Notes
 
+### 2026-06-24 SQLAlchemy 2.0 Mapped Column Run
+
+Command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\evaluate-repos.ps1 -OutputDir eval\m101-evaluation -TimeoutSeconds 300 -Proxy http://127.0.0.1:10809 -RepoCacheDir eval\m95-repo-cache -MinimumQualityScore 1.0
+```
+
+Status: PASS with `-MinimumQualityScore 1.0`.
+
+| Repo | M100 Models | M101 Models | Finding |
+|---|---:|---:|---|
+| `django-oscar` | 79 | 70 | Removed 9 false-positive SQLAlchemy models from non-DB `class X(Base)` utility classes while retaining Django model coverage. |
+
+Findings:
+
+- SQLAlchemy parser now supports 2.0 typed `Mapped[] = mapped_column(...)` fields and `Mapped[] = relationship(...)` relations.
+- Empty `DeclarativeBase` / `Base` classes without table names, fields, or relations are no longer emitted as SQLAlchemy DB models.
+- The 20-sample evaluation gate remains green at quality score 1.0.
+
 ### 2026-06-24 Next.js API Route Handler Run
 
 Command:

@@ -27,6 +27,8 @@ func TestExtractDatabaseModelsFromFixture(t *testing.T) {
 	assertModel(t, models, "Invoice", "django", "django_app/models.py")
 	assertModel(t, models, "Account", "sqlalchemy", "sqlalchemy_app/models.py")
 	assertModel(t, models, "Profile", "sqlalchemy", "sqlalchemy_app/models.py")
+	assertModel(t, models, "Team", "sqlalchemy", "sqlalchemy_app/mapped_models.py")
+	assertModel(t, models, "MappedUser", "sqlalchemy", "sqlalchemy_app/mapped_models.py")
 	assertModel(t, models, "User", "sqlmodel", "sqlmodel_app/models.py")
 	assertModel(t, models, "SQLModelOrder", "sqlmodel", "sqlmodel_app/models.py")
 	assertModel(t, models, "UserEntity", "typeorm", "typeorm/user.entity.ts")
@@ -56,6 +58,9 @@ func TestExtractDatabaseModelsFromFixture(t *testing.T) {
 
 	if !hasRelation(findModel(models, "Profile", "sqlalchemy").Relations, "account_id", "Account", "many-to-one") {
 		t.Fatalf("Profile relations = %+v, want account_id -> Account", findModel(models, "Profile", "sqlalchemy").Relations)
+	}
+	if !hasRelation(findModel(models, "MappedUser", "sqlalchemy").Relations, "team_id", "Team", "many-to-one") {
+		t.Fatalf("MappedUser relations = %+v, want team_id -> Team", findModel(models, "MappedUser", "sqlalchemy").Relations)
 	}
 	if !hasRelation(findModel(models, "UserEntity", "typeorm").Relations, "orders", "OrderEntity", "one-to-many") {
 		t.Fatalf("UserEntity relations = %+v, want orders -> OrderEntity", findModel(models, "UserEntity", "typeorm").Relations)
@@ -131,6 +136,61 @@ type Payload struct {
 	models := parseGoGORM("internal/api/payload.go", content)
 	if len(models) != 0 {
 		t.Fatalf("models = %+v, want none", models)
+	}
+}
+
+func TestParseSQLAlchemyMappedColumnModels(t *testing.T) {
+	content := `from sqlalchemy import ForeignKey, String
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+class Team(Base):
+    __tablename__ = "teams"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(255), unique=True)
+    users: Mapped[list["User"]] = relationship(back_populates="team")
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    email: Mapped[str | None] = mapped_column(String, unique=True, nullable=True)
+    team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"))
+    team: Mapped["Team"] = relationship(back_populates="users")
+`
+	models := parsePythonModels("app/models.py", content)
+
+	assertNoModel(t, models, "Base")
+	assertModel(t, models, "Team", "sqlalchemy", "app/models.py")
+	assertModel(t, models, "User", "sqlalchemy", "app/models.py")
+	team := findModel(models, "Team", "sqlalchemy")
+	if team.Table != "teams" {
+		t.Fatalf("Team table = %q, want teams", team.Table)
+	}
+	if !hasField(team.Fields, "id", true, false) {
+		t.Fatalf("Team fields = %+v, want id primary key", team.Fields)
+	}
+	if !hasField(team.Fields, "name", false, true) {
+		t.Fatalf("Team fields = %+v, want unique name", team.Fields)
+	}
+	if !hasRelation(team.Relations, "users", "User", "one-to-many") {
+		t.Fatalf("Team relations = %+v, want users -> User one-to-many", team.Relations)
+	}
+	user := findModel(models, "User", "sqlalchemy")
+	if !hasField(user.Fields, "email", false, true) {
+		t.Fatalf("User fields = %+v, want unique email", user.Fields)
+	}
+	if !hasRelation(user.Relations, "team_id", "Team", "many-to-one") {
+		t.Fatalf("User relations = %+v, want team_id -> Team", user.Relations)
+	}
+	if !hasRelation(user.Relations, "team", "Team", "many-to-one") {
+		t.Fatalf("User relations = %+v, want team -> Team", user.Relations)
 	}
 }
 
