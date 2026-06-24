@@ -29,7 +29,24 @@ jobs:
         run: go vet ./...
 
       - name: Safety boundary
-        run: pwsh -NoProfile -File scripts/verify-safety-boundary.ps1
+        run: |
+          for path in .env .env.local .env.production .repomind dist eval benchmark repomind repomind.exe; do
+            git check-ignore --quiet -- "$path"
+          done
+          if git check-ignore --quiet -- .env.example; then
+            echo ".env.example must remain trackable"
+            exit 1
+          fi
+          forbidden="$(git ls-files .env '.env.*' .repomind dist eval benchmark repomind repomind.exe)"
+          if [ -n "$forbidden" ]; then
+            echo "Forbidden generated or secret files are tracked:"
+            echo "$forbidden"
+            exit 1
+          fi
+          if git grep -nE '(API_KEY|TOKEN|SECRET)[A-Z0-9_]*[[:space:]]*=[[:space:]]*["'\'']?(sk-|xai-|gsk_|AIza|ghp_|glpat-)' -- . ':!*.png' ':!*.ico' ':!*.jpg' ':!*.jpeg' ':!*.webp'; then
+            echo "Tracked files contain likely real API keys or tokens"
+            exit 1
+          fi
 
       - name: Analyze smoke English
         run: |
