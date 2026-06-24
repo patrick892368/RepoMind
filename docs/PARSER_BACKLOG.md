@@ -134,6 +134,7 @@ Current coverage:
 - Same-block mounted sub-router variables such as `api := NewRouter(); api.Get(...); r.Mount("/api", api)`.
 - Same-package `Mount("/prefix", routeFactory())` route factory prefix propagation.
 - Same-package `Mount("/prefix", resource{}.Routes())` receiver method route factory prefix propagation.
+- Imported package `Mount("/prefix", users.Routes())` route factory prefix propagation for static local imports.
 - Common middleware-wrapped handler calls such as `requireAuth(handler)` and `middleware.Require(controller.Action)`.
 - Standard library `net/http` mux routes, including `HandleFunc`, `Handle`, and Go 1.22 method patterns such as `GET /path`.
 - GORM models through Go AST.
@@ -141,7 +142,7 @@ Current coverage:
 
 Backlog:
 
-- Cross-file route group prefix propagation beyond direct same-package `Mount` factories and receiver method factories.
+- Cross-file route group prefix propagation beyond direct same-package factories, imported package factories, and receiver method factories.
 - Middleware chains or wrapper expressions without a direct handler argument.
 - Handler method type resolution from selector variables.
 - Advanced chi route factories with runtime arguments.

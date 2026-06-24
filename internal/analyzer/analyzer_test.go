@@ -230,6 +230,39 @@ func TestAnalyzeIncludesNetHTTPRoutes(t *testing.T) {
 	}
 }
 
+func TestAnalyzeIncludesGoImportedPackageRouteFactories(t *testing.T) {
+	repoPath := filepath.Join("..", "..", "testdata", "fixtures", "go-cross-package-repo")
+	outputDir := t.TempDir()
+
+	result, err := Analyze(context.Background(), Options{
+		RepoPath:  repoPath,
+		OutputDir: outputDir,
+	})
+	if err != nil {
+		t.Fatalf("Analyze returned error: %v", err)
+	}
+
+	analysis := result.Analysis
+	if analysis.Diagrams.API == "" {
+		t.Fatal("expected non-empty API diagram")
+	}
+	for _, want := range []ir.APIRoute{
+		{Method: "GET", Path: "/api/users", Handler: "listUsers", Source: "go"},
+		{Method: "POST", Path: "/api/users", Handler: "createUser", Source: "go"},
+	} {
+		if !slices.ContainsFunc(analysis.Routes, func(route ir.APIRoute) bool {
+			return route.Method == want.Method && route.Path == want.Path && route.Handler == want.Handler && route.Source == want.Source
+		}) {
+			t.Fatalf("routes did not contain %#v: %+v", want, analysis.Routes)
+		}
+	}
+	if slices.ContainsFunc(analysis.Routes, func(route ir.APIRoute) bool {
+		return route.Method == "GET" && route.Path == "/users" && route.Handler == "listUsers" && route.Source == "go"
+	}) {
+		t.Fatalf("routes contained unprefixed imported factory route: %+v", analysis.Routes)
+	}
+}
+
 func TestAnalyzeIncludesDRFCustomActionRoutes(t *testing.T) {
 	repoPath := filepath.Join("..", "..", "testdata", "fixtures", "drf-repo")
 	outputDir := t.TempDir()

@@ -324,6 +324,41 @@ func (rs usersResource) Routes() Router {
 	assertNoRoute(t, routes, "GET", "/{id}", "rs.Get", "go")
 }
 
+func TestExtractGoImportedPackageRouteFactoryPrefix(t *testing.T) {
+	root := t.TempDir()
+	writeRouteFile(t, root, "cmd/api/server.go", `package api
+
+import "example.com/repomind/internal/users"
+
+func register(r Router) {
+	r.Mount("/api", users.Routes())
+}
+`)
+	writeRouteFile(t, root, "internal/users/routes.go", `package users
+
+func Routes() Router {
+	r := NewRouter()
+	r.Get("/users", listUsers)
+	r.Post("/users", createUser)
+	return r
+}
+`)
+
+	scanResult, err := scanner.Scan(root, scanner.Options{})
+	if err != nil {
+		t.Fatalf("Scan returned error: %v", err)
+	}
+	routes, errors := Extract(root, scanResult)
+	if len(errors) != 0 {
+		t.Fatalf("Extract errors = %v, want none", errors)
+	}
+
+	assertRoute(t, routes, "GET", "/api/users", "listUsers", "go")
+	assertRoute(t, routes, "POST", "/api/users", "createUser", "go")
+	assertNoRoute(t, routes, "GET", "/users", "listUsers", "go")
+	assertNoRoute(t, routes, "POST", "/users", "createUser", "go")
+}
+
 func TestParseDjangoURLsWithSameFileIncludePrefix(t *testing.T) {
 	content := `from django.urls import include, path
 from . import views

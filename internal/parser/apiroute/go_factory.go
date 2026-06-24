@@ -23,6 +23,7 @@ type goParsedRouteFile struct {
 	FileSet *token.FileSet
 	File    *ast.File
 	Package string
+	Imports map[string]string
 }
 
 type goFunctionRef struct {
@@ -38,13 +39,9 @@ func resolveGoSamePackageRouteFactories(contents map[string]string) goRouteFacto
 	}
 	parsedFiles := parseGoRouteFiles(contents)
 	functionsByPackage := goFunctionsByPackage(parsedFiles)
+	packageKeysByName := goUniquePackageKeysByName(parsedFiles)
 
 	for _, parsed := range parsedFiles {
-		packageFunctions := functionsByPackage[goPackageKey(parsed.Path, parsed.Package)]
-		if len(packageFunctions) == 0 {
-			continue
-		}
-
 		ast.Inspect(parsed.File, func(node ast.Node) bool {
 			call, ok := node.(*ast.CallExpr)
 			if !ok {
@@ -58,8 +55,12 @@ func resolveGoSamePackageRouteFactories(contents map[string]string) goRouteFacto
 			if !ok {
 				return true
 			}
-			factoryKey, factoryLabel := goRouteFactoryCallKey(call.Args[1])
+			factoryKey, factoryLabel, qualifier := goRouteFactoryCallRef(call.Args[1])
 			if factoryKey == "" {
+				return true
+			}
+			packageFunctions := goRouteFactoryPackageFunctions(parsed, qualifier, functionsByPackage, packageKeysByName)
+			if len(packageFunctions) == 0 {
 				return true
 			}
 			factory := packageFunctions[factoryKey]
@@ -104,9 +105,29 @@ func parseGoRouteFiles(contents map[string]string) []goParsedRouteFile {
 			FileSet: fileSet,
 			File:    file,
 			Package: file.Name.Name,
+			Imports: goRouteFileImports(file),
 		})
 	}
 	return parsedFiles
+}
+
+func goRouteFileImports(file *ast.File) map[string]string {
+	imports := map[string]string{}
+	for _, spec := range file.Imports {
+		if spec.Path == nil {
+			continue
+		}
+		importPath, err := strconv.Unquote(spec.Path.Value)
+		if err != nil || importPath == "" {
+			continue
+		}
+		alias := path.Base(importPath)
+		if spec.Name != nil && spec.Name.Name != "" && spec.Name.Name != "_" && spec.Name.Name != "." {
+			alias = spec.Name.Name
+		}
+		imports[alias] = importPath
+	}
+	return imports
 }
 
 func goFunctionsByPackage(files []goParsedRouteFile) map[string]map[string]*goFunctionRef {
@@ -147,30 +168,99 @@ func goFunctionsByPackage(files []goParsedRouteFile) map[string]map[string]*goFu
 	return result
 }
 
+func goUniquePackageKeysByName(files []goParsedRouteFile) map[string]string {
+	candidates := map[string][]string{}
+	for _, file := range files {
+		key := goPackageKey(file.Path, file.Package)
+		candidates[file.Package] = append(candidates[file.Package], key)
+	}
+	result := map[string]string{}
+	for packageName, keys := range candidates {
+		unique := map[string]struct{}{}
+		for _, key := range keys {
+			unique[key] = struct{}{}
+		}
+		if len(unique) != 1 {
+			continue
+		}
+		for key := range unique {
+			result[packageName] = key
+		}
+	}
+	return result
+}
+
 func goPackageKey(filePath string, packageName string) string {
 	return path.Dir(filepath.ToSlash(filePath)) + "\x00" + packageName
 }
 
-func goRouteFactoryCallKey(expr ast.Expr) (string, string) {
+func goRouteFactoryPackageFunctions(parsed goParsedRouteFile, qualifier string, functionsByPackage map[string]map[string]*goFunctionRef, packageKeysByName map[string]string) map[string]*goFunctionRef {
+	if qualifier == "" {
+		return functionsByPackage[goPackageKey(parsed.Path, parsed.Package)]
+	}
+	importPath := parsed.Imports[qualifier]
+	if importPath != "" {
+		if packageFunctions := goPackageFunctionsForImport(importPath, functionsByPackage); len(packageFunctions) > 0 {
+			return packageFunctions
+		}
+		if packageKey := packageKeysByName[qualifier]; packageKey != "" {
+			return functionsByPackage[packageKey]
+		}
+	}
+	return nil
+}
+
+func goPackageFunctionsForImport(importPath string, functionsByPackage map[string]map[string]*goFunctionRef) map[string]*goFunctionRef {
+	var matched map[string]*goFunctionRef
+	matches := 0
+	for packageKey, functions := range functionsByPackage {
+		dir, _ := splitGoPackageKey(packageKey)
+		if dir == "." {
+			continue
+		}
+		if strings.HasSuffix(importPath, dir) {
+			matched = functions
+			matches++
+		}
+	}
+	if matches == 1 {
+		return matched
+	}
+	return nil
+}
+
+func splitGoPackageKey(packageKey string) (string, string) {
+	parts := strings.SplitN(packageKey, "\x00", 2)
+	if len(parts) != 2 {
+		return packageKey, ""
+	}
+	return parts[0], parts[1]
+}
+
+func goRouteFactoryCallRef(expr ast.Expr) (string, string, string) {
 	switch typed := expr.(type) {
 	case *ast.CallExpr:
 		if len(typed.Args) != 0 {
-			return "", ""
+			return "", "", ""
 		}
 		if ident, ok := typed.Fun.(*ast.Ident); ok {
-			return "func:" + ident.Name, ident.Name
+			return "func:" + ident.Name, ident.Name, ""
 		}
 		if selector, ok := typed.Fun.(*ast.SelectorExpr); ok {
 			receiver := goFactoryReceiverType(selector.X)
 			if receiver != "" {
 				label := receiver + "." + selector.Sel.Name
-				return "method:" + label, label
+				return "method:" + label, label, ""
+			}
+			if qualifier, ok := selector.X.(*ast.Ident); ok && qualifier.Name != "" {
+				label := qualifier.Name + "." + selector.Sel.Name
+				return "func:" + selector.Sel.Name, label, qualifier.Name
 			}
 		}
 	case *ast.Ident:
-		return "func:" + typed.Name, typed.Name
+		return "func:" + typed.Name, typed.Name, ""
 	}
-	return "", ""
+	return "", "", ""
 }
 
 func goFunctionDeclKey(decl *ast.FuncDecl) (string, bool) {

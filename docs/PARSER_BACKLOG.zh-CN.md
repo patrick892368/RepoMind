@@ -133,6 +133,7 @@ Backlog：
 - Same-block mounted sub-router variables。
 - Same-package `Mount("/prefix", routeFactory())`。
 - Same-package receiver method route factories。
+- Imported package `Mount("/prefix", users.Routes())` route factory prefix propagation，覆盖静态本地 imports。
 - 常见 middleware-wrapped handler calls。
 - 标准库 `net/http` mux routes，包括 `HandleFunc`、`Handle` 和 Go 1.22 method pattern。
 - GORM models through Go AST。
@@ -140,7 +141,7 @@ Backlog：
 
 Backlog：
 
-- Cross-file route group prefix propagation。
+- 超出 same-package factories、imported package factories 和 receiver method factories 的 cross-file route group prefix propagation。
 - 没有直接 handler 参数的 middleware chains。
 - selector 变量的 handler method type resolution。
 - 带 runtime arguments 的 chi route factories。
