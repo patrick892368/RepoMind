@@ -96,6 +96,7 @@ Ask evaluation:
 ```powershell
 .\scripts\evaluate-ask.ps1 -Provider offline -Strict
 .\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider mock -AskStrict
+.\scripts\evaluate-ask.ps1 -Provider offline -Strict -CasesPath docs\examples\ask-cases.example.json
 ```
 
 Pass criteria:
@@ -103,6 +104,7 @@ Pass criteria:
 - [ ] Expected files, handlers, routes, models, and call-chain edges match the fixed questions.
 - [ ] English and Chinese ask cases both pass.
 - [ ] Expected evidence types are present.
+- [ ] Custom case files load successfully when used.
 - [ ] Strict mode returns local evidence for every ask case.
 - [ ] `summary.json` and `summary.md` are generated.
 

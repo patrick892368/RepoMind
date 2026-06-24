@@ -168,9 +168,10 @@ Evaluate ask quality with fixed repository questions:
 ```powershell
 .\scripts\evaluate-ask.ps1 -Provider offline -Strict
 .\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider mock -AskStrict
+.\scripts\evaluate-ask.ps1 -Provider offline -Strict -CasesPath docs\examples\ask-cases.example.json
 ```
 
-The evaluator checks English and Chinese questions across API routes, database models, call-chain edges, handlers, evidence types, and local evidence counts, then writes `summary.json` and `summary.md`.
+The evaluator checks English and Chinese questions across API routes, database models, call-chain edges, handlers, evidence types, and local evidence counts, then writes `summary.json` and `summary.md`. See [Ask Evaluation](docs/ASK_EVALUATION.md) for custom case files.
 
 ## Supported Detection
 

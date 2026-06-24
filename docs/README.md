@@ -8,6 +8,7 @@ Core documents:
 - `INSTALL.md` / `INSTALL.zh-CN.md`: source, Go install, release binary, and PATH setup.
 - `REMOTE_REPOSITORIES.md` / `REMOTE_REPOSITORIES.zh-CN.md`: GitHub/Git URL analysis, ref selection, clone cache, proxy, and private repository authentication.
 - `WORKFLOWS.md` / `WORKFLOWS.zh-CN.md`: local preflight, CI, release, benchmark, evaluation, and AI smoke mapping.
+- `ASK_EVALUATION.md` / `ASK_EVALUATION.zh-CN.md`: repeatable `repomind ask` quality cases and custom case configuration.
 - `RELEASE_CHECKLIST.md` / `RELEASE_CHECKLIST.zh-CN.md`: release readiness checklist.
 - `RELEASE_GATE_RESULTS.md` / `RELEASE_GATE_RESULTS.zh-CN.md`: latest combined release gate run results.
 - `PARSER_BACKLOG.md` / `PARSER_BACKLOG.zh-CN.md`: parser quality backlog and tree-sitter evaluation boundary.

@@ -8,6 +8,7 @@
 - `INSTALL.md` / `INSTALL.zh-CN.md`：源码运行、Go 安装、release binary 和 PATH 配置。
 - `REMOTE_REPOSITORIES.md` / `REMOTE_REPOSITORIES.zh-CN.md`：GitHub/Git URL 分析、ref 选择、clone cache、代理和私有仓库认证。
 - `WORKFLOWS.md` / `WORKFLOWS.zh-CN.md`：本地 preflight、CI、release、benchmark、evaluation 和 AI smoke 的对应关系。
+- `ASK_EVALUATION.md` / `ASK_EVALUATION.zh-CN.md`：可重复的 `repomind ask` 质量评估 case 和自定义 case 配置。
 - `RELEASE_CHECKLIST.md` / `RELEASE_CHECKLIST.zh-CN.md`：发布前检查清单。
 - `RELEASE_GATE_RESULTS.md` / `RELEASE_GATE_RESULTS.zh-CN.md`：最新组合 release gate 结果。
 - `PARSER_BACKLOG.md` / `PARSER_BACKLOG.zh-CN.md`：parser 质量 backlog 和 tree-sitter 引入边界。

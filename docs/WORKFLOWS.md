@@ -56,6 +56,7 @@ Run ask evaluation with fixed repository questions:
 
 ```powershell
 .\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider offline -AskStrict
+.\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider mock -AskStrict -AskCasesPath docs\examples\ask-cases.example.json
 ```
 
 Ask evaluation validates English and Chinese questions for expected files, handlers, routes, models, call-chain edges, evidence types, and evidence counts. It writes:

@@ -1,0 +1,55 @@
+{
+  "cases": [
+    {
+      "name": "api-login-external",
+      "repo_path": "testdata/fixtures/api-repo",
+      "question": "where is login handled?",
+      "expected_files": [
+        "fastapi_app/main.py",
+        "django_project/urls.py"
+      ],
+      "expected_handlers": [
+        "login",
+        "views.login_view"
+      ],
+      "expected_routes": [
+        "POST /login",
+        "ANY /login/"
+      ],
+      "expected_models": [],
+      "expected_call_chain": [],
+      "expected_evidence_types": [
+        "route"
+      ],
+      "minimum_evidence": 2
+    },
+    {
+      "name": "call-payment-zh-external",
+      "repo_path": "testdata/fixtures/call-repo",
+      "language": "zh",
+      "question": "支付回调后发生什么？",
+      "expected_files": [
+        "payment/flow.py"
+      ],
+      "expected_handlers": [
+        "pay_callback",
+        "update_order",
+        "update_balance",
+        "send_notify",
+        "write_log"
+      ],
+      "expected_routes": [],
+      "expected_models": [],
+      "expected_call_chain": [
+        "pay_callback -> update_order",
+        "pay_callback -> update_balance",
+        "pay_callback -> send_notify",
+        "pay_callback -> write_log"
+      ],
+      "expected_evidence_types": [
+        "call_edge"
+      ],
+      "minimum_evidence": 4
+    }
+  ]
+}

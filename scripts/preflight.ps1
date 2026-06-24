@@ -12,6 +12,7 @@ param(
     [string]$AIModel = "grok-4.3",
     [string]$AskProvider = "offline",
     [string]$AskModel = "",
+    [string]$AskCasesPath = "",
     [switch]$AskStrict,
     [double]$MinimumAskScore = 1.0,
     [int]$BenchmarkTargetSeconds = 30,
@@ -169,6 +170,9 @@ if ($IncludeAskEvaluation) {
     if ($AskModel) {
         $askEvaluationArgs += @("-Model", $AskModel)
     }
+    if ($AskCasesPath) {
+        $askEvaluationArgs += @("-CasesPath", $AskCasesPath)
+    }
     if ($AskStrict) {
         $askEvaluationArgs += "-Strict"
     }
@@ -213,6 +217,7 @@ $summary = [ordered]@{
     include_benchmark = [bool]$IncludeBenchmark
     include_evaluation = [bool]$IncludeEvaluation
     include_ask_evaluation = [bool]$IncludeAskEvaluation
+    ask_cases_path = $AskCasesPath
     include_ai_smoke = [bool]$IncludeAISmoke
     include_release_smoke = [bool]$IncludeReleaseSmoke
     include_manifest_build = [bool]$IncludeManifestBuild

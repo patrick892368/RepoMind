@@ -56,6 +56,7 @@ eval/preflight/summary.md
 
 ```powershell
 .\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider offline -AskStrict
+.\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider mock -AskStrict -AskCasesPath docs\examples\ask-cases.example.json
 ```
 
 ask evaluation 会用英文和中文问题检查预期文件、处理函数、路由、模型、调用链、证据类型和证据数量，并输出：

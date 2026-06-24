@@ -1,5 +1,6 @@
 param(
     [string]$OutputDir = "eval/ask",
+    [string]$CasesPath = "",
     [string]$Provider = "offline",
     [string]$Model = "",
     [switch]$Strict,
@@ -136,6 +137,105 @@ function Test-EvidenceTypeContains {
     return $false
 }
 
+function Get-ObjectPropertyValue {
+    param(
+        [object]$Object,
+        [string[]]$Names,
+        [object]$DefaultValue = $null
+    )
+
+    if ($null -eq $Object) {
+        return $DefaultValue
+    }
+
+    foreach ($name in $Names) {
+        $property = $Object.PSObject.Properties | Where-Object { $_.Name -eq $name } | Select-Object -First 1
+        if ($null -ne $property -and $null -ne $property.Value) {
+            return $property.Value
+        }
+    }
+
+    return $DefaultValue
+}
+
+function ConvertTo-StringArray {
+    param([object]$Value)
+
+    if ($null -eq $Value) {
+        return @()
+    }
+    if ($Value -is [string]) {
+        if ($Value.Trim() -eq "") {
+            return @()
+        }
+        return @([string]$Value)
+    }
+
+    $result = @()
+    foreach ($item in @($Value)) {
+        if ($null -ne $item -and ([string]$item).Trim() -ne "") {
+            $result += [string]$item
+        }
+    }
+    return $result
+}
+
+function ConvertTo-EvaluationCase {
+    param([object]$Case)
+
+    $name = [string](Get-ObjectPropertyValue -Object $Case -Names @("Name", "name"))
+    $repoPath = [string](Get-ObjectPropertyValue -Object $Case -Names @("RepoPath", "repo_path", "repoPath"))
+    $question = [string](Get-ObjectPropertyValue -Object $Case -Names @("Question", "question"))
+
+    if (-not $name) {
+        throw "Ask evaluation case is missing name"
+    }
+    if (-not $repoPath) {
+        throw "Ask evaluation case '$name' is missing repo_path"
+    }
+    if (-not $question) {
+        throw "Ask evaluation case '$name' is missing question"
+    }
+
+    $minimumEvidence = Get-ObjectPropertyValue -Object $Case -Names @("MinimumEvidence", "minimum_evidence", "minimumEvidence") -DefaultValue 0
+
+    return [pscustomobject][ordered]@{
+        Name = $name
+        RepoPath = $repoPath
+        Language = [string](Get-ObjectPropertyValue -Object $Case -Names @("Language", "language", "lang") -DefaultValue "")
+        Question = $question
+        ExpectedFiles = ConvertTo-StringArray (Get-ObjectPropertyValue -Object $Case -Names @("ExpectedFiles", "expected_files", "expectedFiles"))
+        ExpectedHandlers = ConvertTo-StringArray (Get-ObjectPropertyValue -Object $Case -Names @("ExpectedHandlers", "expected_handlers", "expectedHandlers"))
+        ExpectedRoutes = ConvertTo-StringArray (Get-ObjectPropertyValue -Object $Case -Names @("ExpectedRoutes", "expected_routes", "expectedRoutes"))
+        ExpectedModels = ConvertTo-StringArray (Get-ObjectPropertyValue -Object $Case -Names @("ExpectedModels", "expected_models", "expectedModels"))
+        ExpectedCallChain = ConvertTo-StringArray (Get-ObjectPropertyValue -Object $Case -Names @("ExpectedCallChain", "expected_call_chain", "expectedCallChain"))
+        ExpectedEvidenceTypes = ConvertTo-StringArray (Get-ObjectPropertyValue -Object $Case -Names @("ExpectedEvidenceTypes", "expected_evidence_types", "expectedEvidenceTypes"))
+        MinimumEvidence = [int]$minimumEvidence
+    }
+}
+
+function Read-AskEvaluationCases {
+    param([string]$Path)
+
+    if (-not (Test-Path -LiteralPath $Path)) {
+        throw "Ask evaluation cases file not found: $Path"
+    }
+
+    $resolvedPath = (Resolve-Path -LiteralPath $Path).Path
+    $config = Get-Content -LiteralPath $resolvedPath -Raw | ConvertFrom-Json
+    $rawCases = Get-ObjectPropertyValue -Object $config -Names @("cases", "Cases") -DefaultValue $config
+    $cases = @()
+    foreach ($case in @($rawCases)) {
+        $cases += ConvertTo-EvaluationCase -Case $case
+    }
+
+    if ($cases.Count -eq 0) {
+        throw "Ask evaluation cases file contains no cases: $resolvedPath"
+    }
+
+    return $cases
+}
+
 if (-not $Proxy) {
     if ($env:HTTPS_PROXY) {
         $Proxy = $env:HTTPS_PROXY
@@ -163,6 +263,7 @@ try {
     New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
     $outputRoot = (Resolve-Path $OutputDir).Path
 
+    $caseSource = "built-in"
     $cases = @(
         [ordered]@{
             Name = "api-login"
@@ -256,6 +357,11 @@ try {
             MinimumEvidence = 4
         }
     )
+
+    if ($CasesPath) {
+        $cases = Read-AskEvaluationCases -Path $CasesPath
+        $caseSource = (Resolve-Path -LiteralPath $CasesPath).Path
+    }
 
     $caseResults = @()
 
@@ -393,6 +499,8 @@ try {
         provider = $Provider
         model = $Model
         strict = [bool]$Strict
+        case_source = $caseSource
+        case_count = @($cases).Count
         minimum_score = $MinimumScore
         overall_score = $overallScore
         passed_checks = $passedChecks
@@ -411,6 +519,8 @@ try {
     $lines += ""
     $lines += "Provider: $Provider"
     $lines += "Strict: $([bool]$Strict)"
+    $lines += "Case source: $caseSource"
+    $lines += "Case count: $(@($cases).Count)"
     $lines += "Minimum score: $MinimumScore"
     $lines += "Overall score: $overallScore"
     $lines += ""

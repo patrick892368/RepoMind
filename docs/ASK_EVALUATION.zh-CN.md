@@ -1,0 +1,50 @@
+# Ask Evaluation
+
+**语言：** [English](ASK_EVALUATION.md) | 简体中文
+
+`scripts/evaluate-ask.ps1` 用可重复的仓库问题验证 `repomind ask`。它会检查预期文件、处理函数、路由、模型、调用链、证据类型和证据数量。
+
+运行内置 case：
+
+```powershell
+.\scripts\evaluate-ask.ps1 -Provider offline -Strict
+```
+
+运行自定义 case 文件：
+
+```powershell
+.\scripts\evaluate-ask.ps1 -Provider offline -Strict -CasesPath docs\examples\ask-cases.example.json
+```
+
+通过 preflight 运行自定义 case：
+
+```powershell
+.\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider mock -AskStrict -AskCasesPath docs\examples\ask-cases.example.json
+```
+
+输出：
+
+```txt
+eval/ask/summary.json
+eval/ask/summary.md
+```
+
+## Case 文件
+
+Case 文件使用 JSON，可以是顶层 `cases` 数组，也可以直接是顶层数组。
+
+支持字段：
+
+- `name`：稳定的 case 名称。
+- `repo_path`：本地仓库或 fixture 路径。
+- `language`：可选 analyze 语言，例如 `en` 或 `zh`。
+- `question`：ask 问题。
+- `expected_files`：预期文件。
+- `expected_handlers`：预期处理函数或函数名。
+- `expected_routes`：预期路由标签，例如 `POST /login`。
+- `expected_models`：预期数据库模型名。
+- `expected_call_chain`：预期调用链前缀，例如 `pay_callback -> update_order`。
+- `expected_evidence_types`：预期证据类型，例如 `route`、`model` 或 `call_edge`。
+- `minimum_evidence`：最少证据数量。
+
+私有或业务相关的问题集可以放在 ignored 的本地路径，例如 `eval/ask-cases.json`。

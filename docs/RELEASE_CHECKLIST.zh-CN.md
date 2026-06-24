@@ -92,6 +92,7 @@ Ask 问答评估：
 ```powershell
 .\scripts\evaluate-ask.ps1 -Provider offline -Strict
 .\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider mock -AskStrict
+.\scripts\evaluate-ask.ps1 -Provider offline -Strict -CasesPath docs\examples\ask-cases.example.json
 ```
 
 通过标准：
@@ -99,6 +100,7 @@ Ask 问答评估：
 - 固定问题的预期文件、处理函数、路由、模型和调用链匹配。
 - 英文和中文 ask case 都通过。
 - 预期证据类型存在。
+- 使用自定义 case 文件时能够成功加载。
 - strict 模式下每个 ask case 都有本地证据。
 - 生成 `summary.json` 和 `summary.md`。
 
