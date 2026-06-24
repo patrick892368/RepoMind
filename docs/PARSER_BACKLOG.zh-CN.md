@@ -39,6 +39,7 @@ Go 优先使用标准库 AST，除非 tree-sitter 有明确优势。
 - 同文件 Express `app.use("/prefix", router)` prefix 传播。
 - Cross-file Express relative router imports。
 - Express composed router prefix。
+- 文件中没有 Express app/router 信号时，避免把前端 HTTP client wrapper 误识别为 Express routes。
 - NestJS controllers。
 - TypeORM entities。
 - 轻量 callgraph。
@@ -48,7 +49,6 @@ Backlog：
 - 多层 Express nested routers。
 - alias chains 或 dynamic exports。
 - path 动态拼接或超过轻量窗口的 route calls。
-- 文件中没有 Express router/app 信号时，避免把前端 HTTP client 调用（如 `agent.get(...)`、`requests.post(...)` 或 API wrapper methods）误识别为 Express routes。
 - NestJS prefix 和 method decorator 边界。
 - Next.js App Router route handlers。
 - Next.js Pages Router API routes。

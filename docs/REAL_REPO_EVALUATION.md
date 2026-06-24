@@ -67,6 +67,29 @@ The summary includes a `quality_score` from 0 to 1. The current score checks exp
 
 ## Evaluation Notes
 
+### 2026-06-24 Express Client False Positive Guard Run
+
+Command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\evaluate-repos.ps1 -OutputDir eval\m96-evaluation-final -TimeoutSeconds 300 -Proxy http://127.0.0.1:10809 -RepoCacheDir eval\m95-repo-cache -MinimumQualityScore 1.0
+```
+
+Status: PASS with `-MinimumQualityScore 1.0`.
+
+| Repo | M95 Routes | M96 Routes | Finding |
+|---|---:|---:|---|
+| `prisma-examples` | 55 | 29 | Removed route checks that depended on client/non-Express signals. |
+| `gofiber-recipes` | 279 | 278 | One frontend-client false positive removed. |
+| `vue-realworld` | 7 | 0 | Frontend API wrapper calls are no longer reported as Express API routes. |
+| `react-realworld` | 4 | 0 | Frontend API wrapper calls are no longer reported as Express API routes. |
+
+Findings:
+
+- Express route parsing now requires an Express app/router signal before accepting `.get/.post/...` calls.
+- Frontend-only repositories still contribute stack and callgraph coverage, but no longer pollute the API map with HTTP client wrapper calls.
+- The 20-sample evaluation gate remains green at quality score 1.0.
+
 ### 2026-06-24 20 Sample Expansion Run
 
 Command:

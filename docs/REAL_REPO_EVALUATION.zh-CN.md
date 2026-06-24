@@ -71,7 +71,7 @@ eval/repos/
 
 ## 最新有效结果
 
-M95 evaluation 将固定样本扩展到 20 个，全部通过 `MinimumQualityScore 1.0`。
+M96 evaluation 收紧 Express route 误报后，20 个固定样本仍全部通过 `MinimumQualityScore 1.0`。
 
 | Repo | Quality | Routes | Models | Call Edges |
 |---|---:|---:|---:|---:|
@@ -81,29 +81,30 @@ M95 evaluation 将固定样本扩展到 20 个，全部通过 `MinimumQualitySco
 | Go chi | 1.00 | 229 | 0 | 1805 |
 | FastAPI full-stack template | 1.00 | 23 | 2 | 851 |
 | Node Express RealWorld | 1.00 | 20 | 4 | 99 |
-| Prisma examples | 1.00 | 55 | 143 | 1764 |
+| Prisma examples | 1.00 | 29 | 143 | 1764 |
 | Symfony demo | 1.00 | 0 | 0 | 26 |
 | Spring PetClinic | 1.00 | 18 | 6 | 0 |
 | Spring Data JPA | 1.00 | 0 | 1 | 0 |
 | Labstack Echo | 1.00 | 237 | 0 | 5000 |
-| GoFiber Recipes | 1.00 | 279 | 49 | 5000 |
+| GoFiber Recipes | 1.00 | 278 | 49 | 5000 |
 | Go GORM Playground | 1.00 | 0 | 6 | 24 |
 | Django Oscar | 1.00 | 52 | 79 | 5000 |
 | NestJS Starter | 1.00 | 1 | 0 | 4 |
 | Next SaaS Starter | 1.00 | 0 | 0 | 284 |
-| Vue RealWorld | 1.00 | 7 | 0 | 73 |
-| React RealWorld | 1.00 | 4 | 0 | 176 |
+| Vue RealWorld | 1.00 | 0 | 0 | 73 |
+| React RealWorld | 1.00 | 0 | 0 | 176 |
 | TypeORM Sample | 1.00 | 0 | 0 | 15 |
 | Cookiecutter Django | 1.00 | 17 | 0 | 571 |
 
 ## 近期发现
 
 - M95 后真实仓库 evaluation 固定样本从 7 个扩展到 20 个，覆盖 PHP、Java、Go、Python、JS/TS 和 frontend-only 仓库。
+- M96 后 Express parser 需要文件中存在 Express app/router 信号，Vue/React frontend client 的 API wrapper 不再污染 API map。
 - FastAPI 多行 decorator 支持后，FastAPI full-stack template routes 从 18 提升到 23。
 - Express 多行 route 支持后，node-express-realworld routes 从 8 提升到 20。
 - Go middleware-wrapped handler 支持后，gin-examples routes 从 66 提升到 68。
 - Go chi 样本保持 quality score 1.00，并检测到 210 routes。
-- 前端 client 样本当前只作为 stack 覆盖；其中误识别出的 client API 调用不能作为 API map 质量依据，后续需要单独收紧 false positive。
+- 前端 client 样本当前作为 stack 和 callgraph 覆盖；其中 HTTP client 调用已不再作为 Express API routes 输出。
 
 ## 记录格式
 

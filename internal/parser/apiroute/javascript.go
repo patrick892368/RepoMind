@@ -11,6 +11,9 @@ var (
 	expressRoutePattern     = regexp.MustCompile(`([A-Za-z_][A-Za-z0-9_]*)\.(get|post|put|delete|patch|options|head|all)\(\s*["']([^"']+)["']\s*,\s*([^,\)]+)`)
 	expressRouteStartPat    = regexp.MustCompile(`([A-Za-z_][A-Za-z0-9_]*)\.(get|post|put|delete|patch|options|head|all)\(\s*$`)
 	expressUsePrefixPattern = regexp.MustCompile(`[A-Za-z_][A-Za-z0-9_]*\.use\(\s*["']([^"']+)["']\s*,\s*([A-Za-z_][A-Za-z0-9_]*)`)
+	expressImportPattern    = regexp.MustCompile(`(?m)(require\(\s*["']express["']\s*\)|from\s+["']express["'])`)
+	expressAppPattern       = regexp.MustCompile(`\b[A-Za-z_][A-Za-z0-9_]*\s*=\s*express\(\s*\)`)
+	expressRouterPattern    = regexp.MustCompile(`\b(express\.)?Router\(\s*\)`)
 	nestControllerPat       = regexp.MustCompile(`@Controller(?:\(([^)]*)\))?`)
 	nestRoutePat            = regexp.MustCompile(`@(Get|Post|Put|Delete|Patch|Options|Head|All)(?:\(([^)]*)\))?`)
 	jsMethodPattern         = regexp.MustCompile(`^\s*(?:async\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*\(`)
@@ -31,6 +34,9 @@ type expressRouteFragment struct {
 }
 
 func parseExpressFragments(path string, content string) []expressRouteFragment {
+	if !hasExpressRouteSignal(content) {
+		return nil
+	}
 	lines := strings.Split(content, "\n")
 	routerPrefixes := expressRouterPrefixes(lines)
 	var routes []expressRouteFragment
@@ -46,6 +52,19 @@ func parseExpressFragments(path string, content string) []expressRouteFragment {
 		}
 	}
 	return routes
+}
+
+func hasExpressRouteSignal(content string) bool {
+	if expressAppPattern.MatchString(content) {
+		return true
+	}
+	if expressRouterPattern.MatchString(content) && (expressImportPattern.MatchString(content) || strings.Contains(content, "express.Router(")) {
+		return true
+	}
+	if expressUsePrefixPattern.MatchString(content) {
+		return true
+	}
+	return false
 }
 
 func parseExpressRouteLine(path string, line string, lineNumber int, routerPrefixes map[string]string) (expressRouteFragment, bool) {

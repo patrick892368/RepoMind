@@ -11,7 +11,7 @@ Date: 2026-06-24
 Command:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 -OutputDir eval\m95-release-gate -Proxy http://127.0.0.1:10809 -TimeoutSeconds 300 -CloneRetries 5 -RepoCacheDir eval\release-gate\repo-cache -AskCasesPath docs\examples\ask-cases.example.json -SkipManifestBuild
+powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 -OutputDir eval\m96-release-gate -Proxy http://127.0.0.1:10809 -TimeoutSeconds 300 -CloneRetries 5 -RepoCacheDir eval\release-gate\repo-cache -AskCasesPath docs\examples\ask-cases.example.json -SkipManifestBuild
 ```
 
 Status: PASS
@@ -20,14 +20,14 @@ Status: PASS
 
 | Step | Status | Seconds |
 |---|---:|---:|
-| `go test ./...` | PASS | 4.08 |
-| `go vet ./...` | PASS | 2.42 |
-| English analyze smoke | PASS | 0.27 |
-| Chinese analyze smoke | PASS | 0.26 |
-| Real repository benchmark | PASS | 1.94 |
-| Real repository evaluation | PASS | 57.86 |
-| Ask evaluation | PASS | 0.21 |
-| Release artifact smoke | PASS | 9.43 |
+| `go test ./...` | PASS | 4.42 |
+| `go vet ./...` | PASS | 2.81 |
+| English analyze smoke | PASS | 0.24 |
+| Chinese analyze smoke | PASS | 0.25 |
+| Real repository benchmark | PASS | 1.92 |
+| Real repository evaluation | PASS | 6.03 |
+| Ask evaluation | PASS | 0.22 |
+| Release artifact smoke | PASS | 9.45 |
 
 ## Ask Evaluation Summary
 
@@ -68,18 +68,18 @@ Minimum quality score: 1.0.
 | Go chi | 1.00 | 229 | 0 | 1805 |
 | FastAPI full-stack template | 1.00 | 23 | 2 | 851 |
 | Node Express RealWorld | 1.00 | 20 | 4 | 99 |
-| Prisma examples | 1.00 | 55 | 143 | 1764 |
+| Prisma examples | 1.00 | 29 | 143 | 1764 |
 | Symfony demo | 1.00 | 0 | 0 | 26 |
 | Spring PetClinic | 1.00 | 18 | 6 | 0 |
 | Spring Data JPA | 1.00 | 0 | 1 | 0 |
 | Labstack Echo | 1.00 | 237 | 0 | 5000 |
-| GoFiber Recipes | 1.00 | 279 | 49 | 5000 |
+| GoFiber Recipes | 1.00 | 278 | 49 | 5000 |
 | Go GORM Playground | 1.00 | 0 | 6 | 24 |
 | Django Oscar | 1.00 | 52 | 79 | 5000 |
 | NestJS Starter | 1.00 | 1 | 0 | 4 |
 | Next SaaS Starter | 1.00 | 0 | 0 | 284 |
-| Vue RealWorld | 1.00 | 7 | 0 | 73 |
-| React RealWorld | 1.00 | 4 | 0 | 176 |
+| Vue RealWorld | 1.00 | 0 | 0 | 73 |
+| React RealWorld | 1.00 | 0 | 0 | 176 |
 | TypeORM Sample | 1.00 | 0 | 0 | 15 |
 | Cookiecutter Django | 1.00 | 17 | 0 | 571 |
 
@@ -92,4 +92,4 @@ Release artifact smoke passed. Manifest build and verification were intentionall
 - Benchmark/evaluation share a repository cache through `RepoCacheDir`.
 - The latest run includes 20 real repository evaluation samples.
 - The latest run includes offline strict ask evaluation with 2 external example cases.
-- Raw run outputs are under ignored `eval/m95-release-gate/`.
+- Raw run outputs are under ignored `eval/m96-release-gate/`.

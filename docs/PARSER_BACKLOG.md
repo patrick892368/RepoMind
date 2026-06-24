@@ -39,6 +39,7 @@ Current coverage:
 - Same-file Express `app.use("/prefix", router)` prefix propagation.
 - Cross-file Express relative router imports for direct `require(...)`, default `import`, and named router imports.
 - Express composed router prefix for `Router().use("/api", api)` wrapping imported controller routers.
+- Express route false-positive guard for frontend HTTP client wrappers when no Express app/router signal exists in the file.
 - NestJS controllers.
 - TypeORM entities.
 - Lightweight callgraph.
@@ -48,7 +49,6 @@ Backlog:
 - Express nested routers across files beyond direct one-hop relative imports and simple composed router exports.
 - Router variables imported through alias chains or dynamic exports.
 - Express route calls whose path is built dynamically or spans more than the lightweight parser window.
-- Avoid treating frontend HTTP client calls such as `agent.get(...)`, `requests.post(...)`, or API wrapper methods as Express routes when no Express router/app signal exists in the file.
 - NestJS controller prefix plus method decorator edge cases.
 - Next.js App Router route handlers.
 - Next.js Pages Router API routes.

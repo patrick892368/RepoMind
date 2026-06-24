@@ -751,7 +751,9 @@ app.use("/api/orders", orderRouter)
 }
 
 func TestParseExpressMultilineRoutes(t *testing.T) {
-	content := `const router = Router()
+	content := `import { Router } from "express"
+
+const router = Router()
 
 router.get(
   "/articles/feed",
@@ -762,6 +764,32 @@ router.get(
 	routes := parseExpress("src/routes/article.controller.ts", content)
 
 	assertRoute(t, routes, "GET", "/articles/feed", "auth.required", "express")
+}
+
+func TestParseExpressIgnoresFrontendHTTPClientCalls(t *testing.T) {
+	content := `import agent from "./agent"
+
+const requests = {
+  get: (url) => agent.get(url),
+  post: (url, body) => agent.post(url, body),
+  put: (url, body) => agent.put(url, body),
+}
+
+export const Articles = {
+  all: () => requests.get("/articles"),
+  create: (article) => requests.post("/articles", { article }),
+}
+
+export const User = {
+  current: () => requests.get("/user"),
+  update: (user) => requests.put("/user", { user }),
+}
+`
+	routes := parseExpress("src/api.js", content)
+
+	if len(routes) != 0 {
+		t.Fatalf("routes = %+v, want none for frontend HTTP client calls", routes)
+	}
 }
 
 func TestExtractExpressRequireRouterPrefix(t *testing.T) {
