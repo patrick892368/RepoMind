@@ -108,6 +108,7 @@ func Ask(opts Options) (Answer, error) {
 	}
 	answer.Handlers = routeHandlers(answer.Routes)
 	answer.CallChain = topCallChain(analysis.CallEdges, tokens, limit)
+	answer.Handlers = appendUniquePreserveCase(answer.Handlers, callChainHandlers(answer.CallChain)...)
 	answer.Snippets = collectSourceSnippets(root, analysis, answer, tokens, min(limit, 6))
 	answer.Summary = summarizeAnswer(answer, analysis.Language)
 
@@ -376,6 +377,19 @@ func routeHandlers(routes []ir.APIRoute) []string {
 		if route.Handler != "" {
 			handlers = append(handlers, route.Handler)
 		}
+	}
+	return uniquePreserveCase(handlers)
+}
+
+func callChainHandlers(edges []string) []string {
+	var handlers []string
+	for _, edge := range edges {
+		pair, _, _ := strings.Cut(edge, " (")
+		caller, callee, ok := strings.Cut(pair, " -> ")
+		if !ok {
+			continue
+		}
+		handlers = append(handlers, strings.TrimSpace(caller), strings.TrimSpace(callee))
 	}
 	return uniquePreserveCase(handlers)
 }

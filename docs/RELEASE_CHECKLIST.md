@@ -91,6 +91,19 @@ Pass criteria:
 - [ ] Chinese output is readable.
 - [ ] `scan.truncated` is acceptable for the tested repository size.
 
+Ask evaluation:
+
+```powershell
+.\scripts\evaluate-ask.ps1 -Provider offline -Strict
+.\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider mock -AskStrict
+```
+
+Pass criteria:
+
+- [ ] Expected files, handlers, routes, and models match the fixed questions.
+- [ ] Strict mode returns local evidence for every ask case.
+- [ ] `summary.json` and `summary.md` are generated.
+
 ## 4. Real Repository Evaluation
 
 Run:

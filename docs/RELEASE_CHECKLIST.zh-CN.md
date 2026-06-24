@@ -87,6 +87,19 @@ go run ./cmd/repomind analyze --lang zh --output .repomind .
 - 英文输出可读。
 - 中文输出可读。
 
+Ask 问答评估：
+
+```powershell
+.\scripts\evaluate-ask.ps1 -Provider offline -Strict
+.\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider mock -AskStrict
+```
+
+通过标准：
+
+- 固定问题的预期文件、处理函数、路由和模型匹配。
+- strict 模式下每个 ask case 都有本地证据。
+- 生成 `summary.json` 和 `summary.md`。
+
 ## 4. 真实仓库 Evaluation
 
 ```powershell

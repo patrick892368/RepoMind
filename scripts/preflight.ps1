@@ -4,11 +4,16 @@ param(
     [string]$Proxy = "",
     [switch]$IncludeBenchmark,
     [switch]$IncludeEvaluation,
+    [switch]$IncludeAskEvaluation,
     [switch]$IncludeAISmoke,
     [switch]$IncludeReleaseSmoke,
     [switch]$IncludeManifestBuild,
     [string]$AIProvider = "grok",
     [string]$AIModel = "grok-4.3",
+    [string]$AskProvider = "offline",
+    [string]$AskModel = "",
+    [switch]$AskStrict,
+    [double]$MinimumAskScore = 1.0,
     [int]$BenchmarkTargetSeconds = 30,
     [double]$MinimumEvaluationQualityScore = 1.0,
     [int]$CloneRetries = 3,
@@ -159,6 +164,22 @@ if ($IncludeEvaluation) {
     }
 }
 
+if ($IncludeAskEvaluation) {
+    $askEvaluationArgs = @("-ExecutionPolicy", "Bypass", "-File", "scripts\evaluate-ask.ps1", "-OutputDir", (Join-Path $outputRoot "ask-evaluation"), "-Provider", $AskProvider, "-MinimumScore", "$MinimumAskScore", "-TimeoutSeconds", "$TimeoutSeconds")
+    if ($AskModel) {
+        $askEvaluationArgs += @("-Model", $AskModel)
+    }
+    if ($AskStrict) {
+        $askEvaluationArgs += "-Strict"
+    }
+    if ($Proxy) {
+        $askEvaluationArgs += @("-Proxy", $Proxy)
+    }
+    $steps += Invoke-PreflightStep -Name "evaluate ask" -Action {
+        Invoke-CapturedCommand -FilePath "powershell" -ArgumentList $askEvaluationArgs -LogPath (Join-Path $outputRoot "ask-evaluation.log") -TimeoutSeconds ($TimeoutSeconds * 3)
+    }
+}
+
 if ($IncludeAISmoke) {
     $aiArgs = @("-ExecutionPolicy", "Bypass", "-File", "scripts\smoke-ai-provider.ps1", "-Provider", $AIProvider, "-Model", $AIModel, "-OutputDir", (Join-Path $outputRoot "ai-smoke"), "-TimeoutSeconds", "$TimeoutSeconds")
     if ($Proxy) {
@@ -191,6 +212,7 @@ $summary = [ordered]@{
     output_dir = $outputRoot
     include_benchmark = [bool]$IncludeBenchmark
     include_evaluation = [bool]$IncludeEvaluation
+    include_ask_evaluation = [bool]$IncludeAskEvaluation
     include_ai_smoke = [bool]$IncludeAISmoke
     include_release_smoke = [bool]$IncludeReleaseSmoke
     include_manifest_build = [bool]$IncludeManifestBuild

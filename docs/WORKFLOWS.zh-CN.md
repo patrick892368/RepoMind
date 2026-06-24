@@ -52,6 +52,19 @@ eval/preflight/summary.md
 .\scripts\preflight.ps1 -IncludeEvaluation -Proxy http://127.0.0.1:10809
 ```
 
+固定问题集 ask evaluation：
+
+```powershell
+.\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider offline -AskStrict
+```
+
+ask evaluation 会检查预期文件、处理函数、路由、模型和本地证据，并输出：
+
+```txt
+eval/preflight/ask-evaluation/summary.json
+eval/preflight/ask-evaluation/summary.md
+```
+
 默认要求所有样本 `quality_score >= 1.0`。
 
 ## 本地 Release Gate

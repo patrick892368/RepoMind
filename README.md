@@ -163,6 +163,15 @@ Ask writes reusable results to:
 .repomind/ask/last-answer.md
 ```
 
+Evaluate ask quality with fixed repository questions:
+
+```powershell
+.\scripts\evaluate-ask.ps1 -Provider offline -Strict
+.\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider mock -AskStrict
+```
+
+The evaluator checks expected files, handlers, routes, models, and local evidence, then writes `summary.json` and `summary.md`.
+
 ## Supported Detection
 
 Stack detection:

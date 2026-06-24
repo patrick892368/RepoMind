@@ -52,6 +52,19 @@ Run real repository evaluation:
 .\scripts\preflight.ps1 -IncludeEvaluation -Proxy http://127.0.0.1:10809
 ```
 
+Run ask evaluation with fixed repository questions:
+
+```powershell
+.\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider offline -AskStrict
+```
+
+Ask evaluation validates expected files, handlers, routes, models, and evidence. It writes:
+
+```txt
+eval/preflight/ask-evaluation/summary.json
+eval/preflight/ask-evaluation/summary.md
+```
+
 By default, evaluation requires every sampled repository to reach `quality_score >= 1.0`. Adjust only when deliberately investigating a parser regression:
 
 ```powershell
