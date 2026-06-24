@@ -36,7 +36,7 @@ eval/summary.json
 eval/summary.md
 ```
 
-The summary includes a `quality_score` from 0 to 1. The current score checks expected stack terms, minimum route/model counts, and selected known route/model names for each sample repository. Known checks currently include representative Gin routes (`/book`, `/bookable`), FastAPI mounted routes (`/api/v1/items`, `/api/v1/users`, `/api/v1/users/{user_id}`, `/api/v1/users/signup`, `/api/v1/utils/health-check`), Express split-router routes (`/api/tags`, `/api/articles`, `/api/articles/feed`, `/api/profiles/:username`, `/api/users/login`), and Prisma route/model names (`/api/filterPosts`, `/api/users`, `Account`, `Comment`, `Location`). It is a lightweight regression signal, not a replacement for manual parser review.
+The summary includes a `quality_score` from 0 to 1. The current score checks expected stack terms, minimum route/model counts, and selected known route/model names for each sample repository. Known checks currently include representative Gin/Chi routes, FastAPI mounted routes, Express split-router routes, Prisma route/model names, Spring PetClinic routes and JPA entities, GORM models, Django Oscar models, and Cookiecutter Django URL entries. It is a lightweight regression signal, not a replacement for manual parser review.
 
 `eval/` is intentionally ignored by Git.
 
@@ -51,8 +51,61 @@ The summary includes a `quality_score` from 0 to 1. The current score checks exp
 | `fastapi/full-stack-fastapi-template` | FastAPI, React, Postgres |
 | `gothinkster/node-express-realworld-example-app` | Express split routers, Prisma models |
 | `prisma/prisma-examples` | Prisma, TypeScript |
+| `symfony/demo` | Symfony, PHP |
+| `spring-projects/spring-petclinic` | Spring Boot, JPA |
+| `spring-guides/gs-accessing-data-jpa` | Spring Boot, JPA |
+| `labstack/echo` | Echo, Go |
+| `gofiber/recipes` | Fiber, Go |
+| `go-gorm/playground` | GORM models, Go |
+| `django-oscar/django-oscar` | Django, Python |
+| `nestjs/typescript-starter` | NestJS, TypeScript |
+| `leerob/next-saas-starter` | Next.js, React, Postgres |
+| `gothinkster/vue-realworld-example-app` | Vue |
+| `gothinkster/react-redux-realworld-example-app` | React |
+| `typeorm/typescript-express-example` | Express, TypeORM sample |
+| `cookiecutter/cookiecutter-django` | Django template |
 
 ## Evaluation Notes
+
+### 2026-06-24 20 Sample Expansion Run
+
+Command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\evaluate-repos.ps1 -OutputDir eval\m95-evaluation -TimeoutSeconds 300 -Proxy http://127.0.0.1:10809 -RepoCacheDir eval\m95-repo-cache -MinimumQualityScore 1.0
+```
+
+Status: PASS with `-MinimumQualityScore 1.0`.
+
+| Repo | Expected | Analyze | Quality | Seconds | Files | Backend | Frontend | Database | Models | Routes | Call Edges |
+|---|---|---:|---:|---:|---:|---|---|---|---:|---:|---:|
+| `laravel` | Laravel, PHP | true | 1.00 | 1.58 | 63 | Laravel |  |  | 0 | 1 | 0 |
+| `spring-rest-service` | Spring Boot, Java | true | 1.00 | 0.36 | 59 | Spring Boot |  |  | 0 | 1 | 0 |
+| `gin-examples` | Gin, Go | true | 1.00 | 2.72 | 124 | Gin |  |  | 0 | 69 | 748 |
+| `go-chi` | Go chi | true | 1.00 | 3.54 | 97 | Chi |  |  | 0 | 229 | 1805 |
+| `fastapi-full-stack-template` | FastAPI, React | true | 1.00 | 4.98 | 227 | FastAPI | React | Postgres | 2 | 23 | 851 |
+| `node-express-realworld` | Express, Prisma | true | 1.00 | 1.41 | 67 | Express |  |  | 4 | 20 | 99 |
+| `prisma-examples` | Prisma, TypeScript | true | 1.00 | 19.44 | 1374 | NestJS, Express | Next.js, Vue, React | Postgres | 143 | 55 | 1764 |
+| `symfony-demo` | Symfony, PHP | true | 1.00 | 3.17 | 243 | Symfony |  |  | 0 | 0 | 26 |
+| `spring-petclinic` | Spring Boot, JPA | true | 1.00 | 1.24 | 127 | Spring Boot |  | Postgres, MySQL | 6 | 18 | 0 |
+| `spring-data-jpa` | Spring Boot, JPA | true | 1.00 | 0.41 | 57 | Spring Boot |  |  | 1 | 0 | 0 |
+| `labstack-echo` | Echo, Go | true | 1.00 | 4.58 | 131 | Echo |  |  | 0 | 237 | 5000 |
+| `gofiber-recipes` | Fiber, Go | true | 1.00 | 11.49 | 1002 | Fiber | React | Postgres, MySQL, MongoDB | 49 | 279 | 5000 |
+| `go-gorm-playground` | GORM, Go | true | 1.00 | 0.35 | 15 |  |  | Postgres, MySQL | 6 | 0 | 24 |
+| `django-oscar` | Django, Python | true | 1.00 | 14.33 | 1573 | Django |  | Postgres | 79 | 52 | 5000 |
+| `nestjs-starter` | NestJS, TypeScript | true | 1.00 | 0.27 | 16 | NestJS |  |  | 0 | 1 | 4 |
+| `next-saas-starter` | Next.js, React | true | 1.00 | 1.38 | 55 |  | Next.js, React | Postgres | 0 | 0 | 284 |
+| `vue-realworld` | Vue | true | 1.00 | 0.73 | 67 |  | Vue |  | 0 | 7 | 73 |
+| `react-realworld` | React | true | 1.00 | 1.52 | 45 |  | React |  | 0 | 4 | 176 |
+| `typeorm-sample` | Express, TypeORM | true | 1.00 | 0.27 | 14 | Express |  | MySQL | 0 | 0 | 15 |
+| `cookiecutter-django` | Django template | true | 1.00 | 1.62 | 277 | Django |  |  | 0 | 17 | 571 |
+
+Findings:
+
+- The fixed evaluation matrix now covers 20 public repositories across PHP, Java, Go, Python, JavaScript/TypeScript, and frontend-only stacks.
+- All sampled repositories completed under the 30-second product target.
+- Frontend client samples are used as stack coverage only; their detected routes should not be treated as API map quality checks until client-side API false positives are tightened.
+- Symfony route extraction, Symfony models, and TypeORM sample entity coverage remain parser improvement candidates.
 
 ### 2026-06-24 Proxied Run
 

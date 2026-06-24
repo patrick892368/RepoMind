@@ -48,6 +48,7 @@ Backlog:
 - Express nested routers across files beyond direct one-hop relative imports and simple composed router exports.
 - Router variables imported through alias chains or dynamic exports.
 - Express route calls whose path is built dynamically or spans more than the lightweight parser window.
+- Avoid treating frontend HTTP client calls such as `agent.get(...)`, `requests.post(...)`, or API wrapper methods as Express routes when no Express router/app signal exists in the file.
 - NestJS controller prefix plus method decorator edge cases.
 - Next.js App Router route handlers.
 - Next.js Pages Router API routes.
@@ -82,6 +83,7 @@ Backlog:
 - Django REST Framework cross-file routers beyond one-hop static module includes and statically registered ViewSets.
 - Cross-file FastAPI module imports beyond direct static router imports and unique static prefix constants.
 - FastAPI decorators whose path is built dynamically or spans more than the lightweight parser window.
+- Avoid treating non-FastAPI test decorators or patch helpers as FastAPI route decorators when the file has no FastAPI router/app signal.
 - SQLAlchemy 2.0 `Mapped[]` and `mapped_column`.
 - Alembic model hints.
 - Celery task discovery.

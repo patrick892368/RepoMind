@@ -55,27 +55,55 @@ eval/repos/
 | `fastapi/full-stack-fastapi-template` | FastAPI, React, Postgres |
 | `gothinkster/node-express-realworld-example-app` | Express, Prisma |
 | `prisma/prisma-examples` | Prisma, TypeScript monorepo |
+| `symfony/demo` | Symfony, PHP |
+| `spring-projects/spring-petclinic` | Spring Boot, JPA |
+| `spring-guides/gs-accessing-data-jpa` | Spring Boot, JPA |
+| `labstack/echo` | Echo, Go |
+| `gofiber/recipes` | Fiber, Go |
+| `go-gorm/playground` | GORM models, Go |
+| `django-oscar/django-oscar` | Django, Python |
+| `nestjs/typescript-starter` | NestJS, TypeScript |
+| `leerob/next-saas-starter` | Next.js, React, Postgres |
+| `gothinkster/vue-realworld-example-app` | Vue |
+| `gothinkster/react-redux-realworld-example-app` | React |
+| `typeorm/typescript-express-example` | Express, TypeORM sample |
+| `cookiecutter/cookiecutter-django` | Django template |
 
 ## 最新有效结果
 
-M72 release gate 和 M71 evaluation 均通过 `MinimumQualityScore 1.0`。
+M95 evaluation 将固定样本扩展到 20 个，全部通过 `MinimumQualityScore 1.0`。
 
 | Repo | Quality | Routes | Models | Call Edges |
 |---|---:|---:|---:|---:|
 | Laravel | 1.00 | 1 | 0 | 0 |
 | Spring REST service | 1.00 | 1 | 0 | 0 |
-| Gin examples | 1.00 | 68 | 0 | 748 |
-| Go chi | 1.00 | 210 | 0 | 1805 |
+| Gin examples | 1.00 | 69 | 0 | 748 |
+| Go chi | 1.00 | 229 | 0 | 1805 |
 | FastAPI full-stack template | 1.00 | 23 | 2 | 851 |
 | Node Express RealWorld | 1.00 | 20 | 4 | 99 |
 | Prisma examples | 1.00 | 55 | 143 | 1764 |
+| Symfony demo | 1.00 | 0 | 0 | 26 |
+| Spring PetClinic | 1.00 | 18 | 6 | 0 |
+| Spring Data JPA | 1.00 | 0 | 1 | 0 |
+| Labstack Echo | 1.00 | 237 | 0 | 5000 |
+| GoFiber Recipes | 1.00 | 279 | 49 | 5000 |
+| Go GORM Playground | 1.00 | 0 | 6 | 24 |
+| Django Oscar | 1.00 | 52 | 79 | 5000 |
+| NestJS Starter | 1.00 | 1 | 0 | 4 |
+| Next SaaS Starter | 1.00 | 0 | 0 | 284 |
+| Vue RealWorld | 1.00 | 7 | 0 | 73 |
+| React RealWorld | 1.00 | 4 | 0 | 176 |
+| TypeORM Sample | 1.00 | 0 | 0 | 15 |
+| Cookiecutter Django | 1.00 | 17 | 0 | 571 |
 
 ## 近期发现
 
+- M95 后真实仓库 evaluation 固定样本从 7 个扩展到 20 个，覆盖 PHP、Java、Go、Python、JS/TS 和 frontend-only 仓库。
 - FastAPI 多行 decorator 支持后，FastAPI full-stack template routes 从 18 提升到 23。
 - Express 多行 route 支持后，node-express-realworld routes 从 8 提升到 20。
 - Go middleware-wrapped handler 支持后，gin-examples routes 从 66 提升到 68。
 - Go chi 样本保持 quality score 1.00，并检测到 210 routes。
+- 前端 client 样本当前只作为 stack 覆盖；其中误识别出的 client API 调用不能作为 API map 质量依据，后续需要单独收紧 false positive。
 
 ## 记录格式
 

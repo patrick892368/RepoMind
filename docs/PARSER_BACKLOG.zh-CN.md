@@ -48,6 +48,7 @@ Backlog：
 - 多层 Express nested routers。
 - alias chains 或 dynamic exports。
 - path 动态拼接或超过轻量窗口的 route calls。
+- 文件中没有 Express router/app 信号时，避免把前端 HTTP client 调用（如 `agent.get(...)`、`requests.post(...)` 或 API wrapper methods）误识别为 Express routes。
 - NestJS prefix 和 method decorator 边界。
 - Next.js App Router route handlers。
 - Next.js Pages Router API routes。
@@ -81,6 +82,7 @@ Backlog：
 - 超出一跳静态 module include 和静态 ViewSet 注册的 DRF cross-file routers。
 - 更复杂的 FastAPI module imports。
 - 动态 path 或超出轻量窗口的 FastAPI decorators。
+- 文件中没有 FastAPI router/app 信号时，避免把非 FastAPI test decorators 或 patch helpers 误识别为 FastAPI route decorators。
 - SQLAlchemy 2.0 `Mapped[]` 和 `mapped_column`。
 - Alembic model hints。
 - Celery task discovery。

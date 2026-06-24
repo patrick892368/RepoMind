@@ -11,7 +11,7 @@ Date: 2026-06-24
 Command:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 -OutputDir eval\m80-release-gate -Proxy http://127.0.0.1:10809 -TimeoutSeconds 300 -CloneRetries 5 -RepoCacheDir eval\release-gate\repo-cache
+powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 -OutputDir eval\m95-release-gate -Proxy http://127.0.0.1:10809 -TimeoutSeconds 300 -CloneRetries 5 -RepoCacheDir eval\release-gate\repo-cache -AskCasesPath docs\examples\ask-cases.example.json -SkipManifestBuild
 ```
 
 Status: PASS
@@ -20,15 +20,14 @@ Status: PASS
 
 | Step | Status | Seconds |
 |---|---:|---:|
-| `go test ./...` | PASS | 2.40 |
-| `go vet ./...` | PASS | 1.39 |
-| English analyze smoke | PASS | 0.22 |
-| Chinese analyze smoke | PASS | 0.22 |
-| Real repository benchmark | PASS | 1.93 |
-| Real repository evaluation | PASS | 2.35 |
-| Ask evaluation | PASS | 2.81 |
-| Release artifact smoke | PASS | 9.19 |
-| Release manifest build and verify | PASS | 13.31 |
+| `go test ./...` | PASS | 4.08 |
+| `go vet ./...` | PASS | 2.42 |
+| English analyze smoke | PASS | 0.27 |
+| Chinese analyze smoke | PASS | 0.26 |
+| Real repository benchmark | PASS | 1.94 |
+| Real repository evaluation | PASS | 57.86 |
+| Ask evaluation | PASS | 0.21 |
+| Release artifact smoke | PASS | 9.43 |
 
 ## Ask Evaluation Summary
 
@@ -36,19 +35,14 @@ Provider: offline.
 
 Strict: true.
 
-Case source: built-in.
+Case source: `docs/examples/ask-cases.example.json`.
 
 Overall score: 1.0.
 
 | Case | Score |
 |---|---:|
-| api-login | 1.0 |
-| api-wallet | 1.0 |
-| self-cli-ask | 1.0 |
-| db-wallet-model | 1.0 |
-| db-models-zh | 1.0 |
-| call-payment | 1.0 |
-| call-payment-zh | 1.0 |
+| api-login-external | 1.0 |
+| call-payment-zh-external | 1.0 |
 
 ## Benchmark Summary
 
@@ -58,9 +52,9 @@ Target: 30 seconds per repository.
 |---|---:|---:|---:|---:|---:|
 | Laravel | 0.22 | true | 1 | 0 | 0 |
 | Spring REST service | 0.15 | true | 1 | 0 | 0 |
-| Gin examples | 0.22 | true | 68 | 0 | 748 |
-| FastAPI full-stack template | 0.27 | true | 23 | 2 | 851 |
-| Prisma examples | 0.54 | true | 55 | 143 | 1764 |
+| Gin examples | 0.22 | true | 69 | 0 | 748 |
+| FastAPI full-stack template | 0.25 | true | 23 | 2 | 851 |
+| Prisma examples | 0.57 | true | 55 | 143 | 1764 |
 
 ## Evaluation Summary
 
@@ -70,26 +64,32 @@ Minimum quality score: 1.0.
 |---|---:|---:|---:|---:|
 | Laravel | 1.00 | 1 | 0 | 0 |
 | Spring REST service | 1.00 | 1 | 0 | 0 |
-| Gin examples | 1.00 | 68 | 0 | 748 |
-| Go chi | 1.00 | 210 | 0 | 1805 |
+| Gin examples | 1.00 | 69 | 0 | 748 |
+| Go chi | 1.00 | 229 | 0 | 1805 |
 | FastAPI full-stack template | 1.00 | 23 | 2 | 851 |
 | Node Express RealWorld | 1.00 | 20 | 4 | 99 |
 | Prisma examples | 1.00 | 55 | 143 | 1764 |
+| Symfony demo | 1.00 | 0 | 0 | 26 |
+| Spring PetClinic | 1.00 | 18 | 6 | 0 |
+| Spring Data JPA | 1.00 | 0 | 1 | 0 |
+| Labstack Echo | 1.00 | 237 | 0 | 5000 |
+| GoFiber Recipes | 1.00 | 279 | 49 | 5000 |
+| Go GORM Playground | 1.00 | 0 | 6 | 24 |
+| Django Oscar | 1.00 | 52 | 79 | 5000 |
+| NestJS Starter | 1.00 | 1 | 0 | 4 |
+| Next SaaS Starter | 1.00 | 0 | 0 | 284 |
+| Vue RealWorld | 1.00 | 7 | 0 | 73 |
+| React RealWorld | 1.00 | 4 | 0 | 176 |
+| TypeORM Sample | 1.00 | 0 | 0 | 15 |
+| Cookiecutter Django | 1.00 | 17 | 0 | 571 |
 
-## Manifest Verification
+## Release Artifact Smoke
 
-Release manifest verification passed for all six release archives:
-
-- Windows amd64
-- Windows arm64
-- macOS amd64
-- macOS arm64
-- Linux amd64
-- Linux arm64
+Release artifact smoke passed. Manifest build and verification were intentionally skipped in this run with `-SkipManifestBuild`; the latest full manifest verification remains the M80 run.
 
 ## Notes
 
 - Benchmark/evaluation share a repository cache through `RepoCacheDir`.
-- The latest run includes 7 real repository evaluation samples and release manifest verification.
-- The latest run includes built-in offline strict ask evaluation with 7 cases.
-- Raw run outputs are under ignored `eval/m80-release-gate/`.
+- The latest run includes 20 real repository evaluation samples.
+- The latest run includes offline strict ask evaluation with 2 external example cases.
+- Raw run outputs are under ignored `eval/m95-release-gate/`.
