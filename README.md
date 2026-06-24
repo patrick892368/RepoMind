@@ -18,7 +18,9 @@ RepoMind is not an AI agent and does not generate application code by default. I
 
 ## Current Status
 
-This repository is in early development. The core CLI and analysis pipeline are implemented, but parser coverage is still intentionally lightweight and will improve through real repository testing.
+RepoMind has a passing v1.0 release gate for the current scope. The gate covers local repository analysis, GitHub repository URL analysis, bilingual reports, stack/API/database/call-graph extraction, `ask`, `trace`, `diagnose`, 20 real repository evaluation samples, safety boundary checks, CI, and release artifact smoke tests.
+
+Parser coverage is still expected to grow through measured real repository testing. The goal is to keep the first-run experience stable: useful repository understanding in 30 seconds, with no code generation by default.
 
 Implemented commands:
 
@@ -36,15 +38,15 @@ repomind export cursor .
 
 ## Evaluation Snapshot
 
-Latest local benchmark results are under the 30-second target:
+The latest combined gate evaluated 20 real repositories at minimum quality score `1.0`, and benchmarked representative repositories under the 30-second target:
 
 | Repository | Time |
 |---|---:|
-| Laravel | 7.41s |
-| Spring REST service | 1.94s |
-| Gin examples | 1.32s |
-| FastAPI full-stack template | 2.99s |
-| Prisma examples | 9.68s |
+| Laravel | 0.23s |
+| Spring REST service | 0.16s |
+| Gin examples | 0.20s |
+| FastAPI full-stack template | 0.24s |
+| Prisma examples | 0.58s |
 
 Details:
 

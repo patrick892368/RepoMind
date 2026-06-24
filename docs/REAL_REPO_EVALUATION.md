@@ -65,6 +65,33 @@ The summary includes a `quality_score` from 0 to 1. The current score checks exp
 | `typeorm/typescript-express-example` | Express, TypeORM sample |
 | `cookiecutter/cookiecutter-django` | Django template |
 
+## Latest Valid Result
+
+The 2026-06-24 M106 release gate kept all 20 fixed samples at `MinimumQualityScore 1.0` while also verifying the core report content, ask evaluation, trace/diagnose smoke, remote repository analyze smoke, safety boundary, release artifact smoke, and release manifest verification.
+
+| Repository | Quality | Routes | Models | Call Edges |
+|---|---:|---:|---:|---:|
+| Laravel | 1.00 | 1 | 0 | 0 |
+| Spring REST service | 1.00 | 1 | 0 | 0 |
+| Gin examples | 1.00 | 69 | 0 | 748 |
+| Go chi | 1.00 | 229 | 0 | 1805 |
+| FastAPI full-stack template | 1.00 | 23 | 2 | 851 |
+| Node Express RealWorld | 1.00 | 20 | 4 | 99 |
+| Prisma examples | 1.00 | 42 | 145 | 1764 |
+| Symfony demo | 1.00 | 19 | 0 | 26 |
+| Spring PetClinic | 1.00 | 18 | 6 | 0 |
+| Spring Data JPA | 1.00 | 0 | 1 | 0 |
+| Labstack Echo | 1.00 | 237 | 0 | 5000 |
+| GoFiber Recipes | 1.00 | 278 | 49 | 5000 |
+| Go GORM Playground | 1.00 | 0 | 6 | 24 |
+| Django Oscar | 1.00 | 8 | 70 | 5000 |
+| NestJS Starter | 1.00 | 1 | 0 | 4 |
+| Next SaaS Starter | 1.00 | 4 | 0 | 284 |
+| Vue RealWorld | 1.00 | 0 | 0 | 73 |
+| React RealWorld | 1.00 | 0 | 0 | 176 |
+| TypeORM Sample | 1.00 | 0 | 2 | 15 |
+| Cookiecutter Django | 1.00 | 9 | 0 | 571 |
+
 ## Evaluation Notes
 
 ### 2026-06-24 SQLAlchemy 2.0 Mapped Column Run

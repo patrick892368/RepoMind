@@ -53,6 +53,22 @@ benchmark/repos/
 | `fastapi/full-stack-fastapi-template` | FastAPI, React, Postgres, SQLModel |
 | `prisma/prisma-examples` | Prisma, TypeScript monorepo |
 
+## 最新有效结果
+
+日期：2026-06-24。
+
+来源：启用 repository cache 的组合 release gate。
+
+目标：每个仓库低于 30 秒。
+
+| 仓库 | 秒 | 低于目标 | Routes | Models | Call Edges |
+|---|---:|---:|---:|---:|---:|
+| Laravel | 0.23 | true | 1 | 0 | 0 |
+| Spring REST service | 0.16 | true | 1 | 0 | 0 |
+| Gin examples | 0.20 | true | 69 | 0 | 748 |
+| FastAPI full-stack template | 0.24 | true | 23 | 2 | 851 |
+| Prisma examples | 0.58 | true | 42 | 145 | 1764 |
+
 ## 通过标准
 
 每个仓库必须满足：
