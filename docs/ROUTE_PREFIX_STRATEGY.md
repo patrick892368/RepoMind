@@ -1,5 +1,7 @@
 # Route Prefix Strategy
 
+**Language:** English | [简体中文](ROUTE_PREFIX_STRATEGY.zh-CN.md)
+
 RepoMind currently supports several same-file route prefix patterns. Cross-file route prefix propagation should be added carefully because it can quickly turn a lightweight scanner into a partial language server.
 
 ## Current Same-file Coverage

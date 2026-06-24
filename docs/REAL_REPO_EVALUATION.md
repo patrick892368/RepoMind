@@ -1,5 +1,7 @@
 # Real Repository Evaluation
 
+**Language:** English | [简体中文](REAL_REPO_EVALUATION.zh-CN.md)
+
 This document records real open-source repository evaluation runs for RepoMind.
 
 The goal is to measure whether `repomind analyze` produces useful context within the 30-second product target, and to identify parser false positives, false negatives, and missing framework patterns.

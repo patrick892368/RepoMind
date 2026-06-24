@@ -1,5 +1,7 @@
 # RepoMind Project Plan
 
+**Language:** [English](PROJECT_PLAN.en.md) | 简体中文
+
 RepoMind 的目标是让开发者在 30 秒内理解一个陌生仓库。它不是代码生成工具，也不是通用 AI Agent，而是面向既有代码库的 Repository Understanding 工具。
 
 ## 1. Project Goal
@@ -2647,6 +2649,39 @@ Status:
 
 - Done
 
+### M74: Root README Cleanup and Bilingual Docs
+
+Goal:
+
+- 根 README 保持产品介绍和使用入口，不再放项目计划、文档索引、发布检查、release gate 结果、parser backlog 等维护型链接；这些内容由 `docs/` 目录承载。
+- `docs/` 中公开维护文档支持英文/简体中文切换。
+
+Features:
+
+- `README.md` 删除 Project Plan 文档链接区块。
+- `README.zh-CN.md` 删除项目计划、文档索引、发布检查、release gate 结果和 parser backlog 区块。
+- `docs/README.md` 增加 language switch，并列出双语文档对。
+- 新增 `docs/README.zh-CN.md`。
+- `docs/PROJECT_PLAN.md` 增加 English / 简体中文切换。
+- 新增 `docs/PROJECT_PLAN.en.md` 作为英文项目计划摘要。
+- 为安装、远程仓库、工作流、发布清单、release gate 结果、parser backlog、性能基准、真实仓库评估、route prefix 策略新增中文文档。
+- 为现有英文 docs 文档增加 language switch。
+- `docs/RELEASE_CHECKLIST.md` 增加 docs 双语检查项。
+
+Unit Tests:
+
+- Not required for documentation-only milestone.
+
+Integration Tests:
+
+- `git diff --check`。
+- `go test ./...`。
+- `go vet ./...`。
+
+Status:
+
+- Done
+
 ## 7. Testing Strategy
 
 ### Unit Tests Required For
@@ -3019,10 +3054,11 @@ Deferred
 - M71: Go route parser now extracts handler names from common middleware wrapper calls such as `requireAuth(handler)`.
 - M72: Full release gate passed after remote repository input and Go parser updates through M71.
 - M73: GitHub README now supports English / Simplified Chinese switching, and release archives include `README.zh-CN.md`.
+- M74: Root README no longer lists maintenance docs, and `docs/` public documents now have bilingual English/Simplified Chinese counterparts.
 
 ## 11. Next Steps
 
-当前 M1-M73 已完成。下一步继续 parser 和远程输入体验质量提升：
+当前 M1-M74 已完成。下一步继续 parser 和远程输入体验质量提升：
 
 1. 继续补充更多真实仓库样本和质量检查。
 2. 增强 Go 带参数 route factory、middleware chain 和 cross-package route assembly 解析。
@@ -3322,3 +3358,10 @@ Deferred
 - `powershell -ExecutionPolicy Bypass -File scripts\verify-release-manifest.ps1 -DistDir dist\bilingual-readme` passed after M73.
 - Release archive content check confirmed `README.zh-CN.md` is present.
 - `git diff --check` passed after M73 bilingual README switch.
+- Root `README.md` and `README.zh-CN.md` no longer contain the project plan / docs index / release checklist / release gate / parser backlog maintenance block after M74.
+- `docs/README.zh-CN.md`, `docs/PROJECT_PLAN.en.md`, and Chinese counterparts for docs maintenance pages were added after M74.
+- Existing docs maintenance pages now include language switch links.
+- `docs/RELEASE_CHECKLIST.md` now requires bilingual docs checks.
+- `git diff --check` passed after M74 root README cleanup and bilingual docs.
+- `go test ./...` passed after M74 root README cleanup and bilingual docs.
+- `go vet ./...` passed after M74 root README cleanup and bilingual docs.

@@ -275,40 +275,6 @@ release workflow 会构建：
 
 每个 archive 包含 `repomind` 二进制、`README.md`、`README.zh-CN.md` 和 `.env.example`。
 
-## 项目计划
-
-路线图和完成记录：
-
-```txt
-docs/PROJECT_PLAN.md
-```
-
-每完成一个 milestone 或关键实现变更，都需要更新该文档。
-
-文档索引：
-
-```txt
-docs/README.md
-```
-
-发布检查：
-
-```txt
-docs/RELEASE_CHECKLIST.md
-```
-
-最新 release gate 结果：
-
-```txt
-docs/RELEASE_GATE_RESULTS.md
-```
-
-Parser 改进 backlog：
-
-```txt
-docs/PARSER_BACKLOG.md
-```
-
 ## 边界
 
 RepoMind 不会：

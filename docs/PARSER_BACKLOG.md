@@ -1,5 +1,7 @@
 # Parser Improvement Backlog
 
+**Language:** English | [简体中文](PARSER_BACKLOG.zh-CN.md)
+
 RepoMind should keep deterministic scanning first. AI can summarize and infer, but parser quality must improve through explicit fixtures, real repository evaluation, and measured false positive / false negative notes.
 
 ## Priority Rules

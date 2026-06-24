@@ -1,5 +1,7 @@
 # RepoMind Workflows
 
+**Language:** English | [简体中文](WORKFLOWS.zh-CN.md)
+
 This document explains how local checks map to CI and release checks.
 
 ## Local Default Preflight

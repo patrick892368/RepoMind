@@ -1,5 +1,7 @@
 # Release Gate Results
 
+**Language:** English | [简体中文](RELEASE_GATE_RESULTS.zh-CN.md)
+
 This document records local release gate runs that combine default preflight, release binary smoke, release manifest verification, real repository benchmark, and real repository evaluation quality checks.
 
 ## Latest Run

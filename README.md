@@ -306,46 +306,6 @@ The release workflow builds:
 
 Each archive includes the `repomind` binary, `README.md`, `README.zh-CN.md`, and `.env.example`.
 
-## Project Plan
-
-The roadmap and completion record live in:
-
-```txt
-docs/PROJECT_PLAN.md
-```
-
-Every completed milestone or important implementation change should update that document.
-
-Documentation index:
-
-```txt
-docs/README.md
-```
-
-Release checks live in:
-
-```txt
-docs/RELEASE_CHECKLIST.md
-```
-
-Latest release gate result:
-
-```txt
-docs/RELEASE_GATE_RESULTS.md
-```
-
-Local, CI, and release workflow mapping lives in:
-
-```txt
-docs/WORKFLOWS.md
-```
-
-Parser improvement backlog:
-
-```txt
-docs/PARSER_BACKLOG.md
-```
-
 ## Boundaries
 
 RepoMind does not:

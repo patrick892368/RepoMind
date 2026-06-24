@@ -1,5 +1,7 @@
 # Installing RepoMind
 
+**Language:** English | [简体中文](INSTALL.zh-CN.md)
+
 RepoMind is CLI-first. The recommended install path depends on whether you want to use source builds or release binaries.
 
 ## Run From Source

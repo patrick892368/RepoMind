@@ -1,5 +1,7 @@
 # Remote Repository Analysis
 
+**Language:** English | [简体中文](REMOTE_REPOSITORIES.zh-CN.md)
+
 RepoMind can analyze a local path or a remote Git URL.
 
 ```powershell
