@@ -94,6 +94,7 @@ jobs:
           NAME="repomind-${VERSION}-${GOOS}-${GOARCH}"
           mkdir -p "dist/${NAME}"
           go build -trimpath -ldflags "-s -w" -o "dist/${NAME}/repomind${{ matrix.ext }}" ./cmd/repomind
+          cp LICENSE "dist/${NAME}/LICENSE"
           cp README.md "dist/${NAME}/README.md"
           cp README.zh-CN.md "dist/${NAME}/README.zh-CN.md"
           cp .env.example "dist/${NAME}/.env.example"

@@ -138,7 +138,7 @@ go run ./cmd/repomind analyze --lang zh --output .repomind .
 
 - 当前平台 binary smoke PASS。
 - Windows、macOS、Linux amd64/arm64 archive 都存在。
-- archive 包含 binary、`README.md`、`README.zh-CN.md` 和 `.env.example`。
+- archive 包含 binary、`LICENSE`、`README.md`、`README.zh-CN.md` 和 `.env.example`。
 - `dist/manifest.json` 和 `dist/manifest.md` 存在。
 - manifest verification PASS。
 

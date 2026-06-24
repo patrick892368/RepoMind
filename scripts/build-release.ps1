@@ -33,6 +33,7 @@ foreach ($target in $targets) {
 
     go build -trimpath -ldflags "-s -w" -o (Join-Path $targetDir $binary) ./cmd/repomind
 
+    Copy-Item LICENSE (Join-Path $targetDir "LICENSE")
     Copy-Item README.md (Join-Path $targetDir "README.md")
     Copy-Item README.zh-CN.md (Join-Path $targetDir "README.zh-CN.md")
     Copy-Item .env.example (Join-Path $targetDir ".env.example")

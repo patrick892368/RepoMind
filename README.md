@@ -304,7 +304,11 @@ The release workflow builds:
 - macOS amd64 / arm64
 - Linux amd64 / arm64
 
-Each archive includes the `repomind` binary, `README.md`, `README.zh-CN.md`, and `.env.example`.
+Each archive includes the `repomind` binary, `LICENSE`, `README.md`, `README.zh-CN.md`, and `.env.example`.
+
+## License
+
+RepoMind is released under the [MIT License](LICENSE).
 
 ## Boundaries
 

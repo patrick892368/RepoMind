@@ -168,7 +168,7 @@ Pass criteria:
 - [ ] macOS arm64 artifact exists.
 - [ ] Linux amd64 artifact exists.
 - [ ] Linux arm64 artifact exists.
-- [ ] Archives include binary, `README.md`, `README.zh-CN.md`, and `.env.example`.
+- [ ] Archives include binary, `LICENSE`, `README.md`, `README.zh-CN.md`, and `.env.example`.
 - [ ] `dist/manifest.json` exists and includes SHA256 values.
 - [ ] `dist/manifest.md` exists for release notes review.
 - [ ] `dist/manifest-verify.md` reports PASS.

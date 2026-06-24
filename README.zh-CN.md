@@ -273,7 +273,11 @@ release workflow 会构建：
 - macOS amd64 / arm64
 - Linux amd64 / arm64
 
-每个 archive 包含 `repomind` 二进制、`README.md`、`README.zh-CN.md` 和 `.env.example`。
+每个 archive 包含 `repomind` 二进制、`LICENSE`、`README.md`、`README.zh-CN.md` 和 `.env.example`。
+
+## 许可证
+
+RepoMind 使用 [MIT License](LICENSE) 发布。
 
 ## 边界
 
