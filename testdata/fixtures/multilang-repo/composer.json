@@ -1,0 +1,6 @@
+{
+  "require": {
+    "laravel/framework": "^11.0",
+    "predis/predis": "^2.0"
+  }
+}

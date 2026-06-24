@@ -1,0 +1,6 @@
+[project]
+name = "repomind-api"
+dependencies = [
+  "fastapi",
+  "psycopg",
+]

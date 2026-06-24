@@ -1,0 +1,64 @@
+name: Release Gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      timeout_seconds:
+        description: "Timeout per repository command"
+        required: false
+        default: "300"
+      clone_retries:
+        description: "Git clone retries"
+        required: false
+        default: "3"
+      benchmark_target_seconds:
+        description: "Benchmark target seconds per repository"
+        required: false
+        default: "30"
+      minimum_quality_score:
+        description: "Minimum evaluation quality score"
+        required: false
+        default: "1.0"
+
+jobs:
+  release-gate:
+    name: Release Gate
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.x"
+          cache: true
+
+      - name: Run release gate
+        shell: powershell
+        run: |
+          powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 `
+            -TimeoutSeconds ${{ inputs.timeout_seconds }} `
+            -CloneRetries ${{ inputs.clone_retries }} `
+            -BenchmarkTargetSeconds ${{ inputs.benchmark_target_seconds }} `
+            -MinimumEvaluationQualityScore ${{ inputs.minimum_quality_score }}
+
+      - name: Upload release gate summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-gate-summary
+          path: |
+            eval/release-gate/summary.json
+            eval/release-gate/summary.md
+            eval/release-gate/benchmark/summary.json
+            eval/release-gate/benchmark/summary.md
+            eval/release-gate/evaluation/summary.json
+            eval/release-gate/evaluation/summary.md
+            eval/release-gate/release-smoke/summary.json
+            eval/release-gate/release-smoke/summary.md
+            eval/release-gate/manifest-build/manifest.json
+            eval/release-gate/manifest-build/manifest.md
+            eval/release-gate/manifest-build/manifest-verify.json
+            eval/release-gate/manifest-build/manifest-verify.md

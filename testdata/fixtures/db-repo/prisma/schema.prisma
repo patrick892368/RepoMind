@@ -1,0 +1,20 @@
+model User {
+  id      Int      @id @default(autoincrement())
+  email   String   @unique
+  name    String?
+  orders  Order[]
+  wallet  Wallet?
+}
+
+model Order {
+  id      Int    @id @default(autoincrement())
+  userId  Int
+  user    User   @relation(fields: [userId], references: [id])
+  amount  Decimal
+}
+
+model Wallet {
+  id      Int  @id @default(autoincrement())
+  userId  Int  @unique
+  user    User @relation(fields: [userId], references: [id])
+}

@@ -1,0 +1,11 @@
+.repomind/
+dist/
+eval/
+benchmark/
+.env
+.env.*
+!.env.example
+/repomind
+/repomind.exe
+*.test
+coverage.out

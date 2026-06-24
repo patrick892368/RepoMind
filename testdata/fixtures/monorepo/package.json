@@ -1,0 +1,8 @@
+{
+  "name": "repomind-monorepo",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "services/*"
+  ]
+}

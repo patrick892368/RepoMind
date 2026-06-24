@@ -1,0 +1,187 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  native-smoke:
+    name: Native Smoke
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.x"
+          cache: true
+
+      - name: Smoke current platform binary
+        shell: pwsh
+        run: |
+          ./scripts/smoke-release-artifact.ps1 -OutputDir "dist/native-smoke-${{ matrix.os }}" -TimeoutSeconds 180
+
+  build:
+    name: Build Release
+    runs-on: ubuntu-latest
+    needs: native-smoke
+
+    strategy:
+      matrix:
+        include:
+          - goos: windows
+            goarch: amd64
+            ext: .exe
+            archive: zip
+          - goos: windows
+            goarch: arm64
+            ext: .exe
+            archive: zip
+          - goos: darwin
+            goarch: amd64
+            ext: ""
+            archive: tar.gz
+          - goos: darwin
+            goarch: arm64
+            ext: ""
+            archive: tar.gz
+          - goos: linux
+            goarch: amd64
+            ext: ""
+            archive: tar.gz
+          - goos: linux
+            goarch: arm64
+            ext: ""
+            archive: tar.gz
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.x"
+          cache: true
+
+      - name: Test
+        run: go test ./...
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Build
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: "0"
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          NAME="repomind-${VERSION}-${GOOS}-${GOARCH}"
+          mkdir -p "dist/${NAME}"
+          go build -trimpath -ldflags "-s -w" -o "dist/${NAME}/repomind${{ matrix.ext }}" ./cmd/repomind
+          cp README.md "dist/${NAME}/README.md"
+          cp README.zh-CN.md "dist/${NAME}/README.zh-CN.md"
+          cp .env.example "dist/${NAME}/.env.example"
+          if [ "${{ matrix.archive }}" = "zip" ]; then
+            (cd "dist/${NAME}" && zip -r "../${NAME}.zip" .)
+          else
+            tar -czf "dist/${NAME}.tar.gz" -C "dist/${NAME}" .
+          fi
+
+      - name: Smoke built binary
+        if: matrix.goos == 'linux' && matrix.goarch == 'amd64'
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          NAME="repomind-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }}"
+          BIN="./dist/${NAME}/repomind"
+          "$BIN" version
+          TMP_REPO="$(mktemp -d)"
+          cp -R testdata/fixtures/api-repo/. "$TMP_REPO"
+          "$BIN" analyze --output "$TMP_REPO/.repomind" "$TMP_REPO"
+          test -f "$TMP_REPO/.repomind/analysis.json"
+          test -f "$TMP_REPO/.repomind/report.html"
+          "$BIN" export codex "$TMP_REPO"
+          test -f "$TMP_REPO/AGENTS.md"
+          "$BIN" analyze --lang zh --output "$TMP_REPO/.repomind-zh" "$TMP_REPO"
+          grep -q '"language": "zh"' "$TMP_REPO/.repomind-zh/analysis.json"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: repomind-${{ github.ref_name }}-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: |
+            dist/*.zip
+            dist/*.tar.gz
+
+  release:
+    name: Publish GitHub Release
+    runs-on: ubuntu-latest
+    needs:
+      - native-smoke
+      - build
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Generate manifest
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          artifacts = Path("artifacts")
+          rows = []
+          for path in sorted(list(artifacts.glob("*.zip")) + list(artifacts.glob("*.tar.gz"))):
+              name = path.name
+              parts = name.removesuffix(".zip").removesuffix(".tar.gz").split("-")
+              goos = parts[-2] if len(parts) >= 2 else ""
+              goarch = parts[-1] if len(parts) >= 1 else ""
+              digest = hashlib.sha256(path.read_bytes()).hexdigest()
+              rows.append({
+                  "version": "${{ github.ref_name }}",
+                  "goos": goos,
+                  "goarch": goarch,
+                  "archive": name,
+                  "size_bytes": path.stat().st_size,
+                  "sha256": digest,
+              })
+          (artifacts / "manifest.json").write_text(json.dumps(rows, indent=2) + "\n", encoding="utf-8")
+          lines = [
+              "# RepoMind Release Manifest",
+              "",
+              "| Version | GOOS | GOARCH | Archive | Size | SHA256 |",
+              "|---|---|---|---|---:|---|",
+          ]
+          for row in rows:
+              lines.append(f"| {row['version']} | {row['goos']} | {row['goarch']} | {row['archive']} | {row['size_bytes']} | {row['sha256']} |")
+          (artifacts / "manifest.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+          PY
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/*.zip
+            artifacts/*.tar.gz
+            artifacts/manifest.json
+            artifacts/manifest.md
