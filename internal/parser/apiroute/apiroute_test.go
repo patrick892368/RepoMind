@@ -303,6 +303,50 @@ urlpatterns = [
 	assertRoute(t, routes, "DELETE", "/api/users/{id}/", "views.UserViewSet.destroy", "django")
 }
 
+func TestExtractDjangoRESTFrameworkCustomActions(t *testing.T) {
+	root := t.TempDir()
+	writeRouteFile(t, root, "project/urls.py", `from django.urls import include, path
+from rest_framework import routers
+from . import views
+
+router = routers.DefaultRouter()
+router.register(r"users", views.UserViewSet, basename="user")
+
+urlpatterns = [
+    path("api/", include(router.urls)),
+]
+`)
+	writeRouteFile(t, root, "project/views.py", `from rest_framework.decorators import action
+from rest_framework.viewsets import ModelViewSet
+
+class UserViewSet(ModelViewSet):
+    @action(detail=True, methods=["post"], url_path="set-password")
+    def set_password(self, request, pk=None):
+        pass
+
+    @action(
+        detail=False,
+        methods=["get", "post"],
+        url_path="recent",
+    )
+    def recent_users(self, request):
+        pass
+`)
+
+	scanResult, err := scanner.Scan(root, scanner.Options{})
+	if err != nil {
+		t.Fatalf("Scan returned error: %v", err)
+	}
+	routes, errors := Extract(root, scanResult)
+	if len(errors) != 0 {
+		t.Fatalf("Extract errors = %v, want none", errors)
+	}
+
+	assertRoute(t, routes, "POST", "/api/users/{id}/set-password/", "views.UserViewSet.set_password", "django")
+	assertRoute(t, routes, "GET", "/api/users/recent/", "views.UserViewSet.recent_users", "django")
+	assertRoute(t, routes, "POST", "/api/users/recent/", "views.UserViewSet.recent_users", "django")
+}
+
 func TestParseFastAPIWithRouterPrefixes(t *testing.T) {
 	content := `from fastapi import APIRouter, FastAPI
 

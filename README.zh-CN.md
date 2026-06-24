@@ -205,7 +205,7 @@ preflight 和 release gate 的 ask evaluation 默认使用 Go CLI 评估器。`s
 
 API 路由抽取：
 
-- Django URL patterns
+- Django URL patterns 和 Django REST Framework routers/actions
 - FastAPI decorators
 - Express routes
 - NestJS controllers

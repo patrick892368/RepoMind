@@ -205,7 +205,7 @@ Database model extraction:
 
 API route extraction:
 
-- Django URL patterns
+- Django URL patterns and Django REST Framework routers/actions
 - FastAPI decorators
 - Express routes
 - NestJS controllers

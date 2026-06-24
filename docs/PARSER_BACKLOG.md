@@ -65,6 +65,7 @@ Current coverage:
 - Same-file Django `include()` prefix propagation for local pattern lists.
 - Django `include("module.urls")` module prefix propagation.
 - Django REST Framework same-file router registrations through `router.register(...)` and `include(router.urls)`.
+- Django REST Framework custom actions on statically registered ViewSets, including `detail`, `methods`, and `url_path`.
 - FastAPI decorators.
 - FastAPI multi-line decorators where the route path is on a following line.
 - FastAPI `APIRouter(prefix=...)` and same-file `include_router(..., prefix=...)` prefix propagation.
@@ -78,7 +79,7 @@ Current coverage:
 Backlog:
 
 - Advanced Django includes with namespaces, app names, or dynamic include targets.
-- Django REST Framework routers/viewsets beyond same-file router registrations, including custom actions and cross-file routers.
+- Django REST Framework cross-file routers beyond statically registered ViewSets.
 - Cross-file FastAPI module imports beyond direct static router imports and unique static prefix constants.
 - FastAPI decorators whose path is built dynamically or spans more than the lightweight parser window.
 - SQLAlchemy 2.0 `Mapped[]` and `mapped_column`.

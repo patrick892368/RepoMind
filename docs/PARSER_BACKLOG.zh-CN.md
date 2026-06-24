@@ -64,6 +64,7 @@ Backlog：
 - Django same-file `include()` prefix。
 - Django `include("module.urls")` module prefix。
 - Django REST Framework same-file router registrations。
+- Django REST Framework statically registered ViewSet custom actions，覆盖 `detail`、`methods` 和 `url_path`。
 - FastAPI decorators。
 - FastAPI 多行 decorators。
 - FastAPI `APIRouter(prefix=...)` 和 same-file `include_router`。
@@ -77,7 +78,7 @@ Backlog：
 Backlog：
 
 - Django namespace、app name 或动态 include。
-- DRF custom actions 和 cross-file routers。
+- DRF cross-file routers 和更动态的 ViewSet 组织方式。
 - 更复杂的 FastAPI module imports。
 - 动态 path 或超出轻量窗口的 FastAPI decorators。
 - SQLAlchemy 2.0 `Mapped[]` 和 `mapped_column`。
@@ -129,6 +130,7 @@ Backlog：
 - Same-package `Mount("/prefix", routeFactory())`。
 - Same-package receiver method route factories。
 - 常见 middleware-wrapped handler calls。
+- 标准库 `net/http` mux routes，包括 `HandleFunc`、`Handle` 和 Go 1.22 method pattern。
 - GORM models through Go AST。
 - Go callgraph through Go AST。
 
@@ -138,7 +140,6 @@ Backlog：
 - 没有直接 handler 参数的 middleware chains。
 - selector 变量的 handler method type resolution。
 - 带 runtime arguments 的 chi route factories。
-- 标准库 `net/http` mux routes。
 - sqlc query file detection。
 - GORM relation tags 和 foreign key metadata。
 - Go receiver method names 和 cross-file callgraph linking。
