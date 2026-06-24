@@ -67,6 +67,27 @@ The summary includes a `quality_score` from 0 to 1. The current score checks exp
 
 ## Evaluation Notes
 
+### 2026-06-24 FastAPI Test Decorator False Positive Guard Run
+
+Command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\evaluate-repos.ps1 -OutputDir eval\m97-evaluation -TimeoutSeconds 300 -Proxy http://127.0.0.1:10809 -RepoCacheDir eval\m95-repo-cache -MinimumQualityScore 1.0
+```
+
+Status: PASS with `-MinimumQualityScore 1.0`.
+
+| Repo | M96 Routes | M97 Routes | Finding |
+|---|---:|---:|---|
+| `django-oscar` | 52 | 8 | Removed FastAPI false positives from Python test patch decorators. |
+| `cookiecutter-django` | 17 | 9 | Removed FastAPI false positives from non-FastAPI helper decorators. |
+
+Findings:
+
+- FastAPI route parsing now requires a FastAPI app/router signal before accepting `@router.get/post/...` decorators.
+- Django projects with test `@patch(...)` decorators no longer emit FastAPI API routes.
+- The 20-sample evaluation gate remains green at quality score 1.0.
+
 ### 2026-06-24 Express Client False Positive Guard Run
 
 Command:

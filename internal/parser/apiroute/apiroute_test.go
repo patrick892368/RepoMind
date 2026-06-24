@@ -632,6 +632,24 @@ def read_users():
 	assertRoute(t, routes, "GET", "/users", "read_users", "fastapi")
 }
 
+func TestParseFastAPIIgnoresPatchDecoratorsWithoutFastAPISignal(t *testing.T) {
+	content := `from unittest.mock import patch
+
+@patch("oscar.apps.checkout.session.CheckoutSessionMixin.skip_unless_basket_requires_shipping")
+def test_check_basket_is_valid(mock_skip):
+    pass
+
+@mock.patch("oscar.apps.catalogue.abstract_models.find")
+def test_symlink_creates_directories(mock_find):
+    pass
+`
+	routes := parseFastAPI("tests/test_checkout.py", content)
+
+	if len(routes) != 0 {
+		t.Fatalf("routes = %+v, want none for non-FastAPI patch decorators", routes)
+	}
+}
+
 func TestExtractFastAPIImportedRouterPrefix(t *testing.T) {
 	root := t.TempDir()
 	writeRouteFile(t, root, "app/main.py", `from fastapi import FastAPI

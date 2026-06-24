@@ -71,6 +71,7 @@ Backlog：
 - FastAPI `APIRouter(prefix=...)` 和 same-file `include_router`。
 - FastAPI direct imported router prefix。
 - FastAPI composed router prefix 和唯一静态 prefix 常量。
+- 文件中没有 FastAPI app/router 信号时，避免把非 FastAPI test helpers 误识别为 FastAPI decorators。
 - Django models。
 - SQLAlchemy models。
 - SQLModel table models。
@@ -82,7 +83,6 @@ Backlog：
 - 超出一跳静态 module include 和静态 ViewSet 注册的 DRF cross-file routers。
 - 更复杂的 FastAPI module imports。
 - 动态 path 或超出轻量窗口的 FastAPI decorators。
-- 文件中没有 FastAPI router/app 信号时，避免把非 FastAPI test decorators 或 patch helpers 误识别为 FastAPI route decorators。
 - SQLAlchemy 2.0 `Mapped[]` 和 `mapped_column`。
 - Alembic model hints。
 - Celery task discovery。

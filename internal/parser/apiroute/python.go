@@ -17,6 +17,7 @@ var (
 	fastAPIRouteStartPattern   = regexp.MustCompile(`@([A-Za-z_][A-Za-z0-9_]*)\.(get|post|put|delete|patch|options|head)\(\s*$`)
 	fastAPIRouterAssignPatten  = regexp.MustCompile(`([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:[A-Za-z_][A-Za-z0-9_]*\.)?APIRouter\s*\((.*)\)`)
 	fastAPIIncludeRouterPatten = regexp.MustCompile(`([A-Za-z_][A-Za-z0-9_]*)\.include_router\s*\(\s*([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)?)(.*)\)`)
+	fastAPIImportPattern       = regexp.MustCompile(`(?m)^\s*(?:from\s+fastapi\s+import|import\s+fastapi\b)`)
 	pythonFuncPattern          = regexp.MustCompile(`^\s*(?:async\s+)?def\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(`)
 	pythonPrefixKeywordPatten  = regexp.MustCompile(`prefix\s*=\s*["']([^"']+)["']`)
 )
@@ -158,6 +159,9 @@ type fastAPIRouteFragment struct {
 }
 
 func parseFastAPIFragments(path string, content string) []fastAPIRouteFragment {
+	if !hasFastAPIRouteSignal(content) {
+		return nil
+	}
 	lines := strings.Split(content, "\n")
 	var routes []fastAPIRouteFragment
 	var pending []fastAPIRouteFragment
@@ -189,6 +193,16 @@ func parseFastAPIFragments(path string, content string) []fastAPIRouteFragment {
 	}
 
 	return routes
+}
+
+func hasFastAPIRouteSignal(content string) bool {
+	if !fastAPIImportPattern.MatchString(content) {
+		return false
+	}
+	return strings.Contains(content, "FastAPI(") ||
+		strings.Contains(content, "APIRouter(") ||
+		strings.Contains(content, ".APIRouter(") ||
+		strings.Contains(content, ".include_router(")
 }
 
 func parseFastAPIRouteDecorator(path string, line string, lineNumber int, includePrefixes map[string]string, routerPrefixes map[string]string) (fastAPIRouteFragment, bool) {

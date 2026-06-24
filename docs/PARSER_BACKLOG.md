@@ -72,6 +72,7 @@ Current coverage:
 - FastAPI `APIRouter(prefix=...)` and same-file `include_router(..., prefix=...)` prefix propagation.
 - FastAPI imported router prefix for direct static `from ... import router as alias` patterns.
 - FastAPI composed router prefix for module imports such as `items.router` and static settings constants such as `settings.API_V1_STR`.
+- FastAPI decorator false-positive guard for non-FastAPI test helpers when no FastAPI app/router signal exists in the file.
 - Django models.
 - SQLAlchemy models.
 - SQLModel table models.
@@ -83,7 +84,6 @@ Backlog:
 - Django REST Framework cross-file routers beyond one-hop static module includes and statically registered ViewSets.
 - Cross-file FastAPI module imports beyond direct static router imports and unique static prefix constants.
 - FastAPI decorators whose path is built dynamically or spans more than the lightweight parser window.
-- Avoid treating non-FastAPI test decorators or patch helpers as FastAPI route decorators when the file has no FastAPI router/app signal.
 - SQLAlchemy 2.0 `Mapped[]` and `mapped_column`.
 - Alembic model hints.
 - Celery task discovery.

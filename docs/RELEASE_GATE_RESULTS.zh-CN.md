@@ -11,7 +11,7 @@
 命令：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 -OutputDir eval\m96-release-gate -Proxy http://127.0.0.1:10809 -TimeoutSeconds 300 -CloneRetries 5 -RepoCacheDir eval\release-gate\repo-cache -AskCasesPath docs\examples\ask-cases.example.json -SkipManifestBuild
+powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 -OutputDir eval\m97-release-gate -Proxy http://127.0.0.1:10809 -TimeoutSeconds 300 -CloneRetries 5 -RepoCacheDir eval\release-gate\repo-cache -AskCasesPath docs\examples\ask-cases.example.json -SkipManifestBuild
 ```
 
 状态：PASS
@@ -20,14 +20,14 @@ powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 -OutputDir eva
 
 | 步骤 | 状态 | 秒 |
 |---|---:|---:|
-| `go test ./...` | PASS | 4.42 |
-| `go vet ./...` | PASS | 2.81 |
+| `go test ./...` | PASS | 4.38 |
+| `go vet ./...` | PASS | 2.86 |
 | 英文 analyze smoke | PASS | 0.24 |
-| 中文 analyze smoke | PASS | 0.25 |
-| 真实仓库 benchmark | PASS | 1.92 |
-| 真实仓库 evaluation | PASS | 6.03 |
-| Ask evaluation | PASS | 0.22 |
-| Release artifact smoke | PASS | 9.45 |
+| 中文 analyze smoke | PASS | 0.24 |
+| 真实仓库 benchmark | PASS | 1.90 |
+| 真实仓库 evaluation | PASS | 5.86 |
+| Ask evaluation | PASS | 0.23 |
+| Release artifact smoke | PASS | 9.76 |
 
 ## Ask Evaluation 摘要
 
@@ -75,13 +75,13 @@ Overall score：1.0。
 | Labstack Echo | 1.00 | 237 | 0 | 5000 |
 | GoFiber Recipes | 1.00 | 278 | 49 | 5000 |
 | Go GORM Playground | 1.00 | 0 | 6 | 24 |
-| Django Oscar | 1.00 | 52 | 79 | 5000 |
+| Django Oscar | 1.00 | 8 | 79 | 5000 |
 | NestJS Starter | 1.00 | 1 | 0 | 4 |
 | Next SaaS Starter | 1.00 | 0 | 0 | 284 |
 | Vue RealWorld | 1.00 | 0 | 0 | 73 |
 | React RealWorld | 1.00 | 0 | 0 | 176 |
 | TypeORM Sample | 1.00 | 0 | 0 | 15 |
-| Cookiecutter Django | 1.00 | 17 | 0 | 571 |
+| Cookiecutter Django | 1.00 | 9 | 0 | 571 |
 
 ## Release Artifact Smoke
 
@@ -92,4 +92,4 @@ Release artifact smoke 已通过。本次通过 `-SkipManifestBuild` 明确跳�
 - benchmark/evaluation 通过 `RepoCacheDir` 共享 repository cache。
 - 最新运行包含 20 个真实仓库 evaluation 样本。
 - 最新运行包含 offline strict ask evaluation，共 2 个外部示例 case。
-- 原始输出位于被 Git 忽略的 `eval/m96-release-gate/`。
+- 原始输出位于被 Git 忽略的 `eval/m97-release-gate/`。
