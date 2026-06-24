@@ -35,7 +35,7 @@ type djangoDRFCustomAction struct {
 	Evidence string
 }
 
-func resolveDjangoDRFCustomActions(contents map[string]string) []ir.APIRoute {
+func resolveDjangoDRFCustomActions(contents map[string]string, includedFiles map[string]struct{}) []ir.APIRoute {
 	actionsByClass := djangoDRFViewSetActions(contents)
 	if len(actionsByClass) == 0 {
 		return nil
@@ -46,32 +46,70 @@ func resolveDjangoDRFCustomActions(contents map[string]string) []ir.APIRoute {
 		if filepath.Base(filepath.ToSlash(path)) != "urls.py" {
 			continue
 		}
-		lines := strings.Split(content, "\n")
-		registrations := djangoDRFRouterRegistrations(lines)
-		if len(registrations) == 0 {
+		if _, included := includedFiles[path]; included {
 			continue
 		}
-		includePrefixes := djangoDRFRouterIncludePrefixes(lines)
-		for _, registration := range registrations {
-			actions := actionsByClass[djangoDRFViewSetClass(registration.ViewSet)]
-			if len(actions) == 0 {
+		lines := strings.Split(content, "\n")
+		routes = append(routes, djangoDRFCustomActionRoutes(path, lines, actionsByClass, "")...)
+	}
+
+	moduleToPath := djangoModulePaths(contents)
+	for parentPath, content := range contents {
+		if filepath.Base(filepath.ToSlash(parentPath)) != "urls.py" {
+			continue
+		}
+		for _, line := range strings.Split(content, "\n") {
+			pathMatch := djangoPathPattern.FindStringSubmatch(line)
+			if len(pathMatch) != 3 || !strings.Contains(pathMatch[2], "include(") {
 				continue
 			}
-			for _, includePrefix := range includePrefixes[registration.Router] {
-				for _, action := range actions {
-					for _, method := range action.Methods {
-						routePath := djangoDRFCustomActionPath(includePrefix, registration.Prefix, action)
-						routes = append(routes, ir.APIRoute{
-							Method:     method,
-							Path:       routePath,
-							Handler:    registration.ViewSet + "." + action.Name,
-							File:       action.File,
-							Line:       action.Line,
-							Source:     "django",
-							Confidence: "medium",
-							Evidence:   evidenceFromLine(registration.Evidence + " -> " + action.Evidence),
-						})
-					}
+			targetModule := djangoModuleIncludeTarget(pathMatch[2])
+			if targetModule == "" {
+				continue
+			}
+			childPath := moduleToPath[targetModule]
+			if childPath == "" || childPath == parentPath {
+				continue
+			}
+			childContent := contents[childPath]
+			if childContent == "" {
+				continue
+			}
+			childLines := strings.Split(childContent, "\n")
+			routes = append(routes, djangoDRFCustomActionRoutes(childPath, childLines, actionsByClass, pathMatch[1])...)
+		}
+	}
+	return routes
+}
+
+func djangoDRFCustomActionRoutes(path string, lines []string, actionsByClass map[string][]djangoDRFCustomAction, parentPrefix string) []ir.APIRoute {
+	registrations := djangoDRFRouterRegistrations(lines)
+	if len(registrations) == 0 {
+		return nil
+	}
+	includePrefixes := djangoDRFRouterIncludePrefixes(lines)
+
+	var routes []ir.APIRoute
+	for _, registration := range registrations {
+		actions := actionsByClass[djangoDRFViewSetClass(registration.ViewSet)]
+		if len(actions) == 0 {
+			continue
+		}
+		for _, includePrefix := range includePrefixes[registration.Router] {
+			fullIncludePrefix := joinDjangoRoutePath(parentPrefix, includePrefix)
+			for _, action := range actions {
+				for _, method := range action.Methods {
+					routePath := djangoDRFCustomActionPath(fullIncludePrefix, registration.Prefix, action)
+					routes = append(routes, ir.APIRoute{
+						Method:     method,
+						Path:       routePath,
+						Handler:    registration.ViewSet + "." + action.Name,
+						File:       action.File,
+						Line:       action.Line,
+						Source:     "django",
+						Confidence: "medium",
+						Evidence:   evidenceFromLine(registration.Evidence + " -> " + action.Evidence),
+					})
 				}
 			}
 		}

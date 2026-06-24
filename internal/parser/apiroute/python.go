@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	djangoPathPattern          = regexp.MustCompile(`(?:path|re_path)\(\s*["']([^"']+)["']\s*,\s*([^,\)]+)`)
+	djangoPathPattern          = regexp.MustCompile(`(?:path|re_path)\(\s*["']([^"']*)["']\s*,\s*([^,\)]+)`)
 	djangoListAssignPattern    = regexp.MustCompile(`^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*\[`)
 	djangoIncludePattern       = regexp.MustCompile(`include\(\s*([A-Za-z_][A-Za-z0-9_]*)`)
 	djangoRouterIncludePattern = regexp.MustCompile(`include\(\s*([A-Za-z_][A-Za-z0-9_]*)\.urls\s*\)`)

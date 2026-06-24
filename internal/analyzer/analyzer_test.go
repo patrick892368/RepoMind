@@ -262,6 +262,42 @@ func TestAnalyzeIncludesDRFCustomActionRoutes(t *testing.T) {
 	}
 }
 
+func TestAnalyzeIncludesCrossFileDRFCustomActionRoutes(t *testing.T) {
+	repoPath := filepath.Join("..", "..", "testdata", "fixtures", "drf-crossfile-repo")
+	outputDir := t.TempDir()
+
+	result, err := Analyze(context.Background(), Options{
+		RepoPath:  repoPath,
+		OutputDir: outputDir,
+	})
+	if err != nil {
+		t.Fatalf("Analyze returned error: %v", err)
+	}
+
+	analysis := result.Analysis
+	if analysis.Stack.Backend != "Django" {
+		t.Fatalf("Backend = %q, want Django", analysis.Stack.Backend)
+	}
+	if analysis.Diagrams.API == "" {
+		t.Fatal("expected non-empty API diagram")
+	}
+	for _, want := range []ir.APIRoute{
+		{Method: "GET", Path: "/api/v1/users/", Handler: "views.UserViewSet.list", Source: "django"},
+		{Method: "POST", Path: "/api/v1/users/{id}/set-password/", Handler: "views.UserViewSet.set_password", Source: "django"},
+	} {
+		if !slices.ContainsFunc(analysis.Routes, func(route ir.APIRoute) bool {
+			return route.Method == want.Method && route.Path == want.Path && route.Handler == want.Handler && route.Source == want.Source
+		}) {
+			t.Fatalf("routes did not contain %#v: %+v", want, analysis.Routes)
+		}
+	}
+	if slices.ContainsFunc(analysis.Routes, func(route ir.APIRoute) bool {
+		return route.Method == "POST" && route.Path == "/users/{id}/set-password/" && route.Handler == "views.UserViewSet.set_password" && route.Source == "django"
+	}) {
+		t.Fatalf("routes contained unprefixed custom action: %+v", analysis.Routes)
+	}
+}
+
 func TestAnalyzeIncludesWorkspacePackages(t *testing.T) {
 	repoPath := filepath.Join("..", "..", "testdata", "fixtures", "monorepo")
 	outputDir := t.TempDir()

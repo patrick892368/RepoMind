@@ -64,7 +64,7 @@ Backlog：
 - Django same-file `include()` prefix。
 - Django `include("module.urls")` module prefix。
 - Django REST Framework same-file router registrations。
-- Django REST Framework statically registered ViewSet custom actions，覆盖 `detail`、`methods` 和 `url_path`。
+- Django REST Framework statically registered ViewSet custom actions，覆盖 `detail`、`methods`、`url_path` 和一跳 `include("module.urls")` 父级 prefix。
 - FastAPI decorators。
 - FastAPI 多行 decorators。
 - FastAPI `APIRouter(prefix=...)` 和 same-file `include_router`。
@@ -78,7 +78,7 @@ Backlog：
 Backlog：
 
 - Django namespace、app name 或动态 include。
-- DRF cross-file routers 和更动态的 ViewSet 组织方式。
+- 超出一跳静态 module include 和静态 ViewSet 注册的 DRF cross-file routers。
 - 更复杂的 FastAPI module imports。
 - 动态 path 或超出轻量窗口的 FastAPI decorators。
 - SQLAlchemy 2.0 `Mapped[]` 和 `mapped_column`。

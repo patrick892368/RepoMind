@@ -38,7 +38,7 @@ func Extract(root string, scan ir.ScanSummary) ([]ir.APIRoute, []ir.ScanError) {
 		routes = filterDjangoIncludedFileRoutes(routes, djangoResolution.IncludedFiles)
 		routes = append(routes, djangoResolution.Routes...)
 	}
-	routes = append(routes, resolveDjangoDRFCustomActions(contents)...)
+	routes = append(routes, resolveDjangoDRFCustomActions(contents, djangoResolution.IncludedFiles)...)
 
 	fastAPIResolution := resolveFastAPIImportedRouters(contents)
 	if len(fastAPIResolution.OriginalRouteKeys) > 0 {
