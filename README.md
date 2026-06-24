@@ -170,7 +170,7 @@ Evaluate ask quality with fixed repository questions:
 .\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider mock -AskStrict
 ```
 
-The evaluator checks expected files, handlers, routes, models, and local evidence, then writes `summary.json` and `summary.md`.
+The evaluator checks English and Chinese questions across API routes, database models, call-chain edges, handlers, evidence types, and local evidence counts, then writes `summary.json` and `summary.md`.
 
 ## Supported Detection
 

@@ -58,7 +58,7 @@ Run ask evaluation with fixed repository questions:
 .\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider offline -AskStrict
 ```
 
-Ask evaluation validates expected files, handlers, routes, models, and evidence. It writes:
+Ask evaluation validates English and Chinese questions for expected files, handlers, routes, models, call-chain edges, evidence types, and evidence counts. It writes:
 
 ```txt
 eval/preflight/ask-evaluation/summary.json

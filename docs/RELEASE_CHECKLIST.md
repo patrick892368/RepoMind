@@ -100,7 +100,9 @@ Ask evaluation:
 
 Pass criteria:
 
-- [ ] Expected files, handlers, routes, and models match the fixed questions.
+- [ ] Expected files, handlers, routes, models, and call-chain edges match the fixed questions.
+- [ ] English and Chinese ask cases both pass.
+- [ ] Expected evidence types are present.
 - [ ] Strict mode returns local evidence for every ask case.
 - [ ] `summary.json` and `summary.md` are generated.
 

@@ -58,7 +58,7 @@ eval/preflight/summary.md
 .\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider offline -AskStrict
 ```
 
-ask evaluation 会检查预期文件、处理函数、路由、模型和本地证据，并输出：
+ask evaluation 会用英文和中文问题检查预期文件、处理函数、路由、模型、调用链、证据类型和证据数量，并输出：
 
 ```txt
 eval/preflight/ask-evaluation/summary.json

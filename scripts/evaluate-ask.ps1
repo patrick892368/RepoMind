@@ -107,6 +107,35 @@ function Test-RouteContains {
     return $false
 }
 
+function Test-CallChainContains {
+    param(
+        [object[]]$Values,
+        [string]$Expected
+    )
+
+    foreach ($value in @($Values)) {
+        $actual = [string]$value
+        if ($actual -eq $Expected -or $actual.StartsWith("$Expected (")) {
+            return $true
+        }
+    }
+    return $false
+}
+
+function Test-EvidenceTypeContains {
+    param(
+        [object[]]$Evidence,
+        [string]$Expected
+    )
+
+    foreach ($item in @($Evidence)) {
+        if ([string]$item.type -eq $Expected) {
+            return $true
+        }
+    }
+    return $false
+}
+
 if (-not $Proxy) {
     if ($env:HTTPS_PROXY) {
         $Proxy = $env:HTTPS_PROXY
@@ -138,32 +167,93 @@ try {
         [ordered]@{
             Name = "api-login"
             RepoPath = "testdata/fixtures/api-repo"
+            Language = ""
             Question = "where is login handled?"
             ExpectedFiles = @("fastapi_app/main.py", "django_project/urls.py")
             ExpectedHandlers = @("login", "views.login_view")
             ExpectedRoutes = @("POST /login", "ANY /login/")
             ExpectedModels = @()
+            ExpectedCallChain = @()
+            ExpectedEvidenceTypes = @("route")
             MinimumEvidence = 2
         },
         [ordered]@{
             Name = "api-wallet"
             RepoPath = "testdata/fixtures/api-repo"
+            Language = ""
             Question = "where is wallet info exposed?"
             ExpectedFiles = @("fastapi_app/main.py")
             ExpectedHandlers = @("wallet_info")
             ExpectedRoutes = @("GET /wallet/info")
             ExpectedModels = @()
+            ExpectedCallChain = @()
+            ExpectedEvidenceTypes = @("route")
             MinimumEvidence = 1
         },
         [ordered]@{
             Name = "self-cli-ask"
             RepoPath = "."
+            Language = ""
             Question = "where is ask handled in the CLI?"
             ExpectedFiles = @("cmd/repomind/main.go", "internal/query/query.go")
             ExpectedHandlers = @("runAsk")
             ExpectedRoutes = @()
             ExpectedModels = @()
+            ExpectedCallChain = @("run -> runAsk")
             MinimumEvidence = 2
+            ExpectedEvidenceTypes = @("call_edge")
+        },
+        [ordered]@{
+            Name = "db-wallet-model"
+            RepoPath = "testdata/fixtures/db-repo"
+            Language = ""
+            Question = "where is wallet stored?"
+            ExpectedFiles = @("prisma/schema.prisma")
+            ExpectedHandlers = @()
+            ExpectedRoutes = @()
+            ExpectedModels = @("Wallet")
+            ExpectedCallChain = @()
+            ExpectedEvidenceTypes = @("model")
+            MinimumEvidence = 2
+        },
+        [ordered]@{
+            Name = "db-models-zh"
+            RepoPath = "testdata/fixtures/db-repo"
+            Language = "zh"
+            Question = "用户和钱包的数据库模型在哪里？"
+            ExpectedFiles = @("prisma/schema.prisma")
+            ExpectedHandlers = @()
+            ExpectedRoutes = @()
+            ExpectedModels = @("User", "Wallet")
+            ExpectedCallChain = @()
+            ExpectedEvidenceTypes = @("model")
+            MinimumEvidence = 2
+        },
+        [ordered]@{
+            Name = "call-payment"
+            RepoPath = "testdata/fixtures/call-repo"
+            Language = ""
+            Question = "what happens after payment callback?"
+            ExpectedFiles = @("payment/flow.py")
+            ExpectedHandlers = @("pay_callback", "update_order", "update_balance", "send_notify", "write_log")
+            ExpectedRoutes = @()
+            ExpectedModels = @()
+            ExpectedCallChain = @("pay_callback -> update_order", "pay_callback -> update_balance", "pay_callback -> send_notify", "pay_callback -> write_log")
+            ExpectedEvidenceTypes = @("call_edge")
+            MinimumEvidence = 4
+        },
+        [ordered]@{
+            Name = "call-payment-zh"
+            RepoPath = "testdata/fixtures/call-repo"
+            Language = "zh"
+            Question = "支付回调后发生什么？"
+            ExpectedFiles = @("payment/flow.py")
+            ExpectedHandlers = @("pay_callback", "update_order", "update_balance", "send_notify", "write_log")
+            ExpectedRoutes = @()
+            ExpectedModels = @()
+            ExpectedCallChain = @("pay_callback -> update_order", "pay_callback -> update_balance", "pay_callback -> send_notify", "pay_callback -> write_log")
+            ExpectedEvidenceTypes = @("call_edge")
+            MinimumEvidence = 4
         }
     )
 
@@ -178,6 +268,7 @@ try {
         $item = [ordered]@{
             name = $case.Name
             repo_path = $case.RepoPath
+            language = $case.Language
             question = $case.Question
             provider = $Provider
             strict = [bool]$Strict
@@ -190,7 +281,12 @@ try {
         }
 
         try {
-            Invoke-CapturedCommand -FilePath "go" -ArgumentList @("run", "./cmd/repomind", "analyze", "--output", $analysisDir, $case.RepoPath) -LogPath (Join-Path $caseDir "analyze.log") -TimeoutSeconds $TimeoutSeconds
+            $analyzeArgs = @("run", "./cmd/repomind", "analyze", "--output", $analysisDir)
+            if ($case.Language) {
+                $analyzeArgs += @("--lang", $case.Language)
+            }
+            $analyzeArgs += $case.RepoPath
+            Invoke-CapturedCommand -FilePath "go" -ArgumentList $analyzeArgs -LogPath (Join-Path $caseDir "analyze.log") -TimeoutSeconds $TimeoutSeconds
             $item.analyze_ok = $true
 
             $askArgs = @("run", "./cmd/repomind", "ask", $case.RepoPath, "--analysis", (Join-Path $analysisDir "analysis.json"), "--question", $case.Question, "--ai", $Provider, "--output", $askDir)
@@ -238,6 +334,22 @@ try {
                     ok = [bool](Test-Contains -Values @($answer.models) -Expected $expected)
                     expected = $expected
                     actual = (@($answer.models) -join ", ")
+                }
+            }
+            foreach ($expected in $case.ExpectedCallChain) {
+                $checks += [pscustomobject]@{
+                    name = "call_chain:$expected"
+                    ok = [bool](Test-CallChainContains -Values @($answer.call_chain) -Expected $expected)
+                    expected = $expected
+                    actual = (@($answer.call_chain) -join ", ")
+                }
+            }
+            foreach ($expected in $case.ExpectedEvidenceTypes) {
+                $checks += [pscustomobject]@{
+                    name = "evidence_type:$expected"
+                    ok = [bool](Test-EvidenceTypeContains -Evidence @($answer.evidence) -Expected $expected)
+                    expected = $expected
+                    actual = (@($answer.evidence | ForEach-Object { $_.type }) -join ", ")
                 }
             }
             $evidenceCount = @($answer.evidence).Count
