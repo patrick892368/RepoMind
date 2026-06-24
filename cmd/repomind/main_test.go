@@ -386,6 +386,59 @@ func TestRunAskPrintsCandidates(t *testing.T) {
 	}
 }
 
+func TestRunAskWithMockProviderWritesAnswerFiles(t *testing.T) {
+	repoPath := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(repoPath, "order"), 0o755); err != nil {
+		t.Fatalf("create source dir: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(repoPath, "order", "views.py"), []byte("def create_order():\n    return True\n"), 0o644); err != nil {
+		t.Fatalf("write source file: %v", err)
+	}
+	analysisPath := filepath.Join(repoPath, ".repomind", "analysis.json")
+	if err := storage.WriteJSON(analysisPath, &ir.Analysis{
+		Repository: ir.RepositoryInfo{Name: "fixture", Root: repoPath},
+		Language:   "en",
+		Scan:       ir.ScanSummary{Files: []ir.FileEntry{{Path: "order/views.py"}}},
+		Models:     []ir.DBModel{{Name: "Order", File: "order/models.py"}},
+		Routes:     []ir.APIRoute{{Method: "POST", Path: "/order/create", Handler: "create_order", File: "order/views.py", Source: "fastapi"}},
+	}); err != nil {
+		t.Fatalf("write analysis json: %v", err)
+	}
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	exitCode := run([]string{"ask", repoPath, "--question", "where is order created?", "--ai", "mock", "--output", ".repomind/ask-cli"}, &stdout, &stderr)
+	if exitCode != 0 {
+		t.Fatalf("exit code = %d, want 0; stderr: %s", exitCode, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "Mock AI answer") {
+		t.Fatalf("stdout did not contain mock AI answer: %s", stdout.String())
+	}
+	if !strings.Contains(stdout.String(), "Saved:") {
+		t.Fatalf("stdout did not contain saved paths: %s", stdout.String())
+	}
+	if _, err := os.Stat(filepath.Join(repoPath, ".repomind", "ask-cli", "last-answer.json")); err != nil {
+		t.Fatalf("last-answer.json missing: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(repoPath, ".repomind", "ask-cli", "last-answer.md")); err != nil {
+		t.Fatalf("last-answer.md missing: %v", err)
+	}
+}
+
+func TestRunAskRejectsInvalidLimit(t *testing.T) {
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	exitCode := run([]string{"ask", "--question", "where?", "--limit", "3abc"}, &stdout, &stderr)
+	if exitCode != 1 {
+		t.Fatalf("exit code = %d, want 1", exitCode)
+	}
+	if !strings.Contains(stderr.String(), "--limit must be a positive integer") {
+		t.Fatalf("stderr did not contain limit error: %s", stderr.String())
+	}
+}
+
 func TestRunTracePrintsCallChain(t *testing.T) {
 	repoPath := t.TempDir()
 	analysisPath := filepath.Join(repoPath, ".repomind", "analysis.json")

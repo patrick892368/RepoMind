@@ -33,7 +33,7 @@ func NewProvider(config Config) (Provider, error) {
 	case "", "offline":
 		return OfflineProvider{Language: language}, nil
 	case "mock":
-		return MockProvider{}, nil
+		return MockProvider{Language: language}, nil
 	case "grok", "xai":
 		return NewGrokProvider(config)
 	case "openai":
@@ -45,6 +45,10 @@ func NewProvider(config Config) (Provider, error) {
 	default:
 		return nil, fmt.Errorf("unknown AI provider: %s", config.Provider)
 	}
+}
+
+type TextCompleter interface {
+	Complete(ctx context.Context, prompt string, maxTokens int) (string, error)
 }
 
 type HTTPDoer interface {
@@ -68,4 +72,18 @@ func (p MockProvider) Summarize(_ context.Context, analysis ir.Analysis) (ir.Pro
 		Title:    analysis.Repository.Name,
 		Overview: "Mock summary.",
 	}, nil
+}
+
+func (p MockProvider) Complete(_ context.Context, _ string, _ int) (string, error) {
+	if i18n.IsChinese(p.Language) {
+		return `{"summary":"Mock AI answer: 已根据候选文件、路由和模型生成问答结果。","files":[],"handlers":[],"models":[],"routes":[],"call_chain":[],"confidence":"mock"}`, nil
+	}
+	return `{"summary":"Mock AI answer: generated from candidate files, routes, and models.","files":[],"handlers":[],"models":[],"routes":[],"call_chain":[],"confidence":"mock"}`, nil
+}
+
+func positiveTokenLimit(value int, fallback int) int {
+	if value > 0 {
+		return value
+	}
+	return fallback
 }

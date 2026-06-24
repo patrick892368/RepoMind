@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/patrick892368/RepoMind/internal/analyzer"
@@ -334,7 +335,7 @@ func parseTraceArgs(args []string) (analysisPath string, symbol string, remainin
 }
 
 func runAsk(args []string, stdout, stderr io.Writer) int {
-	analysisPath, question, remaining, err := parseAskArgs(args)
+	parsed, err := parseAskArgs(args)
 	if err != nil {
 		fmt.Fprintln(stderr, err)
 		return 1
@@ -342,23 +343,27 @@ func runAsk(args []string, stdout, stderr io.Writer) int {
 
 	repoPath := "."
 	var questionParts []string
-	if len(remaining) > 0 {
-		if _, err := os.Stat(remaining[0]); err == nil {
-			repoPath = remaining[0]
-			questionParts = remaining[1:]
+	if len(parsed.Remaining) > 0 {
+		if _, err := os.Stat(parsed.Remaining[0]); err == nil {
+			repoPath = parsed.Remaining[0]
+			questionParts = parsed.Remaining[1:]
 		} else {
-			questionParts = remaining
+			questionParts = parsed.Remaining
 		}
 	}
 
-	if question == "" && len(questionParts) > 0 {
-		question = strings.Join(questionParts, " ")
+	if parsed.Question == "" && len(questionParts) > 0 {
+		parsed.Question = strings.Join(questionParts, " ")
 	}
 
 	answer, err := query.Ask(query.Options{
 		RepoPath:     repoPath,
-		AnalysisPath: analysisPath,
-		Question:     question,
+		AnalysisPath: parsed.AnalysisPath,
+		Question:     parsed.Question,
+		AIProvider:   parsed.AIProvider,
+		AIModel:      parsed.AIModel,
+		OutputDir:    parsed.OutputDir,
+		Limit:        parsed.Limit,
 	})
 	if err != nil {
 		fmt.Fprintf(stderr, "ask failed: %v\n", err)
@@ -367,6 +372,13 @@ func runAsk(args []string, stdout, stderr io.Writer) int {
 
 	fmt.Fprintln(stdout, answer.Summary)
 	labels := labelsForLanguage(answer.Language)
+	if answer.AIProvider != "" {
+		fmt.Fprintln(stdout)
+		fmt.Fprintf(stdout, "%s: %s\n", labels.AIProvider, answer.AIProvider)
+	}
+	if answer.AIError != "" {
+		fmt.Fprintf(stdout, "%s: %s\n", labels.AIFallback, answer.AIError)
+	}
 	if len(answer.Files) > 0 {
 		fmt.Fprintln(stdout)
 		fmt.Fprintln(stdout, labels.FilesList+":")
@@ -395,31 +407,87 @@ func runAsk(args []string, stdout, stderr io.Writer) int {
 			fmt.Fprintf(stdout, "- %s %s -> %s (%s)\n", route.Method, route.Path, route.Handler, route.File)
 		}
 	}
+	if len(answer.CallChain) > 0 {
+		fmt.Fprintln(stdout)
+		fmt.Fprintln(stdout, labels.CallChain+":")
+		for _, edge := range answer.CallChain {
+			fmt.Fprintf(stdout, "- %s\n", edge)
+		}
+	}
+	if len(answer.WrittenFiles) > 0 {
+		fmt.Fprintln(stdout)
+		fmt.Fprintln(stdout, labels.Saved+":")
+		for _, path := range answer.WrittenFiles {
+			fmt.Fprintf(stdout, "- %s\n", path)
+		}
+	}
 
 	return 0
 }
 
-func parseAskArgs(args []string) (analysisPath string, question string, remaining []string, err error) {
+type parsedAskArgs struct {
+	AnalysisPath string
+	Question     string
+	AIProvider   string
+	AIModel      string
+	OutputDir    string
+	Limit        int
+	Remaining    []string
+}
+
+func parseAskArgs(args []string) (parsedAskArgs, error) {
+	parsed := parsedAskArgs{
+		AIProvider: "offline",
+		Limit:      8,
+	}
 	for index := 0; index < len(args); index++ {
 		arg := args[index]
 		switch arg {
 		case "--analysis":
 			if index+1 >= len(args) {
-				return "", "", nil, fmt.Errorf("--analysis requires a value")
+				return parsedAskArgs{}, fmt.Errorf("--analysis requires a value")
 			}
-			analysisPath = args[index+1]
+			parsed.AnalysisPath = args[index+1]
 			index++
 		case "--question", "-q":
 			if index+1 >= len(args) {
-				return "", "", nil, fmt.Errorf("%s requires a value", arg)
+				return parsedAskArgs{}, fmt.Errorf("%s requires a value", arg)
 			}
-			question = args[index+1]
+			parsed.Question = args[index+1]
+			index++
+		case "--ai":
+			if index+1 >= len(args) {
+				return parsedAskArgs{}, fmt.Errorf("--ai requires a value")
+			}
+			parsed.AIProvider = args[index+1]
+			index++
+		case "--ai-model":
+			if index+1 >= len(args) {
+				return parsedAskArgs{}, fmt.Errorf("--ai-model requires a value")
+			}
+			parsed.AIModel = args[index+1]
+			index++
+		case "--output":
+			if index+1 >= len(args) {
+				return parsedAskArgs{}, fmt.Errorf("--output requires a value")
+			}
+			parsed.OutputDir = args[index+1]
+			index++
+		case "--limit":
+			if index+1 >= len(args) {
+				return parsedAskArgs{}, fmt.Errorf("--limit requires a value")
+			}
+			value, err := strconv.Atoi(args[index+1])
+			if err != nil || value <= 0 {
+				return parsedAskArgs{}, fmt.Errorf("--limit must be a positive integer")
+			}
+			parsed.Limit = value
 			index++
 		default:
-			remaining = append(remaining, arg)
+			parsed.Remaining = append(parsed.Remaining, arg)
 		}
 	}
-	return analysisPath, question, remaining, nil
+	return parsed, nil
 }
 
 func printStack(w io.Writer, stack ir.StackInfo, language string) {
@@ -462,6 +530,10 @@ type cliLabels struct {
 	Report           string
 	Truncated        string
 	Handlers         string
+	CallChain        string
+	AIProvider       string
+	AIFallback       string
+	Saved            string
 	TraceFor         string
 	NoCallEdges      string
 	Mermaid          string
@@ -490,6 +562,10 @@ func labelsForLanguage(language string) cliLabels {
 			Report:           "报告:",
 			Truncated:        "已截断",
 			Handlers:         "处理函数",
+			CallChain:        "调用链",
+			AIProvider:       "AI Provider",
+			AIFallback:       "AI 降级",
+			Saved:            "已保存",
 			TraceFor:         "调用链:",
 			NoCallEdges:      "未找到调用边。",
 			Mermaid:          "Mermaid:",
@@ -516,6 +592,10 @@ func labelsForLanguage(language string) cliLabels {
 		Report:           "Report:",
 		Truncated:        "Truncated",
 		Handlers:         "Handlers",
+		CallChain:        "Call Chain",
+		AIProvider:       "AI Provider",
+		AIFallback:       "AI Fallback",
+		Saved:            "Saved",
 		TraceFor:         "Trace for",
 		NoCallEdges:      "No call edges found.",
 		Mermaid:          "Mermaid:",
@@ -527,7 +607,7 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "Usage:")
 	fmt.Fprintln(w, "  repomind analyze [path|git-url] [--output .repomind] [--ref main] [--repo-cache .repomind/repo-cache] [--ai offline] [--ai-model grok-4.3] [--lang en|zh] [--max-files 50000]")
-	fmt.Fprintln(w, "  repomind ask [path] --question \"where is order created?\"")
+	fmt.Fprintln(w, "  repomind ask [path] --question \"where is order created?\" [--ai offline|grok|openai|claude|gemini|mock] [--ai-model grok-4.3] [--output .repomind/ask]")
 	fmt.Fprintln(w, "  repomind trace [path] --symbol pay_callback")
 	fmt.Fprintln(w, "  repomind diagnose [path] --issue \"order status error\"")
 	fmt.Fprintln(w, "  repomind export <codex|claude|cursor> [path] [--analysis .repomind/analysis.json]")

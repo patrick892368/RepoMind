@@ -26,6 +26,7 @@ Implemented commands:
 repomind analyze .
 repomind analyze https://github.com/owner/repo.git
 repomind ask . --question "where is order created?"
+repomind ask . --question "where is order created?" --ai grok --ai-model grok-4.3
 repomind trace . --symbol pay_callback
 repomind diagnose . --issue "order status error"
 repomind export codex .
@@ -138,6 +139,24 @@ HTTPS_PROXY=http://127.0.0.1:10809
 `.env` is ignored by Git. Do not commit API keys.
 
 RepoMind only sends the structured analysis summary to the selected AI provider. It does not upload the full repository source by default.
+
+## AI Repository Questions
+
+After running `analyze`, ask repository-specific questions:
+
+```bash
+go run ./cmd/repomind ask . --question "where is order created?"
+go run ./cmd/repomind ask . --question "where is order created?" --ai grok --ai-model grok-4.3
+```
+
+Offline ask mode uses `.repomind/analysis.json` to rank candidate files, handlers, models, routes, and call-chain edges.
+
+AI ask mode sends only structured analysis facts and small candidate source snippets to the selected provider. It writes reusable results to:
+
+```txt
+.repomind/ask/last-answer.json
+.repomind/ask/last-answer.md
+```
 
 ## Supported Detection
 

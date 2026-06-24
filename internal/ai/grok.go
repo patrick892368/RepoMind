@@ -86,7 +86,7 @@ func (p GrokProvider) Summarize(ctx context.Context, analysis ir.Analysis) (ir.P
 		if !shouldFallbackToChatCompletions(err) {
 			return ir.ProjectSummary{}, err
 		}
-		text, err = p.callChatCompletions(ctx, requestBody.Input)
+		text, err = p.callChatCompletions(ctx, requestBody.Input, 900)
 		if err != nil {
 			return ir.ProjectSummary{}, err
 		}
@@ -106,6 +106,29 @@ func (p GrokProvider) Summarize(ctx context.Context, analysis ir.Analysis) (ir.P
 	return summary, nil
 }
 
+func (p GrokProvider) Complete(ctx context.Context, prompt string, maxTokens int) (string, error) {
+	requestBody := grokResponsesRequest{
+		Model:           p.Model,
+		Input:           prompt,
+		Temperature:     0.2,
+		MaxOutputTokens: positiveTokenLimit(maxTokens, 900),
+	}
+
+	payload, err := json.Marshal(requestBody)
+	if err != nil {
+		return "", fmt.Errorf("marshal grok request: %w", err)
+	}
+
+	text, err := p.callResponses(ctx, payload)
+	if err != nil {
+		if !shouldFallbackToChatCompletions(err) {
+			return "", err
+		}
+		return p.callChatCompletions(ctx, prompt, requestBody.MaxOutputTokens)
+	}
+	return text, nil
+}
+
 func (p GrokProvider) callResponses(ctx context.Context, payload []byte) (string, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, strings.TrimRight(p.BaseURL, "/")+"/responses", bytes.NewReader(payload))
 	if err != nil {
@@ -120,7 +143,7 @@ func (p GrokProvider) callResponses(ctx context.Context, payload []byte) (string
 	return extractGrokText(raw)
 }
 
-func (p GrokProvider) callChatCompletions(ctx context.Context, prompt string) (string, error) {
+func (p GrokProvider) callChatCompletions(ctx context.Context, prompt string, maxTokens int) (string, error) {
 	payload, err := json.Marshal(grokChatRequest{
 		Model: p.Model,
 		Messages: []grokChatMessage{
@@ -128,7 +151,7 @@ func (p GrokProvider) callChatCompletions(ctx context.Context, prompt string) (s
 			{Role: "user", Content: prompt},
 		},
 		Temperature: 0.2,
-		MaxTokens:   900,
+		MaxTokens:   positiveTokenLimit(maxTokens, 900),
 	})
 	if err != nil {
 		return "", fmt.Errorf("marshal grok chat request: %w", err)

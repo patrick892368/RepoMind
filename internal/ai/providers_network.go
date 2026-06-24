@@ -70,15 +70,21 @@ func (p OpenAIProvider) Name() string {
 }
 
 func (p OpenAIProvider) Summarize(ctx context.Context, analysis ir.Analysis) (ir.ProjectSummary, error) {
-	return summarizeWithNetworkProvider(ctx, analysis, p.Language, p.callResponses)
+	return summarizeWithNetworkProvider(ctx, analysis, p.Language, func(ctx context.Context, prompt string) (string, error) {
+		return p.callResponses(ctx, prompt, 900)
+	})
 }
 
-func (p OpenAIProvider) callResponses(ctx context.Context, prompt string) (string, error) {
+func (p OpenAIProvider) Complete(ctx context.Context, prompt string, maxTokens int) (string, error) {
+	return p.callResponses(ctx, prompt, positiveTokenLimit(maxTokens, 900))
+}
+
+func (p OpenAIProvider) callResponses(ctx context.Context, prompt string, maxTokens int) (string, error) {
 	payload, err := json.Marshal(openAIResponsesRequest{
 		Model:           p.Model,
 		Input:           prompt,
 		Temperature:     0.2,
-		MaxOutputTokens: 900,
+		MaxOutputTokens: positiveTokenLimit(maxTokens, 900),
 	})
 	if err != nil {
 		return "", fmt.Errorf("marshal openai request: %w", err)
@@ -160,13 +166,19 @@ func (p ClaudeProvider) Name() string {
 }
 
 func (p ClaudeProvider) Summarize(ctx context.Context, analysis ir.Analysis) (ir.ProjectSummary, error) {
-	return summarizeWithNetworkProvider(ctx, analysis, p.Language, p.callMessages)
+	return summarizeWithNetworkProvider(ctx, analysis, p.Language, func(ctx context.Context, prompt string) (string, error) {
+		return p.callMessages(ctx, prompt, 900)
+	})
 }
 
-func (p ClaudeProvider) callMessages(ctx context.Context, prompt string) (string, error) {
+func (p ClaudeProvider) Complete(ctx context.Context, prompt string, maxTokens int) (string, error) {
+	return p.callMessages(ctx, prompt, positiveTokenLimit(maxTokens, 900))
+}
+
+func (p ClaudeProvider) callMessages(ctx context.Context, prompt string, maxTokens int) (string, error) {
 	payload, err := json.Marshal(claudeMessagesRequest{
 		Model:       p.Model,
-		MaxTokens:   900,
+		MaxTokens:   positiveTokenLimit(maxTokens, 900),
 		Temperature: 0.2,
 		Messages: []claudeMessage{
 			{Role: "user", Content: prompt},
@@ -273,10 +285,16 @@ func (p GeminiProvider) Name() string {
 }
 
 func (p GeminiProvider) Summarize(ctx context.Context, analysis ir.Analysis) (ir.ProjectSummary, error) {
-	return summarizeWithNetworkProvider(ctx, analysis, p.Language, p.callGenerateContent)
+	return summarizeWithNetworkProvider(ctx, analysis, p.Language, func(ctx context.Context, prompt string) (string, error) {
+		return p.callGenerateContent(ctx, prompt, 900)
+	})
 }
 
-func (p GeminiProvider) callGenerateContent(ctx context.Context, prompt string) (string, error) {
+func (p GeminiProvider) Complete(ctx context.Context, prompt string, maxTokens int) (string, error) {
+	return p.callGenerateContent(ctx, prompt, positiveTokenLimit(maxTokens, 900))
+}
+
+func (p GeminiProvider) callGenerateContent(ctx context.Context, prompt string, maxTokens int) (string, error) {
 	payload, err := json.Marshal(geminiGenerateContentRequest{
 		Contents: []geminiContent{
 			{
@@ -288,7 +306,7 @@ func (p GeminiProvider) callGenerateContent(ctx context.Context, prompt string) 
 		},
 		GenerationConfig: geminiGenerationConfig{
 			Temperature:     0.2,
-			MaxOutputTokens: 900,
+			MaxOutputTokens: positiveTokenLimit(maxTokens, 900),
 		},
 	})
 	if err != nil {
