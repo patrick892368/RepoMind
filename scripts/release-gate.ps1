@@ -7,6 +7,7 @@ param(
     [int]$CloneRetries = 3,
     [string]$RepoCacheDir = "",
     [switch]$SkipManifestBuild,
+    [switch]$SkipRemoteAnalyzeSmoke,
     [switch]$SkipAskEvaluation,
     [string]$AskProvider = "offline",
     [string]$AskModel = "",
@@ -52,6 +53,10 @@ if (-not $SkipAskEvaluation) {
     if (-not $SkipAskStrict) {
         $args += "-AskStrict"
     }
+}
+
+if (-not $SkipRemoteAnalyzeSmoke) {
+    $args += "-IncludeRemoteAnalyzeSmoke"
 }
 
 if ($RepoCacheDir) {

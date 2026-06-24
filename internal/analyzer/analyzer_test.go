@@ -78,6 +78,39 @@ func TestAnalyzeWritesAnalysisJSON(t *testing.T) {
 	}
 }
 
+func TestAnalyzeWritesRemoteRepositoryMetadata(t *testing.T) {
+	root := t.TempDir()
+	if err := os.WriteFile(filepath.Join(root, "README.md"), []byte("# remote"), 0o644); err != nil {
+		t.Fatalf("write file: %v", err)
+	}
+
+	result, err := Analyze(context.Background(), Options{
+		RepoPath:         root,
+		OutputDir:        ".repomind",
+		RepositoryRemote: true,
+		RepositoryRef:    "main",
+	})
+	if err != nil {
+		t.Fatalf("Analyze returned error: %v", err)
+	}
+
+	raw, err := os.ReadFile(result.AnalysisPath)
+	if err != nil {
+		t.Fatalf("read analysis file: %v", err)
+	}
+
+	var analysis ir.Analysis
+	if err := json.Unmarshal(raw, &analysis); err != nil {
+		t.Fatalf("unmarshal analysis json: %v", err)
+	}
+	if !analysis.Repository.Remote {
+		t.Fatalf("Repository.Remote = false, want true")
+	}
+	if analysis.Repository.Ref != "main" {
+		t.Fatalf("Repository.Ref = %q, want main", analysis.Repository.Ref)
+	}
+}
+
 func TestAnalyzeIncludesDetectedStack(t *testing.T) {
 	repoPath := filepath.Join("..", "..", "testdata", "fixtures", "stack-repo")
 	outputDir := t.TempDir()

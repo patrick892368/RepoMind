@@ -86,11 +86,12 @@ eval/preflight/ask-evaluation/summary.md
 
 - 默认 preflight 中的 trace 和 diagnose CLI smoke
 - 通过 Go CLI 运行 offline strict ask evaluation
+- 远程 Git URL analyze smoke
 - 当前平台 release binary smoke
 - 跨平台 release manifest build and verification
 - 真实仓库 benchmark
 - 真实仓库 evaluation quality gate
-- benchmark 和 evaluation 共享 repository cache
+- benchmark、evaluation 和 remote analyze smoke 共享 repository cache
 
 网络不稳定时可以增加 clone 重试次数：
 

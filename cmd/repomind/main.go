@@ -205,6 +205,8 @@ func runAnalyze(args []string, stdout, stderr io.Writer) int {
 		MaxFiles:          *maxFiles,
 		MaxParseFileBytes: *maxFileBytes,
 		MaxCallEdges:      *maxCallEdges,
+		RepositoryRemote:  prepared.Remote,
+		RepositoryRef:     selectedRef,
 	})
 	if err != nil {
 		fmt.Fprintf(stderr, "analysis failed: %v\n", err)

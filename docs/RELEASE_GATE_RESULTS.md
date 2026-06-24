@@ -2,7 +2,7 @@
 
 **Language:** English | [简体中文](RELEASE_GATE_RESULTS.zh-CN.md)
 
-This document records local release gate runs that combine default preflight, ask evaluation, release binary smoke, release manifest verification, real repository benchmark, and real repository evaluation quality checks.
+This document records local release gate runs that combine default preflight, ask evaluation, remote Git URL analyze smoke, release binary smoke, release manifest verification, real repository benchmark, and real repository evaluation quality checks.
 
 ## Latest Run
 
@@ -11,7 +11,7 @@ Date: 2026-06-24
 Command:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 -OutputDir eval\m103-release-gate -Proxy http://127.0.0.1:10809 -TimeoutSeconds 300 -CloneRetries 5 -RepoCacheDir eval\release-gate\repo-cache -AskCasesPath docs\examples\ask-cases.example.json
+powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 -OutputDir eval\m104-release-gate -Proxy http://127.0.0.1:10809 -TimeoutSeconds 300 -CloneRetries 5 -RepoCacheDir eval\release-gate\repo-cache -AskCasesPath docs\examples\ask-cases.example.json
 ```
 
 Status: PASS
@@ -20,16 +20,17 @@ Status: PASS
 
 | Step | Status | Seconds |
 |---|---:|---:|
-| `go test ./...` | PASS | 4.59 |
-| `go vet ./...` | PASS | 3.09 |
-| English analyze smoke | PASS | 0.25 |
-| Chinese analyze smoke | PASS | 0.24 |
-| Trace and diagnose smoke | PASS | 0.52 |
-| Real repository benchmark | PASS | 1.91 |
-| Real repository evaluation | PASS | 5.91 |
-| Ask evaluation | PASS | 0.23 |
-| Release artifact smoke | PASS | 9.05 |
-| Release manifest build and verification | PASS | 12.36 |
+| `go test ./...` | PASS | 4.26 |
+| `go vet ./...` | PASS | 3.08 |
+| English analyze smoke | PASS | 0.23 |
+| Chinese analyze smoke | PASS | 0.25 |
+| Trace and diagnose smoke | PASS | 0.49 |
+| Real repository benchmark | PASS | 1.94 |
+| Real repository evaluation | PASS | 6.05 |
+| Ask evaluation | PASS | 0.25 |
+| Remote repository analyze smoke | PASS | 1.31 |
+| Release artifact smoke | PASS | 9.56 |
+| Release manifest build and verification | PASS | 13.99 |
 
 ## Ask Evaluation Summary
 
@@ -53,10 +54,10 @@ Target: 30 seconds per repository.
 | Repository | Seconds | Under Target | Routes | Models | Call Edges |
 |---|---:|---:|---:|---:|---:|
 | Laravel | 0.21 | true | 1 | 0 | 0 |
-| Spring REST service | 0.17 | true | 1 | 0 | 0 |
-| Gin examples | 0.20 | true | 69 | 0 | 748 |
-| FastAPI full-stack template | 0.27 | true | 23 | 2 | 851 |
-| Prisma examples | 0.57 | true | 42 | 145 | 1764 |
+| Spring REST service | 0.16 | true | 1 | 0 | 0 |
+| Gin examples | 0.22 | true | 69 | 0 | 748 |
+| FastAPI full-stack template | 0.25 | true | 23 | 2 | 851 |
+| Prisma examples | 0.53 | true | 42 | 145 | 1764 |
 
 ## Evaluation Summary
 
@@ -105,4 +106,4 @@ Release manifest build and verification passed for all six archives:
 - Benchmark/evaluation share a repository cache through `RepoCacheDir`.
 - The latest run includes 20 real repository evaluation samples.
 - The latest run includes offline strict ask evaluation with 2 external example cases.
-- Raw run outputs are under ignored `eval/m103-release-gate/`.
+- Raw run outputs are under ignored `eval/m104-release-gate/`.

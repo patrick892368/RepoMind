@@ -6,6 +6,7 @@ param(
     [switch]$IncludeEvaluation,
     [switch]$IncludeAskEvaluation,
     [switch]$IncludeAISmoke,
+    [switch]$IncludeRemoteAnalyzeSmoke,
     [switch]$IncludeReleaseSmoke,
     [switch]$IncludeManifestBuild,
     [string]$AIProvider = "grok",
@@ -19,6 +20,7 @@ param(
     [double]$MinimumEvaluationQualityScore = 1.0,
     [int]$CloneRetries = 3,
     [string]$RepoCacheDir = "",
+    [string]$RemoteAnalyzeRepo = "https://github.com/spring-guides/gs-rest-service.git",
     [string]$ManifestVersion = "v0.0.0-preflight"
 )
 
@@ -219,6 +221,30 @@ if ($IncludeAskEvaluation) {
     }
 }
 
+if ($IncludeRemoteAnalyzeSmoke) {
+    $remoteAnalyzeEnv = @{}
+    if ($Proxy) {
+        $remoteAnalyzeEnv["HTTPS_PROXY"] = $Proxy
+        $remoteAnalyzeEnv["HTTP_PROXY"] = $Proxy
+        $remoteAnalyzeEnv["ALL_PROXY"] = $Proxy
+    }
+    $remoteOutput = Join-Path $outputRoot "remote-analyze"
+    $steps += Invoke-PreflightStep -Name "remote repository analyze smoke" -Action {
+        Invoke-CapturedCommand -FilePath "go" -ArgumentList @("run", "./cmd/repomind", "analyze", "--output", $remoteOutput, "--repo-cache", $sharedRepoCache, $RemoteAnalyzeRepo) -LogPath (Join-Path $outputRoot "remote-analyze.log") -TimeoutSeconds ($TimeoutSeconds * 3) -EnvironmentVariables $remoteAnalyzeEnv
+        $analysisPath = Join-Path $remoteOutput "analysis.json"
+        if (-not (Test-Path $analysisPath)) {
+            throw "remote analyze did not write analysis.json"
+        }
+        $analysis = Get-Content -Path $analysisPath -Raw | ConvertFrom-Json
+        if (-not $analysis.repository.remote) {
+            throw "remote analyze did not mark repository as remote"
+        }
+        if (@($analysis.routes).Count -lt 1) {
+            throw "remote analyze did not extract expected API routes"
+        }
+    }
+}
+
 if ($IncludeAISmoke) {
     $aiArgs = @("-ExecutionPolicy", "Bypass", "-File", "scripts\smoke-ai-provider.ps1", "-Provider", $AIProvider, "-Model", $AIModel, "-OutputDir", (Join-Path $outputRoot "ai-smoke"), "-TimeoutSeconds", "$TimeoutSeconds")
     if ($Proxy) {
@@ -254,6 +280,8 @@ $summary = [ordered]@{
     include_ask_evaluation = [bool]$IncludeAskEvaluation
     ask_evaluation_runner = if ($IncludeAskEvaluation) { "go-cli" } else { "" }
     ask_cases_path = $AskCasesPath
+    include_remote_analyze_smoke = [bool]$IncludeRemoteAnalyzeSmoke
+    remote_analyze_repo = if ($IncludeRemoteAnalyzeSmoke) { $RemoteAnalyzeRepo } else { "" }
     include_ai_smoke = [bool]$IncludeAISmoke
     include_release_smoke = [bool]$IncludeReleaseSmoke
     include_manifest_build = [bool]$IncludeManifestBuild

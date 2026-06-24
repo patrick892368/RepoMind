@@ -45,6 +45,20 @@ For remote Git URLs, relative `--output` paths are resolved from the current wor
 go run ./cmd/repomind analyze --output .repomind https://github.com/owner/repo.git
 ```
 
+Remote analyses mark `analysis.json` with repository metadata:
+
+```json
+{
+  "repository": {
+    "name": "repo",
+    "remote": true,
+    "ref": "main"
+  }
+}
+```
+
+`ref` is omitted when no `--ref` / `--branch` is provided. RepoMind does not write the original remote URL to `analysis.json`, so credentials embedded in private URLs are not persisted.
+
 ## Clone Cache
 
 Use `--repo-cache` when repeatedly analyzing the same remote repositories.

@@ -41,6 +41,20 @@ go run ./cmd/repomind analyze --ref e9efc9dfa0abe8cf8e15cf0e71830b5125322cae htt
 
 分析远程 Git URL 时，相对 `--output` 会相对于当前工作目录解析。这样临时 clone 清理后，报告仍保留。
 
+远程分析会在 `analysis.json` 写入 repository metadata：
+
+```json
+{
+  "repository": {
+    "name": "repo",
+    "remote": true,
+    "ref": "main"
+  }
+}
+```
+
+未传入 `--ref` / `--branch` 时会省略 `ref`。RepoMind 不会把原始 remote URL 写入 `analysis.json`，避免持久化私有 URL 中可能携带的凭证。
+
 ## Clone Cache
 
 反复分析同一批远程仓库时使用：

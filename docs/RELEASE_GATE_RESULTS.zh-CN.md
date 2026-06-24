@@ -2,7 +2,7 @@
 
 **语言：** [English](RELEASE_GATE_RESULTS.md) | 简体中文
 
-本文记录组合 release gate 的本地运行结果。release gate 覆盖默认 preflight、ask evaluation、release binary smoke、release manifest verification、真实仓库 benchmark 和真实仓库 evaluation quality gate。
+本文记录组合 release gate 的本地运行结果。release gate 覆盖默认 preflight、ask evaluation、远程 Git URL analyze smoke、release binary smoke、release manifest verification、真实仓库 benchmark 和真实仓库 evaluation quality gate。
 
 ## 最新运行
 
@@ -11,7 +11,7 @@
 命令：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 -OutputDir eval\m103-release-gate -Proxy http://127.0.0.1:10809 -TimeoutSeconds 300 -CloneRetries 5 -RepoCacheDir eval\release-gate\repo-cache -AskCasesPath docs\examples\ask-cases.example.json
+powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 -OutputDir eval\m104-release-gate -Proxy http://127.0.0.1:10809 -TimeoutSeconds 300 -CloneRetries 5 -RepoCacheDir eval\release-gate\repo-cache -AskCasesPath docs\examples\ask-cases.example.json
 ```
 
 状态：PASS
@@ -20,16 +20,17 @@ powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 -OutputDir eva
 
 | 步骤 | 状态 | 秒 |
 |---|---:|---:|
-| `go test ./...` | PASS | 4.59 |
-| `go vet ./...` | PASS | 3.09 |
-| 英文 analyze smoke | PASS | 0.25 |
-| 中文 analyze smoke | PASS | 0.24 |
-| Trace and diagnose smoke | PASS | 0.52 |
-| 真实仓库 benchmark | PASS | 1.91 |
-| 真实仓库 evaluation | PASS | 5.91 |
-| Ask evaluation | PASS | 0.23 |
-| Release artifact smoke | PASS | 9.05 |
-| Release manifest build and verification | PASS | 12.36 |
+| `go test ./...` | PASS | 4.26 |
+| `go vet ./...` | PASS | 3.08 |
+| 英文 analyze smoke | PASS | 0.23 |
+| 中文 analyze smoke | PASS | 0.25 |
+| Trace and diagnose smoke | PASS | 0.49 |
+| 真实仓库 benchmark | PASS | 1.94 |
+| 真实仓库 evaluation | PASS | 6.05 |
+| Ask evaluation | PASS | 0.25 |
+| Remote repository analyze smoke | PASS | 1.31 |
+| Release artifact smoke | PASS | 9.56 |
+| Release manifest build and verification | PASS | 13.99 |
 
 ## Ask Evaluation 摘要
 
@@ -53,10 +54,10 @@ Overall score：1.0。
 | 仓库 | 秒 | 低于目标 | Routes | Models | Call Edges |
 |---|---:|---:|---:|---:|---:|
 | Laravel | 0.21 | true | 1 | 0 | 0 |
-| Spring REST service | 0.17 | true | 1 | 0 | 0 |
-| Gin examples | 0.20 | true | 69 | 0 | 748 |
-| FastAPI full-stack template | 0.27 | true | 23 | 2 | 851 |
-| Prisma examples | 0.57 | true | 42 | 145 | 1764 |
+| Spring REST service | 0.16 | true | 1 | 0 | 0 |
+| Gin examples | 0.22 | true | 69 | 0 | 748 |
+| FastAPI full-stack template | 0.25 | true | 23 | 2 | 851 |
+| Prisma examples | 0.53 | true | 42 | 145 | 1764 |
 
 ## Evaluation 摘要
 
@@ -105,4 +106,4 @@ Release manifest build and verification 已通过，覆盖全部 6 个归档：
 - benchmark/evaluation 通过 `RepoCacheDir` 共享 repository cache。
 - 最新运行包含 20 个真实仓库 evaluation 样本。
 - 最新运行包含 offline strict ask evaluation，共 2 个外部示例 case。
-- 原始输出位于被 Git 忽略的 `eval/m103-release-gate/`。
+- 原始输出位于被 Git 忽略的 `eval/m104-release-gate/`。

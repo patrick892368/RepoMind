@@ -90,11 +90,12 @@ This runs the default preflight plus:
 
 - trace and diagnose CLI smoke through the default preflight
 - offline strict ask evaluation through the Go CLI
+- remote Git URL analyze smoke
 - current-platform release binary smoke
 - cross-platform release manifest build and verification
 - real repository benchmark
 - real repository evaluation with quality gate
-- shared repository cache for benchmark and evaluation
+- shared repository cache for benchmark, evaluation, and remote analyze smoke
 
 Repository clones are retried by default. Use `-CloneRetries` when the network is unstable:
 

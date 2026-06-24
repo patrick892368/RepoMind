@@ -18,6 +18,8 @@ type Analysis struct {
 type RepositoryInfo struct {
 	Name       string `json:"name"`
 	Root       string `json:"root"`
+	Remote     bool   `json:"remote,omitempty"`
+	Ref        string `json:"ref,omitempty"`
 	AnalyzedAt string `json:"analyzed_at"`
 }
 

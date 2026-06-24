@@ -34,6 +34,8 @@ type Options struct {
 	MaxFiles          int
 	MaxParseFileBytes int64
 	MaxCallEdges      int
+	RepositoryRemote  bool
+	RepositoryRef     string
 }
 
 type Result struct {
@@ -94,6 +96,8 @@ func Analyze(ctx context.Context, opts Options) (*Result, error) {
 		Repository: ir.RepositoryInfo{
 			Name:       filepath.Base(root),
 			Root:       root,
+			Remote:     opts.RepositoryRemote,
+			Ref:        opts.RepositoryRef,
 			AnalyzedAt: time.Now().UTC().Format(time.RFC3339),
 		},
 		Stack:     stack,
