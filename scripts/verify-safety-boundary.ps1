@@ -41,11 +41,11 @@ try {
         throw ".env.example must remain trackable"
     }
 
-    $trackedRaw = & git ls-files -z
+    $trackedRaw = & git ls-files
     if ($LASTEXITCODE -ne 0) {
         throw "git ls-files failed"
     }
-    $tracked = @($trackedRaw -split "`0" | Where-Object { $_ })
+    $tracked = @($trackedRaw | Where-Object { $_ })
 
     $forbiddenTracked = @()
     foreach ($path in $tracked) {

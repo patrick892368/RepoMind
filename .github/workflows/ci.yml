@@ -29,8 +29,7 @@ jobs:
         run: go vet ./...
 
       - name: Safety boundary
-        shell: pwsh
-        run: ./scripts/verify-safety-boundary.ps1
+        run: pwsh -NoProfile -File scripts/verify-safety-boundary.ps1
 
       - name: Analyze smoke English
         run: |
