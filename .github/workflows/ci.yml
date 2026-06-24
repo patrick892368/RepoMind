@@ -37,6 +37,12 @@ jobs:
           go run ./cmd/repomind analyze --output "$OUT" testdata/fixtures/api-repo
           test -f "$OUT/analysis.json"
           test -f "$OUT/report.html"
+          grep -q '"language": "en"' "$OUT/analysis.json"
+          grep -q 'Project Summary' "$OUT/report.html"
+          grep -q 'Database Models' "$OUT/report.html"
+          grep -q 'API Routes' "$OUT/report.html"
+          grep -q 'Call Graph' "$OUT/report.html"
+          grep -q 'mermaid' "$OUT/report.html"
 
       - name: Analyze smoke Chinese
         run: |
@@ -45,6 +51,11 @@ jobs:
           test -f "$OUT/analysis.json"
           test -f "$OUT/report.html"
           grep -q '"language": "zh"' "$OUT/analysis.json"
+          grep -q '项目总结' "$OUT/report.html"
+          grep -q '数据库模型' "$OUT/report.html"
+          grep -q 'API 路由' "$OUT/report.html"
+          grep -q '调用图' "$OUT/report.html"
+          grep -q 'mermaid' "$OUT/report.html"
 
       - name: Trace and diagnose smoke
         run: |

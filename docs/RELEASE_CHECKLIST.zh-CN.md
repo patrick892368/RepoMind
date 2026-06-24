@@ -66,6 +66,7 @@ go vet ./...
 - preflight summary 为 PASS。
 - release gate summary 为 PASS。
 - preflight/release gate 包含 safety boundary verification。
+- preflight/release gate 包含英文和中文核心报告内容 smoke。
 - preflight/release gate 包含 trace 和 diagnose smoke。
 - release gate 包含远程 Git URL analyze smoke，除非正在排查网络问题。
 - release gate 包含 ask evaluation，除非排查时明确使用 `-SkipAskEvaluation`。
@@ -188,6 +189,8 @@ Actions -> Release Gate -> Run workflow
 
 - workflow run 通过。
 - 上传的 `release-gate-summary` artifact 包含 ask evaluation summary、`manifest.json`、`manifest.md`、`manifest-verify.json` 和 `manifest-verify.md`。
+- tag release workflow 在构建 artifact 前运行 safety boundary verification。
+- linux/amd64 release binary smoke 检查英文和中文报告核心内容。
 
 全部检查通过后：
 

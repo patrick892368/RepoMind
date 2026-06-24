@@ -68,6 +68,7 @@ Pass criteria:
 - [ ] `eval/preflight/summary.md` reports PASS when using the preflight script.
 - [ ] `eval/release-gate/summary.md` reports PASS when using the release gate script.
 - [ ] Preflight/release gate includes safety boundary verification.
+- [ ] Preflight/release gate includes English and Chinese core report content smoke.
 - [ ] Preflight/release gate includes trace and diagnose smoke.
 - [ ] Release gate includes remote Git URL analyze smoke unless investigating network failures.
 - [ ] Release gate includes ask evaluation unless `-SkipAskEvaluation` is intentionally used for investigation.
@@ -225,6 +226,8 @@ Pass criteria:
 
 - [ ] The workflow run passes.
 - [ ] The uploaded `release-gate-summary` artifact includes ask evaluation summary, `manifest.json`, `manifest.md`, `manifest-verify.json`, and `manifest-verify.md`.
+- [ ] The tag release workflow runs safety boundary verification before artifact builds.
+- [ ] The linux/amd64 release binary smoke checks English and Chinese report content.
 
 After all checks pass:
 

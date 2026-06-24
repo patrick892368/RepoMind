@@ -143,8 +143,8 @@ It runs:
 - `go test ./...`
 - `go vet ./...`
 - safety boundary verification
-- English analyze smoke
-- Chinese analyze smoke
+- English analyze smoke with core report content checks
+- Chinese analyze smoke with core report content checks
 - trace and diagnose smoke
 
 The local equivalent is:
@@ -162,8 +162,9 @@ It runs:
 - native binary smoke on Ubuntu, macOS, and Windows
 - `go test ./...`
 - `go vet ./...`
+- safety boundary verification
 - cross-platform binary builds
-- linux/amd64 built binary smoke
+- linux/amd64 built binary smoke with English and Chinese report content checks
 - GitHub Release upload
 
 The local binary smoke equivalent is:

@@ -119,8 +119,8 @@ GitHub Actions CI 运行：
 - `go test ./...`
 - `go vet ./...`
 - safety boundary verification
-- 英文 analyze smoke
-- 中文 analyze smoke
+- 英文 analyze smoke，并检查核心报告内容
+- 中文 analyze smoke，并检查核心报告内容
 - trace 和 diagnose smoke
 
 ## Release Workflow
@@ -128,8 +128,11 @@ GitHub Actions CI 运行：
 tag `v*` 会触发 release workflow，执行：
 
 - Windows、macOS、Linux 原生 smoke
+- `go test ./...`
+- `go vet ./...`
+- safety boundary verification
 - 跨平台 release binary build
-- linux/amd64 release binary smoke
+- linux/amd64 release binary smoke，并检查英文/中文报告核心内容
 - archive upload
 - release manifest 生成
 - GitHub Release 发布

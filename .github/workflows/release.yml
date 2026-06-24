@@ -84,6 +84,9 @@ jobs:
       - name: Vet
         run: go vet ./...
 
+      - name: Safety boundary
+        run: bash scripts/verify-safety-boundary.sh
+
       - name: Build
         env:
           GOOS: ${{ matrix.goos }}
@@ -116,10 +119,22 @@ jobs:
           "$BIN" analyze --output "$TMP_REPO/.repomind" "$TMP_REPO"
           test -f "$TMP_REPO/.repomind/analysis.json"
           test -f "$TMP_REPO/.repomind/report.html"
+          grep -q '"language": "en"' "$TMP_REPO/.repomind/analysis.json"
+          grep -q 'Project Summary' "$TMP_REPO/.repomind/report.html"
+          grep -q 'Database Models' "$TMP_REPO/.repomind/report.html"
+          grep -q 'API Routes' "$TMP_REPO/.repomind/report.html"
+          grep -q 'Call Graph' "$TMP_REPO/.repomind/report.html"
+          grep -q 'mermaid' "$TMP_REPO/.repomind/report.html"
           "$BIN" export codex "$TMP_REPO"
           test -f "$TMP_REPO/AGENTS.md"
           "$BIN" analyze --lang zh --output "$TMP_REPO/.repomind-zh" "$TMP_REPO"
+          test -f "$TMP_REPO/.repomind-zh/report.html"
           grep -q '"language": "zh"' "$TMP_REPO/.repomind-zh/analysis.json"
+          grep -q '项目总结' "$TMP_REPO/.repomind-zh/report.html"
+          grep -q '数据库模型' "$TMP_REPO/.repomind-zh/report.html"
+          grep -q 'API 路由' "$TMP_REPO/.repomind-zh/report.html"
+          grep -q '调用图' "$TMP_REPO/.repomind-zh/report.html"
+          grep -q 'mermaid' "$TMP_REPO/.repomind-zh/report.html"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
