@@ -303,7 +303,7 @@ go build -o repomind ./cmd/repomind
 Build release artifacts for Windows, macOS, and Linux:
 
 ```powershell
-.\scripts\build-release.ps1 -Version v0.1.0
+.\scripts\build-release.ps1 -Version v1.0.0
 ```
 
 Smoke test the current platform binary workflow:
@@ -325,6 +325,8 @@ dist/manifest.json
 dist/manifest.md
 ```
 
+Release builds inject the requested version into `repomind version`.
+
 Verify a release manifest:
 
 ```powershell
@@ -336,8 +338,8 @@ Verify a release manifest:
 GitHub Releases are built from version tags:
 
 ```bash
-git tag v0.1.0
-git push origin v0.1.0
+git tag v1.0.0
+git push origin v1.0.0
 ```
 
 The release workflow builds:

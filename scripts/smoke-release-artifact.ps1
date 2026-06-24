@@ -1,6 +1,7 @@
 param(
     [string]$OutputDir = "dist/release-smoke",
     [string]$RepoPath = "testdata/fixtures/api-repo",
+    [string]$Version = "dev-smoke",
     [int]$TimeoutSeconds = 120
 )
 
@@ -99,6 +100,25 @@ function Invoke-SmokeStep {
     return [pscustomobject]$item
 }
 
+function Assert-PathExists {
+    param([string]$Path)
+
+    if (-not (Test-Path $Path)) {
+        throw "$Path was not generated"
+    }
+}
+
+function Assert-FileContains {
+    param(
+        [string]$Path,
+        [string]$Pattern
+    )
+
+    if (-not (Select-String -LiteralPath $Path -Pattern $Pattern -SimpleMatch -Quiet)) {
+        throw "$Path did not contain expected text: $Pattern"
+    }
+}
+
 if (Test-Path $OutputDir) {
     Remove-Item -Recurse -Force $OutputDir
 }
@@ -115,35 +135,47 @@ Copy-Item -Recurse -Force -Path (Resolve-Path $RepoPath).Path -Destination $repo
 
 $steps = @()
 $steps += Invoke-SmokeStep -Name "build binary" -Action {
-    Invoke-CapturedCommand -FilePath "go" -ArgumentList @("build", "-trimpath", "-o", $binaryPath, "./cmd/repomind") -LogPath (Join-Path $outputRoot "build.log") -TimeoutSeconds $TimeoutSeconds
+    Invoke-CapturedCommand -FilePath "go" -ArgumentList @("build", "-trimpath", "-ldflags", "-X main.version=$Version", "-o", $binaryPath, "./cmd/repomind") -LogPath (Join-Path $outputRoot "build.log") -TimeoutSeconds $TimeoutSeconds
 }
 $steps += Invoke-SmokeStep -Name "version" -Action {
-    Invoke-CapturedCommand -FilePath $binaryPath -ArgumentList @("version") -LogPath (Join-Path $outputRoot "version.log") -TimeoutSeconds $TimeoutSeconds
+    $versionLog = Join-Path $outputRoot "version.log"
+    Invoke-CapturedCommand -FilePath $binaryPath -ArgumentList @("version") -LogPath $versionLog -TimeoutSeconds $TimeoutSeconds
+    Assert-FileContains -Path $versionLog -Pattern "repomind $Version"
 }
 $steps += Invoke-SmokeStep -Name "analyze en" -Action {
     Invoke-CapturedCommand -FilePath $binaryPath -ArgumentList @("analyze", "--output", (Join-Path $repoCopy ".repomind"), "--lang", "en", $repoCopy) -LogPath (Join-Path $outputRoot "analyze-en.log") -TimeoutSeconds $TimeoutSeconds
     $analysisPath = Join-Path $repoCopy ".repomind/analysis.json"
     $reportPath = Join-Path $repoCopy ".repomind/report.html"
-    if (-not (Test-Path $analysisPath)) {
-        throw "analysis.json was not generated"
-    }
-    if (-not (Test-Path $reportPath)) {
-        throw "report.html was not generated"
-    }
+    Assert-PathExists -Path $analysisPath
+    Assert-PathExists -Path $reportPath
+    Assert-FileContains -Path $analysisPath -Pattern '"language": "en"'
+    Assert-FileContains -Path $reportPath -Pattern "Project Summary"
+    Assert-FileContains -Path $reportPath -Pattern "Database Models"
+    Assert-FileContains -Path $reportPath -Pattern "API Routes"
+    Assert-FileContains -Path $reportPath -Pattern "Call Graph"
+    Assert-FileContains -Path $reportPath -Pattern "mermaid"
 }
 $steps += Invoke-SmokeStep -Name "export codex" -Action {
     Invoke-CapturedCommand -FilePath $binaryPath -ArgumentList @("export", "codex", $repoCopy) -LogPath (Join-Path $outputRoot "export-codex.log") -TimeoutSeconds $TimeoutSeconds
-    if (-not (Test-Path (Join-Path $repoCopy "AGENTS.md"))) {
-        throw "AGENTS.md was not generated"
-    }
+    Assert-PathExists -Path (Join-Path $repoCopy "AGENTS.md")
 }
 $steps += Invoke-SmokeStep -Name "analyze zh" -Action {
     $zhOutput = Join-Path $repoCopy ".repomind-zh"
     Invoke-CapturedCommand -FilePath $binaryPath -ArgumentList @("analyze", "--output", $zhOutput, "--lang", "zh", $repoCopy) -LogPath (Join-Path $outputRoot "analyze-zh.log") -TimeoutSeconds $TimeoutSeconds
-    $analysis = Get-Content (Join-Path $zhOutput "analysis.json") -Raw | ConvertFrom-Json
+    $analysisPath = Join-Path $zhOutput "analysis.json"
+    $reportPath = Join-Path $zhOutput "report.html"
+    Assert-PathExists -Path $analysisPath
+    Assert-PathExists -Path $reportPath
+    $analysis = Get-Content $analysisPath -Raw | ConvertFrom-Json
     if ($analysis.language -ne "zh") {
         throw "Chinese analyze smoke wrote language=$($analysis.language)"
     }
+    Assert-FileContains -Path $analysisPath -Pattern '"language": "zh"'
+    Assert-FileContains -Path $reportPath -Pattern "项目总结"
+    Assert-FileContains -Path $reportPath -Pattern "数据库模型"
+    Assert-FileContains -Path $reportPath -Pattern "API 路由"
+    Assert-FileContains -Path $reportPath -Pattern "调用图"
+    Assert-FileContains -Path $reportPath -Pattern "mermaid"
 }
 
 $failed = @($steps | Where-Object { -not $_.ok })

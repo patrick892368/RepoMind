@@ -155,14 +155,15 @@ go run ./cmd/repomind eval ask --cases docs/examples/ask-cases.example.json --st
 ## 7. Release Artifacts
 
 ```powershell
-.\scripts\smoke-release-artifact.ps1
-.\scripts\build-release.ps1 -Version v0.1.0
+.\scripts\smoke-release-artifact.ps1 -Version v1.0.0-smoke
+.\scripts\build-release.ps1 -Version v1.0.0
 .\scripts\verify-release-manifest.ps1 -DistDir dist
 ```
 
 通过标准：
 
 - 当前平台 binary smoke PASS。
+- 当前平台 binary smoke 验证 `repomind version` 与指定 smoke version 一致。
 - Windows、macOS、Linux amd64/arm64 archive 都存在。
 - archive 包含 binary、`LICENSE`、`README.md`、`README.zh-CN.md` 和 `.env.example`。
 - `dist/manifest.json` 和 `dist/manifest.md` 存在。
@@ -190,11 +191,12 @@ Actions -> Release Gate -> Run workflow
 - workflow run 通过。
 - 上传的 `release-gate-summary` artifact 包含 ask evaluation summary、`manifest.json`、`manifest.md`、`manifest-verify.json` 和 `manifest-verify.md`。
 - tag release workflow 在构建 artifact 前运行 safety boundary verification。
+- linux/amd64 release binary smoke 检查 `repomind version` 与 release tag 一致。
 - linux/amd64 release binary smoke 检查英文和中文报告核心内容。
 
 全部检查通过后：
 
 ```powershell
-git tag v0.1.0
-git push origin v0.1.0
+git tag v1.0.0
+git push origin v1.0.0
 ```

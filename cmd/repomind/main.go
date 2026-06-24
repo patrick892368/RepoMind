@@ -20,7 +20,8 @@ import (
 	"github.com/patrick892368/RepoMind/internal/trace"
 )
 
-const version = "0.1.0-dev"
+// version is overridden by release builds with: -ldflags "-X main.version=<tag>".
+var version = "dev"
 
 func main() {
 	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr))

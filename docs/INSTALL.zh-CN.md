@@ -62,6 +62,16 @@ repomind version
 
 从 GitHub Releases 下载对应平台 archive，解压后把 `repomind` 或 `repomind.exe` 放到 PATH 目录中。
 
+Archive 包含：
+
+```txt
+repomind
+LICENSE
+README.md
+README.zh-CN.md
+.env.example
+```
+
 检查：
 
 ```powershell

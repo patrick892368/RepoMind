@@ -164,7 +164,8 @@ It runs:
 - `go vet ./...`
 - safety boundary verification
 - cross-platform binary builds
-- linux/amd64 built binary smoke with English and Chinese report content checks
+- release tag injection into `repomind version`
+- linux/amd64 built binary smoke with version, English report, and Chinese report content checks
 - GitHub Release upload
 
 The local binary smoke equivalent is:

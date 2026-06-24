@@ -132,7 +132,8 @@ tag `v*` 会触发 release workflow，执行：
 - `go vet ./...`
 - safety boundary verification
 - 跨平台 release binary build
-- linux/amd64 release binary smoke，并检查英文/中文报告核心内容
+- release tag 注入到 `repomind version`
+- linux/amd64 release binary smoke，并检查版本、英文报告和中文报告核心内容
 - archive upload
 - release manifest 生成
 - GitHub Release 发布

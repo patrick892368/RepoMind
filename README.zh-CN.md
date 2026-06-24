@@ -291,7 +291,7 @@ go build -o repomind ./cmd/repomind
 构建 Windows、macOS、Linux release artifacts：
 
 ```powershell
-.\scripts\build-release.ps1 -Version v0.1.0
+.\scripts\build-release.ps1 -Version v1.0.0
 ```
 
 构建产物输出到：
@@ -300,13 +300,15 @@ go build -o repomind ./cmd/repomind
 dist/
 ```
 
+Release build 会把指定版本注入到 `repomind version`。
+
 ## 发布
 
 GitHub Releases 基于版本 tag 构建：
 
 ```bash
-git tag v0.1.0
-git push origin v0.1.0
+git tag v1.0.0
+git push origin v1.0.0
 ```
 
 release workflow 会构建：

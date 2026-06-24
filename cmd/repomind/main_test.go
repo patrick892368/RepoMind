@@ -43,6 +43,25 @@ func TestRunAnalyzeCreatesAnalysisFile(t *testing.T) {
 	}
 }
 
+func TestRunVersionPrintsConfiguredVersion(t *testing.T) {
+	previous := version
+	version = "test-version"
+	defer func() {
+		version = previous
+	}()
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	exitCode := run([]string{"version"}, &stdout, &stderr)
+	if exitCode != 0 {
+		t.Fatalf("exit code = %d, want 0; stderr: %s", exitCode, stderr.String())
+	}
+	if got, want := stdout.String(), "repomind test-version\n"; got != want {
+		t.Fatalf("stdout = %q, want %q", got, want)
+	}
+}
+
 func TestRunAnalyzeWritesDetectedStack(t *testing.T) {
 	repoPath := filepath.Join("..", "..", "testdata", "fixtures", "stack-repo")
 	outputDir := t.TempDir()

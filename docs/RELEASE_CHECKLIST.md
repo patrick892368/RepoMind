@@ -175,19 +175,20 @@ Pass criteria:
 Run current-platform binary smoke:
 
 ```powershell
-.\scripts\smoke-release-artifact.ps1
+.\scripts\smoke-release-artifact.ps1 -Version v1.0.0-smoke
 ```
 
 Run:
 
 ```powershell
-.\scripts\build-release.ps1 -Version v0.1.0
+.\scripts\build-release.ps1 -Version v1.0.0
 .\scripts\verify-release-manifest.ps1 -DistDir dist
 ```
 
 Pass criteria:
 
 - [ ] Current-platform binary smoke reports PASS in `dist/release-smoke/summary.md`.
+- [ ] Current-platform binary smoke verifies `repomind version` matches the requested smoke version.
 - [ ] Windows amd64 artifact exists.
 - [ ] Windows arm64 artifact exists.
 - [ ] macOS amd64 artifact exists.
@@ -227,13 +228,14 @@ Pass criteria:
 - [ ] The workflow run passes.
 - [ ] The uploaded `release-gate-summary` artifact includes ask evaluation summary, `manifest.json`, `manifest.md`, `manifest-verify.json`, and `manifest-verify.md`.
 - [ ] The tag release workflow runs safety boundary verification before artifact builds.
+- [ ] The linux/amd64 release binary smoke checks `repomind version` against the release tag.
 - [ ] The linux/amd64 release binary smoke checks English and Chinese report content.
 
 After all checks pass:
 
 ```powershell
-git tag v0.1.0
-git push origin v0.1.0
+git tag v1.0.0
+git push origin v1.0.0
 ```
 
 GitHub Actions will build release artifacts from the tag.

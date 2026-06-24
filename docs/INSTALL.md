@@ -66,7 +66,9 @@ Archives contain:
 
 ```txt
 repomind
+LICENSE
 README.md
+README.zh-CN.md
 .env.example
 ```
 

@@ -31,7 +31,7 @@ foreach ($target in $targets) {
     $env:GOARCH = $target.GOARCH
     $env:CGO_ENABLED = "0"
 
-    go build -trimpath -ldflags "-s -w" -o (Join-Path $targetDir $binary) ./cmd/repomind
+    go build -trimpath -ldflags "-s -w -X main.version=$Version" -o (Join-Path $targetDir $binary) ./cmd/repomind
 
     Copy-Item LICENSE (Join-Path $targetDir "LICENSE")
     Copy-Item README.md (Join-Path $targetDir "README.md")
