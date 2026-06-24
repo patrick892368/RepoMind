@@ -111,12 +111,13 @@ Backlog：
 当前覆盖：
 
 - Spring controller routes。
+- Spring controller 和 method mapping arrays，覆盖静态 `value` / `path` 声明。
 - JPA entities。
 - Spring Boot stack detection。
 
 Backlog：
 
-- Controller-level `@RequestMapping` arrays。
+- Spring mapping constants、composed annotations 和动态 path values。
 - `@RequestParam`、`@PathVariable` 和 method metadata。
 - Spring WebFlux routes。
 - MyBatis mapper interfaces 和 XML。

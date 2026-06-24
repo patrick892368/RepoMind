@@ -108,6 +108,41 @@ Route::prefix('api/v1')->group(function () {
 	assertNoRoute(t, routes, "GET", "/api/v1/wallets/create", "WalletController@create", "laravel")
 }
 
+func TestParseSpringMappingArraysAndRequestMethods(t *testing.T) {
+	content := `package com.example;
+
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping({"/api/v1", "/internal"})
+public class OrderController {
+    @GetMapping({"/orders", "/purchases"})
+    public String list() {
+        return "ok";
+    }
+
+    @RequestMapping(path = {"/orders/{id}", "/purchases/{id}"}, method = {RequestMethod.PUT, RequestMethod.PATCH})
+    public String update() {
+        return "ok";
+    }
+
+    @PostMapping(path = "/orders")
+    public String create() {
+        return "ok";
+    }
+}
+`
+	routes := parseSpring("src/main/java/com/example/OrderController.java", content)
+
+	assertRoute(t, routes, "GET", "/api/v1/orders", "list", "spring")
+	assertRoute(t, routes, "GET", "/api/v1/purchases", "list", "spring")
+	assertRoute(t, routes, "GET", "/internal/orders", "list", "spring")
+	assertRoute(t, routes, "PUT", "/api/v1/orders/{id}", "update", "spring")
+	assertRoute(t, routes, "PATCH", "/api/v1/purchases/{id}", "update", "spring")
+	assertRoute(t, routes, "POST", "/api/v1/orders", "create", "spring")
+	assertRoute(t, routes, "POST", "/internal/orders", "create", "spring")
+}
+
 func TestParseGoRoutesWithASTHandlers(t *testing.T) {
 	content := `package main
 

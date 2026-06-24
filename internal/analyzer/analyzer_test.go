@@ -373,6 +373,40 @@ func TestAnalyzeIncludesLaravelEloquentModels(t *testing.T) {
 	}
 }
 
+func TestAnalyzeIncludesSpringMappingArrays(t *testing.T) {
+	repoPath := filepath.Join("..", "..", "testdata", "fixtures", "spring-array-repo")
+	outputDir := t.TempDir()
+
+	result, err := Analyze(context.Background(), Options{
+		RepoPath:  repoPath,
+		OutputDir: outputDir,
+	})
+	if err != nil {
+		t.Fatalf("Analyze returned error: %v", err)
+	}
+
+	analysis := result.Analysis
+	if analysis.Stack.Backend != "Spring Boot" {
+		t.Fatalf("Backend = %q, want Spring Boot", analysis.Stack.Backend)
+	}
+	if analysis.Diagrams.API == "" {
+		t.Fatal("expected non-empty API diagram")
+	}
+	for _, want := range []ir.APIRoute{
+		{Method: "GET", Path: "/api/v1/orders", Handler: "list", Source: "spring"},
+		{Method: "GET", Path: "/internal/purchases", Handler: "list", Source: "spring"},
+		{Method: "PUT", Path: "/api/v1/orders/{id}", Handler: "update", Source: "spring"},
+		{Method: "PATCH", Path: "/internal/purchases/{id}", Handler: "update", Source: "spring"},
+		{Method: "POST", Path: "/api/v1/orders", Handler: "create", Source: "spring"},
+	} {
+		if !slices.ContainsFunc(analysis.Routes, func(route ir.APIRoute) bool {
+			return route.Method == want.Method && route.Path == want.Path && route.Handler == want.Handler && route.Source == want.Source
+		}) {
+			t.Fatalf("routes did not contain %#v: %+v", want, analysis.Routes)
+		}
+	}
+}
+
 func TestAnalyzeIncludesCrossFileDRFCustomActionRoutes(t *testing.T) {
 	repoPath := filepath.Join("..", "..", "testdata", "fixtures", "drf-crossfile-repo")
 	outputDir := t.TempDir()

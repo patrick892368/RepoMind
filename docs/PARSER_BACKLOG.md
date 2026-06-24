@@ -112,12 +112,13 @@ Backlog:
 Current coverage:
 
 - Spring controller routes.
+- Spring controller and method mapping arrays for static `value` / `path` declarations.
 - JPA entities.
 - Spring Boot stack detection.
 
 Backlog:
 
-- Controller-level `@RequestMapping` arrays.
+- Spring mapping constants, composed annotations, and dynamic path values.
 - `@RequestParam`, `@PathVariable`, and method metadata.
 - Spring WebFlux routes.
 - MyBatis mapper interfaces and XML.
