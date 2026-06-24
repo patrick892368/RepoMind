@@ -11,7 +11,7 @@
 命令：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 -OutputDir eval\m99-release-gate-final -Proxy http://127.0.0.1:10809 -TimeoutSeconds 300 -CloneRetries 5 -RepoCacheDir eval\release-gate\repo-cache -AskCasesPath docs\examples\ask-cases.example.json -SkipManifestBuild
+powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 -OutputDir eval\m100-release-gate -Proxy http://127.0.0.1:10809 -TimeoutSeconds 300 -CloneRetries 5 -RepoCacheDir eval\release-gate\repo-cache -AskCasesPath docs\examples\ask-cases.example.json -SkipManifestBuild
 ```
 
 状态：PASS
@@ -20,14 +20,14 @@ powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 -OutputDir eva
 
 | 步骤 | 状态 | 秒 |
 |---|---:|---:|
-| `go test ./...` | PASS | 4.55 |
-| `go vet ./...` | PASS | 2.97 |
-| 英文 analyze smoke | PASS | 5.73 |
-| 中文 analyze smoke | PASS | 2.09 |
-| 真实仓库 benchmark | PASS | 1.91 |
-| 真实仓库 evaluation | PASS | 5.98 |
-| Ask evaluation | PASS | 0.22 |
-| Release artifact smoke | PASS | 9.38 |
+| `go test ./...` | PASS | 4.60 |
+| `go vet ./...` | PASS | 3.00 |
+| 英文 analyze smoke | PASS | 0.23 |
+| 中文 analyze smoke | PASS | 0.24 |
+| 真实仓库 benchmark | PASS | 2.12 |
+| 真实仓库 evaluation | PASS | 6.00 |
+| Ask evaluation | PASS | 0.21 |
+| Release artifact smoke | PASS | 9.46 |
 
 ## Ask Evaluation 摘要
 
@@ -50,11 +50,11 @@ Overall score：1.0。
 
 | 仓库 | 秒 | 低于目标 | Routes | Models | Call Edges |
 |---|---:|---:|---:|---:|---:|
-| Laravel | 0.22 | true | 1 | 0 | 0 |
-| Spring REST service | 0.18 | true | 1 | 0 | 0 |
-| Gin examples | 0.20 | true | 69 | 0 | 748 |
-| FastAPI full-stack template | 0.24 | true | 23 | 2 | 851 |
-| Prisma examples | 0.54 | true | 29 | 145 | 1764 |
+| Laravel | 0.23 | true | 1 | 0 | 0 |
+| Spring REST service | 0.17 | true | 1 | 0 | 0 |
+| Gin examples | 0.21 | true | 69 | 0 | 748 |
+| FastAPI full-stack template | 0.25 | true | 23 | 2 | 851 |
+| Prisma examples | 0.53 | true | 42 | 145 | 1764 |
 
 ## Evaluation 摘要
 
@@ -68,7 +68,7 @@ Overall score：1.0。
 | Go chi | 1.00 | 229 | 0 | 1805 |
 | FastAPI full-stack template | 1.00 | 23 | 2 | 851 |
 | Node Express RealWorld | 1.00 | 20 | 4 | 99 |
-| Prisma examples | 1.00 | 29 | 145 | 1764 |
+| Prisma examples | 1.00 | 42 | 145 | 1764 |
 | Symfony demo | 1.00 | 19 | 0 | 26 |
 | Spring PetClinic | 1.00 | 18 | 6 | 0 |
 | Spring Data JPA | 1.00 | 0 | 1 | 0 |
@@ -77,7 +77,7 @@ Overall score：1.0。
 | Go GORM Playground | 1.00 | 0 | 6 | 24 |
 | Django Oscar | 1.00 | 8 | 79 | 5000 |
 | NestJS Starter | 1.00 | 1 | 0 | 4 |
-| Next SaaS Starter | 1.00 | 0 | 0 | 284 |
+| Next SaaS Starter | 1.00 | 4 | 0 | 284 |
 | Vue RealWorld | 1.00 | 0 | 0 | 73 |
 | React RealWorld | 1.00 | 0 | 0 | 176 |
 | TypeORM Sample | 1.00 | 0 | 2 | 15 |
@@ -92,4 +92,4 @@ Release artifact smoke 已通过。本次通过 `-SkipManifestBuild` 明确跳�
 - benchmark/evaluation 通过 `RepoCacheDir` 共享 repository cache。
 - 最新运行包含 20 个真实仓库 evaluation 样本。
 - 最新运行包含 offline strict ask evaluation，共 2 个外部示例 case。
-- 原始输出位于被 Git 忽略的 `eval/m99-release-gate-final/`。
+- 原始输出位于被 Git 忽略的 `eval/m100-release-gate/`。

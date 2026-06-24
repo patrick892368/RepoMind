@@ -67,6 +67,28 @@ The summary includes a `quality_score` from 0 to 1. The current score checks exp
 
 ## Evaluation Notes
 
+### 2026-06-24 Next.js API Route Handler Run
+
+Command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\evaluate-repos.ps1 -OutputDir eval\m100-evaluation -TimeoutSeconds 300 -Proxy http://127.0.0.1:10809 -RepoCacheDir eval\m95-repo-cache -MinimumQualityScore 1.0
+```
+
+Status: PASS with `-MinimumQualityScore 1.0`.
+
+| Repo | M99 Routes | M100 Routes | Finding |
+|---|---:|---:|---|
+| `next-saas-starter` | 0 | 4 | Next.js App Router handlers under `app/api/**/route.ts` are now extracted. |
+| `prisma-examples` | 29 | 42 | Next.js examples inside the monorepo now contribute API routes. |
+
+Findings:
+
+- Next.js parser now derives route paths from `app/api/**/route.{js,jsx,ts,tsx}` and method exports such as `GET` and `POST`.
+- Pages Router `pages/api/**` files are recognized, including static `req.method` / `request.method` checks and `case "METHOD"` branches.
+- Dynamic route segments such as `[id]`, `[...slug]`, and `[[...slug]]` are normalized to Mermaid/API-map-friendly `{id}` / `{slug}` parameters.
+- The 20-sample evaluation gate remains green at quality score 1.0.
+
 ### 2026-06-24 TypeORM Empty Entity Decorator Run
 
 Command:

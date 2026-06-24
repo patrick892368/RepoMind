@@ -224,6 +224,77 @@ class BlogController
 	assertNoRoute(t, routes, "GET", "/blog/posts/{slug:post}", "postShow", "symfony")
 }
 
+func TestParseNextJSAppRouterRoutes(t *testing.T) {
+	content := `import { NextRequest } from "next/server";
+
+export async function GET(request: NextRequest) {
+  return Response.json({});
+}
+
+export const POST = async (request: NextRequest) => {
+  return Response.json({});
+};
+`
+	routes := parseNextJS("apps/web/app/api/stripe/checkout/route.ts", content)
+
+	assertRoute(t, routes, "GET", "/api/stripe/checkout", "GET", "nextjs")
+	assertRoute(t, routes, "POST", "/api/stripe/checkout", "POST", "nextjs")
+}
+
+func TestParseNextJSDynamicAppRouterRoute(t *testing.T) {
+	content := `export async function DELETE() {
+  return Response.json({});
+}
+`
+	routes := parseNextJS("app/api/orders/[orderId]/route.ts", content)
+
+	assertRoute(t, routes, "DELETE", "/api/orders/{orderId}", "DELETE", "nextjs")
+}
+
+func TestParseNextJSPagesAPIRoutes(t *testing.T) {
+	content := `export default async function handler(req, res) {
+  if (req.method === "POST") {
+    return res.status(201).json({});
+  }
+
+  switch (req.method) {
+  case "GET":
+    return res.status(200).json({});
+  }
+}
+`
+	routes := parseNextJS("pages/api/orders/[orderId].ts", content)
+
+	assertRoute(t, routes, "POST", "/api/orders/{orderId}", "handler", "nextjs")
+	assertRoute(t, routes, "GET", "/api/orders/{orderId}", "handler", "nextjs")
+}
+
+func TestExtractNextJSRoutes(t *testing.T) {
+	root := t.TempDir()
+	writeRouteFile(t, root, "app/api/team/route.ts", `export async function GET() {
+  return Response.json({});
+}
+`)
+	writeRouteFile(t, root, "pages/api/orders/[orderId].ts", `export default async function handler(req, res) {
+  if (req.method === "PATCH") {
+    return res.status(200).json({});
+  }
+}
+`)
+
+	scanResult, err := scanner.Scan(root, scanner.Options{})
+	if err != nil {
+		t.Fatalf("Scan returned error: %v", err)
+	}
+	routes, errors := Extract(root, scanResult)
+	if len(errors) != 0 {
+		t.Fatalf("Extract errors = %v, want none", errors)
+	}
+
+	assertRoute(t, routes, "GET", "/api/team", "GET", "nextjs")
+	assertRoute(t, routes, "PATCH", "/api/orders/{orderId}", "handler", "nextjs")
+}
+
 func TestParseSpringMappingArraysAndRequestMethods(t *testing.T) {
 	content := `package com.example;
 

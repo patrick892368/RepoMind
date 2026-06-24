@@ -144,7 +144,7 @@ func parsersForFile(path string) []routeParser {
 		parsers = append(parsers, parseFastAPI)
 	}
 	if ext == ".js" || ext == ".jsx" || ext == ".ts" || ext == ".tsx" {
-		parsers = append(parsers, parseExpress, parseNestJS)
+		parsers = append(parsers, parseExpress, parseNestJS, parseNextJS)
 	}
 	if ext == ".php" {
 		parsers = append(parsers, parseLaravel, parseSymfony)

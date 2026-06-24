@@ -41,6 +41,8 @@ Current coverage:
 - Express composed router prefix for `Router().use("/api", api)` wrapping imported controller routers.
 - Express route false-positive guard for frontend HTTP client wrappers when no Express app/router signal exists in the file.
 - NestJS controllers.
+- Next.js App Router route handlers.
+- Next.js Pages Router API routes, including static `req.method` checks.
 - TypeORM entities, including `@Entity()` without an explicit table name.
 - Lightweight callgraph.
 
@@ -50,8 +52,6 @@ Backlog:
 - Router variables imported through alias chains or dynamic exports.
 - Express route calls whose path is built dynamically or spans more than the lightweight parser window.
 - NestJS controller prefix plus method decorator edge cases.
-- Next.js App Router route handlers.
-- Next.js Pages Router API routes.
 - Hono routes.
 - tRPC routers.
 - TypeORM relation decorators with inverse side functions.

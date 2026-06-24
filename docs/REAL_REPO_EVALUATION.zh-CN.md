@@ -71,7 +71,7 @@ eval/repos/
 
 ## 最新有效结果
 
-M99 evaluation 修复 TypeORM 空 `@Entity()` decorator 后，20 个固定样本仍全部通过 `MinimumQualityScore 1.0`。
+M100 evaluation 增加 Next.js API/App Router route handler 识别后，20 个固定样本仍全部通过 `MinimumQualityScore 1.0`。
 
 | Repo | Quality | Routes | Models | Call Edges |
 |---|---:|---:|---:|---:|
@@ -81,7 +81,7 @@ M99 evaluation 修复 TypeORM 空 `@Entity()` decorator 后，20 个固定样本
 | Go chi | 1.00 | 229 | 0 | 1805 |
 | FastAPI full-stack template | 1.00 | 23 | 2 | 851 |
 | Node Express RealWorld | 1.00 | 20 | 4 | 99 |
-| Prisma examples | 1.00 | 29 | 145 | 1764 |
+| Prisma examples | 1.00 | 42 | 145 | 1764 |
 | Symfony demo | 1.00 | 19 | 0 | 26 |
 | Spring PetClinic | 1.00 | 18 | 6 | 0 |
 | Spring Data JPA | 1.00 | 0 | 1 | 0 |
@@ -90,7 +90,7 @@ M99 evaluation 修复 TypeORM 空 `@Entity()` decorator 后，20 个固定样本
 | Go GORM Playground | 1.00 | 0 | 6 | 24 |
 | Django Oscar | 1.00 | 8 | 79 | 5000 |
 | NestJS Starter | 1.00 | 1 | 0 | 4 |
-| Next SaaS Starter | 1.00 | 0 | 0 | 284 |
+| Next SaaS Starter | 1.00 | 4 | 0 | 284 |
 | Vue RealWorld | 1.00 | 0 | 0 | 73 |
 | React RealWorld | 1.00 | 0 | 0 | 176 |
 | TypeORM Sample | 1.00 | 0 | 2 | 15 |
@@ -103,6 +103,7 @@ M99 evaluation 修复 TypeORM 空 `@Entity()` decorator 后，20 个固定样本
 - M97 后 FastAPI parser 需要文件中存在 FastAPI app/router 信号，Django 项目测试中的 `@patch(...)` 不再污染 API map。
 - M98 后 Symfony demo routes 从 0 提升到 19，覆盖 PHP 8 `#[Route(...)]` controller attributes。
 - M99 后 TypeORM `@Entity()` 无显式表名模型可识别，TypeORM sample models 从 0 提升到 2。
+- M100 后 Next SaaS Starter routes 从 0 提升到 4，覆盖 Next.js `app/api/**/route.ts` route handlers。
 - FastAPI 多行 decorator 支持后，FastAPI full-stack template routes 从 18 提升到 23。
 - Express 多行 route 支持后，node-express-realworld routes 从 8 提升到 20。
 - Go middleware-wrapped handler 支持后，gin-examples routes 从 66 提升到 68。
