@@ -332,6 +332,47 @@ func TestAnalyzeIncludesLaravelResourceRoutes(t *testing.T) {
 	}
 }
 
+func TestAnalyzeIncludesLaravelEloquentModels(t *testing.T) {
+	repoPath := filepath.Join("..", "..", "testdata", "fixtures", "laravel-eloquent-repo")
+	outputDir := t.TempDir()
+
+	result, err := Analyze(context.Background(), Options{
+		RepoPath:  repoPath,
+		OutputDir: outputDir,
+	})
+	if err != nil {
+		t.Fatalf("Analyze returned error: %v", err)
+	}
+
+	analysis := result.Analysis
+	if analysis.Stack.Backend != "Laravel" {
+		t.Fatalf("Backend = %q, want Laravel", analysis.Stack.Backend)
+	}
+	if analysis.Diagrams.ER == "" {
+		t.Fatal("expected non-empty ER diagram")
+	}
+	for _, want := range []ir.DBModel{
+		{Name: "User", Source: "eloquent"},
+		{Name: "Order", Source: "eloquent"},
+		{Name: "Wallet", Source: "eloquent"},
+	} {
+		if !slices.ContainsFunc(analysis.Models, func(model ir.DBModel) bool {
+			return model.Name == want.Name && model.Source == want.Source
+		}) {
+			t.Fatalf("models did not contain %#v: %+v", want, analysis.Models)
+		}
+	}
+	user := findAnalysisModel(analysis.Models, "User", "eloquent")
+	if user.Table != "users" {
+		t.Fatalf("User table = %q, want users", user.Table)
+	}
+	if !slices.ContainsFunc(user.Relations, func(relation ir.DBRelation) bool {
+		return relation.Name == "orders" && relation.Target == "Order" && relation.Type == "one-to-many"
+	}) {
+		t.Fatalf("User relations = %+v, want orders -> Order", user.Relations)
+	}
+}
+
 func TestAnalyzeIncludesCrossFileDRFCustomActionRoutes(t *testing.T) {
 	repoPath := filepath.Join("..", "..", "testdata", "fixtures", "drf-crossfile-repo")
 	outputDir := t.TempDir()
@@ -544,4 +585,13 @@ func TestAnalyzeWritesHTMLReport(t *testing.T) {
 	if !strings.Contains(string(raw), "mermaid") {
 		t.Fatalf("report did not contain Mermaid markup")
 	}
+}
+
+func findAnalysisModel(models []ir.DBModel, name string, source string) ir.DBModel {
+	for _, model := range models {
+		if model.Name == name && model.Source == source {
+			return model
+		}
+	}
+	return ir.DBModel{}
 }

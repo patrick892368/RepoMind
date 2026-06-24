@@ -134,6 +134,74 @@ type Payload struct {
 	}
 }
 
+func TestParseLaravelEloquentModels(t *testing.T) {
+	content := `<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class User extends Model
+{
+    protected $table = 'users';
+
+    protected $fillable = [
+        'name',
+        'email',
+        'wallet_id',
+    ];
+
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'is_active' => 'boolean',
+    ];
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function wallet()
+    {
+        return $this->hasOne(Wallet::class);
+    }
+}
+
+class Order extends Model
+{
+    protected $fillable = ['amount', 'status', 'user_id'];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+}
+`
+	models := parseLaravelEloquent("app/Models/User.php", content)
+
+	assertModel(t, models, "User", "eloquent", "app/Models/User.php")
+	assertModel(t, models, "Order", "eloquent", "app/Models/User.php")
+	user := findModel(models, "User", "eloquent")
+	if user.Table != "users" {
+		t.Fatalf("User table = %q, want users", user.Table)
+	}
+	if !hasField(user.Fields, "email", false, false) {
+		t.Fatalf("User fields = %+v, want email", user.Fields)
+	}
+	if !hasField(user.Fields, "is_active", false, false) {
+		t.Fatalf("User fields = %+v, want is_active", user.Fields)
+	}
+	if !hasRelation(user.Relations, "orders", "Order", "one-to-many") {
+		t.Fatalf("User relations = %+v, want orders -> Order", user.Relations)
+	}
+	if !hasRelation(user.Relations, "wallet", "Wallet", "one-to-one") {
+		t.Fatalf("User relations = %+v, want wallet -> Wallet", user.Relations)
+	}
+	if !hasRelation(findModel(models, "Order", "eloquent").Relations, "user", "User", "many-to-one") {
+		t.Fatalf("Order relations = %+v, want user -> User", findModel(models, "Order", "eloquent").Relations)
+	}
+}
+
 func assertModel(t *testing.T, models []ir.DBModel, name string, source string, file string) {
 	t.Helper()
 	model := findModel(models, name, source)

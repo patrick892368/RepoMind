@@ -56,6 +56,8 @@ func parserForFile(path string) modelParser {
 		return parseJavaJPA
 	case ext == ".go":
 		return parseGoGORM
+	case ext == ".php":
+		return parseLaravelEloquent
 	default:
 		return nil
 	}
