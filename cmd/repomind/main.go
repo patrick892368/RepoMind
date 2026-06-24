@@ -364,6 +364,7 @@ func runAsk(args []string, stdout, stderr io.Writer) int {
 		AIModel:      parsed.AIModel,
 		OutputDir:    parsed.OutputDir,
 		Limit:        parsed.Limit,
+		Strict:       parsed.Strict,
 	})
 	if err != nil {
 		fmt.Fprintf(stderr, "ask failed: %v\n", err)
@@ -414,6 +415,13 @@ func runAsk(args []string, stdout, stderr io.Writer) int {
 			fmt.Fprintf(stdout, "- %s\n", edge)
 		}
 	}
+	if len(answer.Evidence) > 0 {
+		fmt.Fprintln(stdout)
+		fmt.Fprintln(stdout, labels.Evidence+":")
+		for _, item := range answer.Evidence {
+			fmt.Fprintf(stdout, "- %s\n", query.FormatEvidence(item))
+		}
+	}
 	if len(answer.WrittenFiles) > 0 {
 		fmt.Fprintln(stdout)
 		fmt.Fprintln(stdout, labels.Saved+":")
@@ -432,6 +440,7 @@ type parsedAskArgs struct {
 	AIModel      string
 	OutputDir    string
 	Limit        int
+	Strict       bool
 	Remaining    []string
 }
 
@@ -483,6 +492,8 @@ func parseAskArgs(args []string) (parsedAskArgs, error) {
 			}
 			parsed.Limit = value
 			index++
+		case "--strict":
+			parsed.Strict = true
 		default:
 			parsed.Remaining = append(parsed.Remaining, arg)
 		}
@@ -534,6 +545,7 @@ type cliLabels struct {
 	AIProvider       string
 	AIFallback       string
 	Saved            string
+	Evidence         string
 	TraceFor         string
 	NoCallEdges      string
 	Mermaid          string
@@ -566,6 +578,7 @@ func labelsForLanguage(language string) cliLabels {
 			AIProvider:       "AI Provider",
 			AIFallback:       "AI 降级",
 			Saved:            "已保存",
+			Evidence:         "证据",
 			TraceFor:         "调用链:",
 			NoCallEdges:      "未找到调用边。",
 			Mermaid:          "Mermaid:",
@@ -596,6 +609,7 @@ func labelsForLanguage(language string) cliLabels {
 		AIProvider:       "AI Provider",
 		AIFallback:       "AI Fallback",
 		Saved:            "Saved",
+		Evidence:         "Evidence",
 		TraceFor:         "Trace for",
 		NoCallEdges:      "No call edges found.",
 		Mermaid:          "Mermaid:",
@@ -607,7 +621,7 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "Usage:")
 	fmt.Fprintln(w, "  repomind analyze [path|git-url] [--output .repomind] [--ref main] [--repo-cache .repomind/repo-cache] [--ai offline] [--ai-model grok-4.3] [--lang en|zh] [--max-files 50000]")
-	fmt.Fprintln(w, "  repomind ask [path] --question \"where is order created?\" [--ai offline|grok|openai|claude|gemini|mock] [--ai-model grok-4.3] [--output .repomind/ask]")
+	fmt.Fprintln(w, "  repomind ask [path] --question \"where is order created?\" [--ai offline|grok|openai|claude|gemini|mock] [--ai-model grok-4.3] [--output .repomind/ask] [--strict]")
 	fmt.Fprintln(w, "  repomind trace [path] --symbol pay_callback")
 	fmt.Fprintln(w, "  repomind diagnose [path] --issue \"order status error\"")
 	fmt.Fprintln(w, "  repomind export <codex|claude|cursor> [path] [--analysis .repomind/analysis.json]")

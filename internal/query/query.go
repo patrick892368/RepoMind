@@ -24,11 +24,13 @@ type Options struct {
 	AIProvider   string
 	AIModel      string
 	OutputDir    string
+	Strict       bool
 }
 
 type Answer struct {
 	Question     string          `json:"question"`
 	Language     string          `json:"language,omitempty"`
+	Strict       bool            `json:"strict,omitempty"`
 	AIProvider   string          `json:"ai_provider,omitempty"`
 	AIError      string          `json:"ai_error,omitempty"`
 	Summary      string          `json:"summary"`
@@ -38,6 +40,7 @@ type Answer struct {
 	Models       []string        `json:"models"`
 	Routes       []ir.APIRoute   `json:"routes"`
 	CallChain    []string        `json:"call_chain,omitempty"`
+	Evidence     []EvidenceItem  `json:"evidence,omitempty"`
 	Snippets     []SourceSnippet `json:"snippets,omitempty"`
 	Confidence   string          `json:"confidence,omitempty"`
 	WrittenFiles []string        `json:"-"`
@@ -53,6 +56,17 @@ type SourceSnippet struct {
 	StartLine int    `json:"start_line"`
 	EndLine   int    `json:"end_line"`
 	Text      string `json:"text"`
+}
+
+type EvidenceItem struct {
+	Type       string `json:"type"`
+	File       string `json:"file"`
+	StartLine  int    `json:"start_line,omitempty"`
+	EndLine    int    `json:"end_line,omitempty"`
+	Symbol     string `json:"symbol,omitempty"`
+	Detail     string `json:"detail,omitempty"`
+	Source     string `json:"source,omitempty"`
+	Confidence string `json:"confidence,omitempty"`
 }
 
 func Ask(opts Options) (Answer, error) {
@@ -87,6 +101,7 @@ func Ask(opts Options) (Answer, error) {
 	answer := Answer{
 		Question: question,
 		Language: analysis.Language,
+		Strict:   opts.Strict,
 		Routes:   topRoutes(analysis.Routes, tokens, limit),
 		Models:   topModels(analysis.Models, tokens, limit),
 		Files:    topFiles(analysis, tokens, limit),
@@ -100,6 +115,11 @@ func Ask(opts Options) (Answer, error) {
 		if err := enrichWithAI(context.Background(), root, analysis, &answer, opts); err != nil {
 			return Answer{}, err
 		}
+	}
+	answer.Evidence = buildEvidence(analysis, answer)
+	if opts.Strict && len(answer.Evidence) == 0 {
+		answer.Summary = strictNoEvidenceSummary(analysis.Language)
+		answer.Confidence = "insufficient_evidence"
 	}
 
 	written, err := writeAnswer(root, opts.OutputDir, answer)
@@ -373,6 +393,139 @@ func summarizeAnswer(answer Answer, language string) string {
 	return fmt.Sprintf("Found %d candidate files, %d routes, and %d models.", len(answer.Files), len(answer.Routes), len(answer.Models))
 }
 
+func strictNoEvidenceSummary(language string) string {
+	if i18n.IsChinese(language) {
+		return "未找到足够的本地证据回答这个问题。"
+	}
+	return "Not enough local evidence was found to answer this question."
+}
+
+func buildEvidence(analysis ir.Analysis, answer Answer) []EvidenceItem {
+	var evidence []EvidenceItem
+	for _, item := range answer.Evidence {
+		if validated, ok := validateEvidenceItem(analysis, answer, item); ok {
+			evidence = appendEvidence(evidence, validated)
+		}
+	}
+	for _, snippet := range answer.Snippets {
+		evidence = appendEvidence(evidence, EvidenceItem{
+			Type:      "source_snippet",
+			File:      snippet.File,
+			StartLine: snippet.StartLine,
+			EndLine:   snippet.EndLine,
+			Detail:    "Candidate source snippet",
+			Source:    "local",
+		})
+	}
+	for _, route := range answer.Routes {
+		evidence = appendEvidence(evidence, routeEvidence(route))
+	}
+	modelSet := stringSet(answer.Models)
+	for _, model := range analysis.Models {
+		if _, ok := modelSet[strings.ToLower(model.Name)]; !ok {
+			continue
+		}
+		evidence = appendEvidence(evidence, modelEvidence(model))
+	}
+	callSet := stringSet(answer.CallChain)
+	for _, edge := range analysis.CallEdges {
+		label := callEdgeLabel(edge)
+		if _, ok := callSet[strings.ToLower(label)]; ok {
+			evidence = appendEvidence(evidence, callEdgeEvidence(edge))
+			continue
+		}
+		compact := strings.ToLower(fmt.Sprintf("%s -> %s", edge.Caller, edge.Callee))
+		for candidate := range callSet {
+			if strings.Contains(candidate, compact) {
+				evidence = appendEvidence(evidence, callEdgeEvidence(edge))
+				break
+			}
+		}
+	}
+	return evidence
+}
+
+func routeEvidence(route ir.APIRoute) EvidenceItem {
+	item := EvidenceItem{
+		Type:       "route",
+		File:       route.File,
+		StartLine:  route.Line,
+		EndLine:    route.Line,
+		Symbol:     strings.TrimSpace(route.Method + " " + route.Path),
+		Detail:     strings.TrimSpace(route.Handler),
+		Source:     route.Source,
+		Confidence: route.Confidence,
+	}
+	if item.Detail == "" {
+		item.Detail = "API route"
+	}
+	return item
+}
+
+func modelEvidence(model ir.DBModel) EvidenceItem {
+	item := EvidenceItem{
+		Type:       "model",
+		File:       model.File,
+		StartLine:  model.Line,
+		EndLine:    model.Line,
+		Symbol:     model.Name,
+		Detail:     model.Table,
+		Source:     model.Source,
+		Confidence: model.Confidence,
+	}
+	if item.Detail == "" {
+		item.Detail = "Database model"
+	}
+	return item
+}
+
+func callEdgeEvidence(edge ir.CallEdge) EvidenceItem {
+	return EvidenceItem{
+		Type:      "call_edge",
+		File:      edge.File,
+		StartLine: edge.Line,
+		EndLine:   edge.Line,
+		Symbol:    fmt.Sprintf("%s -> %s", edge.Caller, edge.Callee),
+		Detail:    "Call graph edge",
+		Source:    edge.Source,
+	}
+}
+
+func callEdgeLabel(edge ir.CallEdge) string {
+	location := edge.File
+	if edge.Line > 0 {
+		location = fmt.Sprintf("%s:%d", edge.File, edge.Line)
+	}
+	return fmt.Sprintf("%s -> %s (%s)", edge.Caller, edge.Callee, location)
+}
+
+func appendEvidence(values []EvidenceItem, item EvidenceItem) []EvidenceItem {
+	item.File = strings.TrimSpace(filepath.ToSlash(item.File))
+	item.Type = strings.TrimSpace(item.Type)
+	item.Symbol = strings.TrimSpace(item.Symbol)
+	item.Detail = strings.TrimSpace(item.Detail)
+	if item.File == "" || item.Type == "" {
+		return values
+	}
+	if item.EndLine > 0 && item.StartLine == 0 {
+		item.StartLine = item.EndLine
+	}
+	if item.StartLine > 0 && item.EndLine == 0 {
+		item.EndLine = item.StartLine
+	}
+	key := evidenceKey(item)
+	for _, existing := range values {
+		if evidenceKey(existing) == key {
+			return values
+		}
+	}
+	return append(values, item)
+}
+
+func evidenceKey(item EvidenceItem) string {
+	return strings.ToLower(fmt.Sprintf("%s|%s|%d|%d|%s", item.Type, filepath.ToSlash(item.File), item.StartLine, item.EndLine, item.Symbol))
+}
+
 func collectSourceSnippets(root string, analysis ir.Analysis, answer Answer, tokens []string, limit int) []SourceSnippet {
 	if limit <= 0 {
 		limit = 6
@@ -521,8 +674,13 @@ func buildAskPrompt(analysis ir.Analysis, answer Answer) string {
 	builder.WriteString("You are RepoMind. Answer a developer question about an existing repository. ")
 	builder.WriteString("Use only the structured facts and source snippets below. ")
 	builder.WriteString("Do not invent files, functions, routes, models, or behavior. ")
-	builder.WriteString("Return JSON only with keys: summary, files, handlers, models, routes, call_chain, confidence. ")
+	builder.WriteString("Return JSON only with keys: summary, files, handlers, models, routes, call_chain, evidence, confidence. ")
 	builder.WriteString("files may be strings or objects with path and reason. routes may be strings like 'POST /login' or objects with method and path.\n\n")
+	builder.WriteString("Every non-trivial claim in summary must be supported by evidence. ")
+	builder.WriteString("Evidence items must use existing file paths and line ranges from source snippets, routes, models, or call-chain edges.\n\n")
+	if answer.Strict {
+		builder.WriteString("Strict mode is enabled. If the provided facts and snippets are not enough, say that there is not enough local evidence instead of guessing.\n\n")
+	}
 	if i18n.IsChinese(analysis.Language) {
 		builder.WriteString("Write summary, file reasons, and confidence in Simplified Chinese unless code identifiers must remain unchanged.\n\n")
 	} else {
@@ -589,6 +747,7 @@ type aiAnswerPayload struct {
 	Models     []string
 	Routes     []aiRouteRef
 	CallChain  []string
+	Evidence   []EvidenceItem
 	Confidence string
 }
 
@@ -612,6 +771,7 @@ func parseAIAnswerJSON(text string) (aiAnswerPayload, error) {
 		Models:     rawStringSlice(raw["models"]),
 		Routes:     rawRouteRefs(raw["routes"]),
 		CallChain:  rawStringSlice(raw["call_chain"]),
+		Evidence:   rawEvidenceItems(raw["evidence"]),
 		Confidence: rawString(raw["confidence"]),
 	}, nil
 }
@@ -634,10 +794,15 @@ func mergeAIAnswer(answer *Answer, payload aiAnswerPayload, analysis ir.Analysis
 		answer.Files = appendUniquePreserveCase(answer.Files, path)
 		answer.FileReasons = upsertFileReason(answer.FileReasons, FileReason{Path: path, Reason: strings.TrimSpace(file.Reason)})
 	}
-	answer.Handlers = appendUniquePreserveCase(answer.Handlers, payload.Handlers...)
+	answer.Handlers = mergeKnownHandlers(answer.Handlers, payload.Handlers, analysis)
 	answer.Models = mergeKnownModels(answer.Models, payload.Models, analysis.Models)
 	answer.Routes = mergeKnownRoutes(answer.Routes, payload.Routes, analysis.Routes)
-	answer.CallChain = appendUniquePreserveCase(answer.CallChain, payload.CallChain...)
+	answer.CallChain = mergeKnownCallChain(answer.CallChain, payload.CallChain, analysis.CallEdges)
+	for _, item := range payload.Evidence {
+		if validated, ok := validateEvidenceItem(analysis, *answer, item); ok {
+			answer.Evidence = appendEvidence(answer.Evidence, validated)
+		}
+	}
 }
 
 func knownFileSet(analysis ir.Analysis) map[string]struct{} {
@@ -676,6 +841,29 @@ func mergeKnownModels(existing []string, values []string, models []ir.DBModel) [
 	return existing
 }
 
+func mergeKnownHandlers(existing []string, values []string, analysis ir.Analysis) []string {
+	known := map[string]string{}
+	for _, route := range analysis.Routes {
+		if strings.TrimSpace(route.Handler) != "" {
+			known[strings.ToLower(route.Handler)] = route.Handler
+		}
+	}
+	for _, edge := range analysis.CallEdges {
+		if strings.TrimSpace(edge.Caller) != "" {
+			known[strings.ToLower(edge.Caller)] = edge.Caller
+		}
+		if strings.TrimSpace(edge.Callee) != "" {
+			known[strings.ToLower(edge.Callee)] = edge.Callee
+		}
+	}
+	for _, value := range values {
+		if canonical, ok := known[strings.ToLower(strings.TrimSpace(value))]; ok {
+			existing = appendUniquePreserveCase(existing, canonical)
+		}
+	}
+	return existing
+}
+
 func mergeKnownRoutes(existing []ir.APIRoute, refs []aiRouteRef, routes []ir.APIRoute) []ir.APIRoute {
 	seen := map[string]struct{}{}
 	for _, route := range existing {
@@ -696,6 +884,169 @@ func mergeKnownRoutes(existing []ir.APIRoute, refs []aiRouteRef, routes []ir.API
 		}
 	}
 	return existing
+}
+
+func mergeKnownCallChain(existing []string, values []string, edges []ir.CallEdge) []string {
+	known := map[string]string{}
+	for _, edge := range edges {
+		label := callEdgeLabel(edge)
+		known[strings.ToLower(label)] = label
+		known[strings.ToLower(fmt.Sprintf("%s -> %s", edge.Caller, edge.Callee))] = label
+	}
+	for _, value := range values {
+		key := strings.ToLower(strings.TrimSpace(value))
+		if canonical, ok := known[key]; ok {
+			existing = appendUniquePreserveCase(existing, canonical)
+			continue
+		}
+		for knownKey, canonical := range known {
+			if strings.Contains(key, knownKey) || strings.Contains(knownKey, key) {
+				existing = appendUniquePreserveCase(existing, canonical)
+				break
+			}
+		}
+	}
+	return existing
+}
+
+func validateEvidenceItem(analysis ir.Analysis, answer Answer, item EvidenceItem) (EvidenceItem, bool) {
+	item.File = strings.TrimSpace(filepath.ToSlash(item.File))
+	item.Type = strings.TrimSpace(item.Type)
+	item.Symbol = strings.TrimSpace(item.Symbol)
+	item.Detail = strings.TrimSpace(item.Detail)
+	if item.File == "" || item.Type == "" {
+		return EvidenceItem{}, false
+	}
+	if !fileKnownInAnswerOrAnalysis(item.File, answer, analysis) {
+		return EvidenceItem{}, false
+	}
+	switch strings.ToLower(item.Type) {
+	case "source_snippet", "snippet":
+		for _, snippet := range answer.Snippets {
+			if samePath(snippet.File, item.File) && rangesOverlap(item.StartLine, item.EndLine, snippet.StartLine, snippet.EndLine) {
+				item.Type = "source_snippet"
+				item.StartLine = clampLine(item.StartLine, snippet.StartLine)
+				item.EndLine = clampLine(item.EndLine, snippet.EndLine)
+				if item.Detail == "" {
+					item.Detail = "Candidate source snippet"
+				}
+				if item.Source == "" {
+					item.Source = "local"
+				}
+				return item, true
+			}
+		}
+	case "route":
+		for _, route := range answer.Routes {
+			if samePath(route.File, item.File) && routeEvidenceMatches(route, item) {
+				local := routeEvidence(route)
+				if item.Detail != "" {
+					local.Detail = item.Detail
+				}
+				return local, true
+			}
+		}
+	case "model":
+		modelSet := stringSet(answer.Models)
+		for _, model := range analysis.Models {
+			if _, ok := modelSet[strings.ToLower(model.Name)]; ok && samePath(model.File, item.File) && symbolMatches(model.Name, item.Symbol) {
+				local := modelEvidence(model)
+				if item.Detail != "" {
+					local.Detail = item.Detail
+				}
+				return local, true
+			}
+		}
+	case "call_edge", "call":
+		for _, edge := range analysis.CallEdges {
+			if samePath(edge.File, item.File) && callEvidenceMatches(edge, item) && answerHasCallEdge(answer, edge) {
+				local := callEdgeEvidence(edge)
+				if item.Detail != "" {
+					local.Detail = item.Detail
+				}
+				return local, true
+			}
+		}
+	}
+	return EvidenceItem{}, false
+}
+
+func fileKnownInAnswerOrAnalysis(path string, answer Answer, analysis ir.Analysis) bool {
+	known := knownFileSet(analysis)
+	if _, ok := known[strings.ToLower(filepath.ToSlash(path))]; ok {
+		return true
+	}
+	for _, file := range answer.Files {
+		if samePath(file, path) {
+			return true
+		}
+	}
+	return false
+}
+
+func routeEvidenceMatches(route ir.APIRoute, item EvidenceItem) bool {
+	if item.Symbol == "" && item.StartLine == 0 {
+		return true
+	}
+	symbol := strings.ToLower(item.Symbol)
+	routeSymbol := strings.ToLower(strings.TrimSpace(route.Method + " " + route.Path))
+	if symbol != "" && (strings.Contains(symbol, strings.ToLower(route.Path)) || strings.Contains(routeSymbol, symbol)) {
+		return true
+	}
+	return item.StartLine > 0 && route.Line > 0 && item.StartLine == route.Line
+}
+
+func callEvidenceMatches(edge ir.CallEdge, item EvidenceItem) bool {
+	if item.Symbol == "" && item.StartLine == 0 {
+		return true
+	}
+	symbol := strings.ToLower(item.Symbol)
+	if symbol != "" && strings.Contains(symbol, strings.ToLower(edge.Caller)) && strings.Contains(symbol, strings.ToLower(edge.Callee)) {
+		return true
+	}
+	return item.StartLine > 0 && edge.Line > 0 && item.StartLine == edge.Line
+}
+
+func answerHasCallEdge(answer Answer, edge ir.CallEdge) bool {
+	compact := strings.ToLower(fmt.Sprintf("%s -> %s", edge.Caller, edge.Callee))
+	for _, candidate := range answer.CallChain {
+		lower := strings.ToLower(candidate)
+		if strings.Contains(lower, compact) {
+			return true
+		}
+	}
+	return false
+}
+
+func symbolMatches(want string, got string) bool {
+	if strings.TrimSpace(got) == "" {
+		return true
+	}
+	return strings.EqualFold(strings.TrimSpace(want), strings.TrimSpace(got))
+}
+
+func samePath(left string, right string) bool {
+	return strings.EqualFold(filepath.ToSlash(strings.TrimSpace(left)), filepath.ToSlash(strings.TrimSpace(right)))
+}
+
+func rangesOverlap(startA int, endA int, startB int, endB int) bool {
+	if startA == 0 && endA == 0 {
+		return true
+	}
+	if endA == 0 {
+		endA = startA
+	}
+	if startA == 0 {
+		startA = endA
+	}
+	return startA <= endB && startB <= endA
+}
+
+func clampLine(value int, fallback int) int {
+	if value > 0 {
+		return value
+	}
+	return fallback
 }
 
 func routeKey(method string, path string) string {
@@ -743,6 +1094,13 @@ func renderMarkdown(answer Answer) string {
 		builder.WriteString("\n")
 	}
 	writeStringList(&builder, "Call Chain", answer.CallChain)
+	if len(answer.Evidence) > 0 {
+		builder.WriteString("## Evidence\n\n")
+		for _, item := range answer.Evidence {
+			builder.WriteString("- " + FormatEvidence(item) + "\n")
+		}
+		builder.WriteString("\n")
+	}
 	if len(answer.Snippets) > 0 {
 		builder.WriteString("## Source Snippets\n\n")
 		for _, snippet := range answer.Snippets {
@@ -753,6 +1111,31 @@ func renderMarkdown(answer Answer) string {
 		}
 	}
 	return builder.String()
+}
+
+func FormatEvidence(item EvidenceItem) string {
+	location := item.File
+	if item.StartLine > 0 {
+		location = fmt.Sprintf("%s:%d", item.File, item.StartLine)
+		if item.EndLine > item.StartLine {
+			location = fmt.Sprintf("%s-%d", location, item.EndLine)
+		}
+	}
+	var parts []string
+	if item.Type != "" {
+		parts = append(parts, item.Type)
+	}
+	parts = append(parts, location)
+	if item.Symbol != "" {
+		parts = append(parts, item.Symbol)
+	}
+	if item.Detail != "" {
+		parts = append(parts, item.Detail)
+	}
+	if item.Confidence != "" {
+		parts = append(parts, "confidence="+item.Confidence)
+	}
+	return strings.Join(parts, " | ")
 }
 
 func writeStringList(builder *strings.Builder, title string, values []string) {
@@ -992,6 +1375,59 @@ func rawRouteRefs(value any) []aiRouteRef {
 	default:
 		return nil
 	}
+}
+
+func rawEvidenceItems(value any) []EvidenceItem {
+	switch typed := value.(type) {
+	case nil:
+		return nil
+	case []any:
+		var result []EvidenceItem
+		for _, item := range typed {
+			switch evidence := item.(type) {
+			case string:
+				if strings.TrimSpace(evidence) != "" {
+					result = append(result, EvidenceItem{Type: "source_snippet", Detail: strings.TrimSpace(evidence)})
+				}
+			case map[string]any:
+				result = append(result, EvidenceItem{
+					Type:       rawString(firstMapValue(evidence, "type", "kind")),
+					File:       rawString(firstMapValue(evidence, "file", "path")),
+					StartLine:  rawInt(firstMapValue(evidence, "start_line", "line", "start")),
+					EndLine:    rawInt(firstMapValue(evidence, "end_line", "line", "end")),
+					Symbol:     rawString(firstMapValue(evidence, "symbol", "name")),
+					Detail:     rawString(firstMapValue(evidence, "detail", "reason")),
+					Source:     rawString(evidence["source"]),
+					Confidence: rawString(evidence["confidence"]),
+				})
+			}
+		}
+		return result
+	default:
+		return nil
+	}
+}
+
+func rawInt(value any) int {
+	switch typed := value.(type) {
+	case nil:
+		return 0
+	case int:
+		return typed
+	case int64:
+		return int(typed)
+	case float64:
+		return int(typed)
+	case json.Number:
+		parsed, _ := typed.Int64()
+		return int(parsed)
+	case string:
+		var parsed int
+		if _, err := fmt.Sscanf(strings.TrimSpace(typed), "%d", &parsed); err == nil {
+			return parsed
+		}
+	}
+	return 0
 }
 
 func firstMapValue(values map[string]any, keys ...string) any {

@@ -82,6 +82,9 @@ def create_order():
 	if !strings.Contains(answer.Snippets[0].Text, "create_order") {
 		t.Fatalf("snippet = %q, want create_order", answer.Snippets[0].Text)
 	}
+	if !hasEvidenceType(answer.Evidence, "source_snippet") {
+		t.Fatalf("evidence = %#v, want source_snippet evidence", answer.Evidence)
+	}
 	for _, path := range answer.WrittenFiles {
 		if _, err := os.Stat(path); err != nil {
 			t.Fatalf("written file %s missing: %v", path, err)
@@ -92,6 +95,114 @@ def create_order():
 	}
 	if _, err := os.Stat(filepath.Join(root, ".repomind", "ask-test", "last-answer.md")); err != nil {
 		t.Fatalf("last-answer.md missing: %v", err)
+	}
+}
+
+func TestAskBuildsEvidenceForRoutesModelsAndCalls(t *testing.T) {
+	root := t.TempDir()
+	writeQueryAnalysis(t, root)
+	writeQuerySource(t, root, "order/views.py", `from fastapi import APIRouter
+
+def create_order():
+    allocate_order()
+`)
+	writeQuerySource(t, root, "order/models.py", `class Order:
+    pass
+`)
+
+	answer, err := Ask(Options{
+		RepoPath: root,
+		Question: "订单 create_order allocate",
+		Strict:   true,
+	})
+	if err != nil {
+		t.Fatalf("Ask returned error: %v", err)
+	}
+
+	for _, want := range []string{"source_snippet", "route", "model", "call_edge"} {
+		if !hasEvidenceType(answer.Evidence, want) {
+			t.Fatalf("evidence = %#v, want %s evidence", answer.Evidence, want)
+		}
+	}
+	if answer.Confidence == "insufficient_evidence" {
+		t.Fatalf("strict answer incorrectly marked insufficient: %#v", answer)
+	}
+}
+
+func TestStrictAskWithoutEvidenceReturnsInsufficient(t *testing.T) {
+	root := t.TempDir()
+	if err := storage.WriteJSON(filepath.Join(root, ".repomind", "analysis.json"), &ir.Analysis{
+		Repository: ir.RepositoryInfo{Name: "empty", Root: root},
+		Language:   "en",
+		Scan:       ir.ScanSummary{},
+	}); err != nil {
+		t.Fatalf("write analysis: %v", err)
+	}
+
+	answer, err := Ask(Options{
+		RepoPath:  root,
+		Question:  "where is login handled?",
+		Strict:    true,
+		OutputDir: ".repomind/ask-strict",
+	})
+	if err != nil {
+		t.Fatalf("Ask returned error: %v", err)
+	}
+	if answer.Confidence != "insufficient_evidence" {
+		t.Fatalf("confidence = %q, want insufficient_evidence", answer.Confidence)
+	}
+	if !strings.Contains(answer.Summary, "Not enough local evidence") {
+		t.Fatalf("summary = %q, want insufficient evidence summary", answer.Summary)
+	}
+}
+
+func TestMergeAIAnswerValidatesCandidatesAndEvidence(t *testing.T) {
+	analysis := testQueryAnalysis("repo")
+	answer := Answer{
+		Files:     []string{"order/views.py"},
+		Handlers:  []string{"create_order"},
+		Models:    []string{"Order"},
+		Routes:    []ir.APIRoute{analysis.Routes[0]},
+		CallChain: []string{callEdgeLabel(analysis.CallEdges[0])},
+		Snippets:  []SourceSnippet{{File: "order/views.py", StartLine: 1, EndLine: 8, Text: "def create_order(): pass"}},
+	}
+
+	mergeAIAnswer(&answer, aiAnswerPayload{
+		Summary:   "AI summary",
+		Files:     []FileReason{{Path: "order/views.py", Reason: "valid"}, {Path: "missing.py", Reason: "invalid"}},
+		Handlers:  []string{"create_order", "invented_handler"},
+		Models:    []string{"Order", "InventedModel"},
+		Routes:    []aiRouteRef{{Method: "POST", Path: "/order/create"}, {Method: "GET", Path: "/missing"}},
+		CallChain: []string{"create_order -> allocate_order", "invented -> missing"},
+		Evidence: []EvidenceItem{
+			{Type: "route", File: "order/views.py", StartLine: 5, Symbol: "POST /order/create"},
+			{Type: "source_snippet", File: "missing.py", StartLine: 1, EndLine: 2},
+		},
+	}, analysis)
+	answer.Evidence = buildEvidence(analysis, answer)
+
+	if contains(answer.Files, "missing.py") {
+		t.Fatalf("files = %v, should not include missing.py", answer.Files)
+	}
+	if contains(answer.Handlers, "invented_handler") {
+		t.Fatalf("handlers = %v, should not include invented handler", answer.Handlers)
+	}
+	if contains(answer.Models, "InventedModel") {
+		t.Fatalf("models = %v, should not include invented model", answer.Models)
+	}
+	if len(answer.Routes) != 1 {
+		t.Fatalf("routes = %#v, want only known route", answer.Routes)
+	}
+	if len(answer.CallChain) != 1 {
+		t.Fatalf("call chain = %#v, want only known edge", answer.CallChain)
+	}
+	if !hasEvidenceType(answer.Evidence, "route") {
+		t.Fatalf("evidence = %#v, want valid route evidence", answer.Evidence)
+	}
+	for _, item := range answer.Evidence {
+		if item.File == "missing.py" {
+			t.Fatalf("evidence = %#v, should not include missing.py", answer.Evidence)
+		}
 	}
 }
 
@@ -125,6 +236,7 @@ func TestParseAIAnswerJSONFlexibleFields(t *testing.T) {
 		"models": "Order, Wallet",
 		"routes": ["POST /order/create"],
 		"call_chain": ["create_order -> allocate_order"],
+		"evidence": [{"type":"route","file":"order/views.py","line":5,"symbol":"POST /order/create"}],
 		"confidence": "high"
 	}`)
 	if err != nil {
@@ -142,30 +254,42 @@ func TestParseAIAnswerJSONFlexibleFields(t *testing.T) {
 	if len(payload.Routes) != 1 || payload.Routes[0].Method != "POST" || payload.Routes[0].Path != "/order/create" {
 		t.Fatalf("routes = %#v", payload.Routes)
 	}
+	if len(payload.Evidence) != 1 || payload.Evidence[0].Type != "route" || payload.Evidence[0].StartLine != 5 {
+		t.Fatalf("evidence = %#v", payload.Evidence)
+	}
 }
 
 func writeQueryAnalysis(t *testing.T, root string) {
 	t.Helper()
-	err := storage.WriteJSON(filepath.Join(root, ".repomind", "analysis.json"), &ir.Analysis{
+	analysis := testQueryAnalysis(root)
+	err := storage.WriteJSON(filepath.Join(root, ".repomind", "analysis.json"), &analysis)
+	if err != nil {
+		t.Fatalf("write analysis: %v", err)
+	}
+}
+
+func testQueryAnalysis(root string) ir.Analysis {
+	return ir.Analysis{
 		Repository: ir.RepositoryInfo{Name: "fixture", Root: root},
 		Scan: ir.ScanSummary{
 			Files: []ir.FileEntry{
+				{Path: "order/models.py"},
 				{Path: "order/services/dispatch.py"},
 				{Path: "order/views.py"},
 				{Path: "wallet/models.py"},
 			},
 		},
 		Models: []ir.DBModel{
-			{Name: "Order", File: "order/models.py"},
-			{Name: "Wallet", File: "wallet/models.py", Fields: []ir.DBField{{Name: "balance", Type: "Decimal"}}},
+			{Name: "Order", File: "order/models.py", Line: 1, Source: "django", Confidence: "high"},
+			{Name: "Wallet", File: "wallet/models.py", Line: 3, Source: "django", Fields: []ir.DBField{{Name: "balance", Type: "Decimal"}}},
 		},
 		Routes: []ir.APIRoute{
-			{Method: "POST", Path: "/order/create", Handler: "create_order", File: "order/views.py", Source: "fastapi"},
-			{Method: "GET", Path: "/wallet/info", Handler: "wallet_info", File: "wallet/views.py", Source: "fastapi"},
+			{Method: "POST", Path: "/order/create", Handler: "create_order", File: "order/views.py", Line: 5, Source: "fastapi", Confidence: "high"},
+			{Method: "GET", Path: "/wallet/info", Handler: "wallet_info", File: "wallet/views.py", Line: 8, Source: "fastapi"},
 		},
-	})
-	if err != nil {
-		t.Fatalf("write analysis: %v", err)
+		CallEdges: []ir.CallEdge{
+			{Caller: "create_order", Callee: "allocate_order", File: "order/views.py", Line: 6, Source: "python"},
+		},
 	}
 }
 
@@ -183,6 +307,15 @@ func writeQuerySource(t *testing.T, root string, relPath string, content string)
 func contains(values []string, want string) bool {
 	for _, value := range values {
 		if value == want {
+			return true
+		}
+	}
+	return false
+}
+
+func hasEvidenceType(values []EvidenceItem, want string) bool {
+	for _, value := range values {
+		if value.Type == want {
 			return true
 		}
 	}

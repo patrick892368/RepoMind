@@ -147,11 +147,16 @@ After running `analyze`, ask repository-specific questions:
 ```bash
 go run ./cmd/repomind ask . --question "where is order created?"
 go run ./cmd/repomind ask . --question "where is order created?" --ai grok --ai-model grok-4.3
+go run ./cmd/repomind ask . --question "where is order created?" --ai grok --strict
 ```
 
 Offline ask mode uses `.repomind/analysis.json` to rank candidate files, handlers, models, routes, and call-chain edges.
 
-AI ask mode sends only structured analysis facts and small candidate source snippets to the selected provider. It writes reusable results to:
+AI ask mode sends only structured analysis facts and small candidate source snippets to the selected provider. Provider-returned files, handlers, models, routes, call-chain edges, and evidence are validated against local analysis before they are kept.
+
+Ask results include an Evidence section with local file paths and line ranges when RepoMind can verify the answer. `--strict` requires local evidence; when no evidence is available, RepoMind returns an insufficient-evidence answer instead of relying on AI inference.
+
+Ask writes reusable results to:
 
 ```txt
 .repomind/ask/last-answer.json
