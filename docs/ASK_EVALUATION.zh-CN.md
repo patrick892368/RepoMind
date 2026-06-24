@@ -2,7 +2,7 @@
 
 **语言：** [English](ASK_EVALUATION.md) | 简体中文
 
-`repomind eval ask` 用可重复的仓库问题验证 `repomind ask`。它会检查预期文件、处理函数、路由、模型、调用链、证据类型和证据数量。`scripts/evaluate-ask.ps1` 保留为兼容入口。
+`repomind eval ask` 用可重复的仓库问题验证 `repomind ask`。它会检查预期文件、处理函数、路由、模型、调用链、证据类型和证据数量。`scripts/evaluate-ask.ps1` 保留为兼容 wrapper，并委托到 Go CLI 评估器。
 
 运行跨平台 Go CLI 评估器：
 
@@ -22,7 +22,7 @@ go run ./cmd/repomind eval ask --cases docs/examples/ask-cases.example.json --st
 .\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider offline -AskStrict
 ```
 
-运行旧 PowerShell 兼容评估器：
+运行 PowerShell 兼容 wrapper：
 
 ```powershell
 .\scripts\evaluate-ask.ps1 -Provider offline -Strict

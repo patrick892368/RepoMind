@@ -169,7 +169,7 @@ Evaluate ask quality with fixed repository questions:
 go run ./cmd/repomind eval ask --cases docs/examples/ask-cases.example.json --strict
 ```
 
-Preflight and release gate use the Go CLI evaluator for ask evaluation. The PowerShell evaluator remains available as a compatibility runner:
+Preflight and release gate use the Go CLI evaluator for ask evaluation. `scripts/evaluate-ask.ps1` remains available as a compatibility wrapper that delegates to the same Go CLI path:
 
 ```powershell
 .\scripts\evaluate-ask.ps1 -Provider offline -Strict

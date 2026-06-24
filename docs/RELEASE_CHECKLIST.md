@@ -109,7 +109,7 @@ Pass criteria:
 - [ ] Custom case files load successfully when used.
 - [ ] Go CLI `eval ask` path passes for custom case files.
 - [ ] Preflight ask evaluation uses the Go CLI runner.
-- [ ] PowerShell `evaluate-ask.ps1` compatibility runner still passes for at least one smoke.
+- [ ] PowerShell `evaluate-ask.ps1` compatibility wrapper still passes for at least one smoke.
 - [ ] Strict mode returns local evidence for every ask case.
 - [ ] `summary.json` and `summary.md` are generated.
 

@@ -2,7 +2,7 @@
 
 **Language:** English | [简体中文](ASK_EVALUATION.zh-CN.md)
 
-`repomind eval ask` validates `repomind ask` with repeatable repository questions. It checks expected files, handlers, routes, models, call-chain edges, evidence types, and evidence counts. `scripts/evaluate-ask.ps1` remains available as a compatibility runner.
+`repomind eval ask` validates `repomind ask` with repeatable repository questions. It checks expected files, handlers, routes, models, call-chain edges, evidence types, and evidence counts. `scripts/evaluate-ask.ps1` remains available as a compatibility wrapper that delegates to the Go CLI evaluator.
 
 Run the cross-platform Go CLI evaluator:
 
@@ -22,7 +22,7 @@ Run built-in cases through preflight:
 .\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider offline -AskStrict
 ```
 
-Run the legacy PowerShell compatibility runner:
+Run the PowerShell compatibility wrapper:
 
 ```powershell
 .\scripts\evaluate-ask.ps1 -Provider offline -Strict

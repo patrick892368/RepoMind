@@ -105,7 +105,7 @@ go run ./cmd/repomind eval ask --cases docs/examples/ask-cases.example.json --st
 - 使用自定义 case 文件时能够成功加载。
 - Go CLI `eval ask` 自定义 case 路径通过。
 - preflight ask evaluation 使用 Go CLI runner。
-- PowerShell `evaluate-ask.ps1` 兼容 runner 至少有一次 smoke 通过。
+- PowerShell `evaluate-ask.ps1` 兼容 wrapper 至少有一次 smoke 通过。
 - strict 模式下每个 ask case 都有本地证据。
 - 生成 `summary.json` 和 `summary.md`。
 
