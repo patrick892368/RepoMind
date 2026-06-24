@@ -99,6 +99,7 @@ Current coverage:
 - Laravel static resource route `only` / `except` options, including multiline chained calls.
 - Laravel static resource route custom `parameters` options, including multiline chained calls.
 - Laravel Eloquent models with `$table`, `$fillable`, `$casts`, and common relation methods.
+- Symfony controller `#[Route(...)]` attributes with class prefixes, method-level routes, method filters, and typed route parameter normalization.
 - Laravel/Symfony/ThinkPHP stack detection.
 
 Backlog:
@@ -107,7 +108,6 @@ Backlog:
 - Laravel controller array syntax edge cases beyond direct `[Controller::class, "method"]` handlers.
 - Laravel resource route options such as custom `names`.
 - Laravel Eloquent migration-derived columns, accessors/mutators, pivot models, and polymorphic relations.
-- Symfony controller attributes.
 - ThinkPHP route definitions.
 - PHP service callgraph.
 

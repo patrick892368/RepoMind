@@ -147,7 +147,7 @@ func parsersForFile(path string) []routeParser {
 		parsers = append(parsers, parseExpress, parseNestJS)
 	}
 	if ext == ".php" {
-		parsers = append(parsers, parseLaravel)
+		parsers = append(parsers, parseLaravel, parseSymfony)
 	}
 	if ext == ".java" {
 		parsers = append(parsers, parseSpring)

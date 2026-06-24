@@ -11,7 +11,7 @@ Date: 2026-06-24
 Command:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 -OutputDir eval\m97-release-gate -Proxy http://127.0.0.1:10809 -TimeoutSeconds 300 -CloneRetries 5 -RepoCacheDir eval\release-gate\repo-cache -AskCasesPath docs\examples\ask-cases.example.json -SkipManifestBuild
+powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 -OutputDir eval\m98-release-gate -Proxy http://127.0.0.1:10809 -TimeoutSeconds 300 -CloneRetries 5 -RepoCacheDir eval\release-gate\repo-cache -AskCasesPath docs\examples\ask-cases.example.json -SkipManifestBuild
 ```
 
 Status: PASS
@@ -20,14 +20,14 @@ Status: PASS
 
 | Step | Status | Seconds |
 |---|---:|---:|
-| `go test ./...` | PASS | 4.38 |
-| `go vet ./...` | PASS | 2.86 |
-| English analyze smoke | PASS | 0.24 |
+| `go test ./...` | PASS | 4.40 |
+| `go vet ./...` | PASS | 2.88 |
+| English analyze smoke | PASS | 0.25 |
 | Chinese analyze smoke | PASS | 0.24 |
-| Real repository benchmark | PASS | 1.90 |
-| Real repository evaluation | PASS | 5.86 |
-| Ask evaluation | PASS | 0.23 |
-| Release artifact smoke | PASS | 9.76 |
+| Real repository benchmark | PASS | 2.03 |
+| Real repository evaluation | PASS | 5.78 |
+| Ask evaluation | PASS | 0.22 |
+| Release artifact smoke | PASS | 9.40 |
 
 ## Ask Evaluation Summary
 
@@ -69,7 +69,7 @@ Minimum quality score: 1.0.
 | FastAPI full-stack template | 1.00 | 23 | 2 | 851 |
 | Node Express RealWorld | 1.00 | 20 | 4 | 99 |
 | Prisma examples | 1.00 | 29 | 143 | 1764 |
-| Symfony demo | 1.00 | 0 | 0 | 26 |
+| Symfony demo | 1.00 | 19 | 0 | 26 |
 | Spring PetClinic | 1.00 | 18 | 6 | 0 |
 | Spring Data JPA | 1.00 | 0 | 1 | 0 |
 | Labstack Echo | 1.00 | 237 | 0 | 5000 |
@@ -92,4 +92,4 @@ Release artifact smoke passed. Manifest build and verification were intentionall
 - Benchmark/evaluation share a repository cache through `RepoCacheDir`.
 - The latest run includes 20 real repository evaluation samples.
 - The latest run includes offline strict ask evaluation with 2 external example cases.
-- Raw run outputs are under ignored `eval/m97-release-gate/`.
+- Raw run outputs are under ignored `eval/m98-release-gate/`.

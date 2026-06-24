@@ -98,6 +98,7 @@ Backlog：
 - Laravel 静态 resource route `only` / `except` options，包括多行链式调用。
 - Laravel 静态 resource route custom `parameters` options，包括多行链式调用。
 - Laravel Eloquent models，覆盖 `$table`、`$fillable`、`$casts` 和常见 relation methods。
+- Symfony controller `#[Route(...)]` attributes，覆盖 class prefix、method route、methods 过滤和 typed route parameter 归一化。
 - Laravel/Symfony/ThinkPHP stack detection。
 
 Backlog：
@@ -106,7 +107,6 @@ Backlog：
 - 超出直接 `[Controller::class, "method"]` handler 的 Laravel controller array syntax 边界。
 - Laravel resource route options，例如自定义 `names`。
 - Laravel 从 migrations 推断 columns、accessors/mutators、pivot models 和 polymorphic relations。
-- Symfony controller attributes。
 - ThinkPHP route definitions。
 - PHP service callgraph。
 

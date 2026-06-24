@@ -67,6 +67,26 @@ The summary includes a `quality_score` from 0 to 1. The current score checks exp
 
 ## Evaluation Notes
 
+### 2026-06-24 Symfony Controller Attribute Route Run
+
+Command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\evaluate-repos.ps1 -OutputDir eval\m98-evaluation -TimeoutSeconds 300 -Proxy http://127.0.0.1:10809 -RepoCacheDir eval\m95-repo-cache -MinimumQualityScore 1.0
+```
+
+Status: PASS with `-MinimumQualityScore 1.0`.
+
+| Repo | M97 Routes | M98 Routes | Finding |
+|---|---:|---:|---|
+| `symfony-demo` | 0 | 19 | Symfony PHP 8 `#[Route(...)]` controller attributes are now extracted. |
+
+Findings:
+
+- Symfony parser now handles class-level route prefixes, method-level attributes, multiple attributes on one method, method filters, and typed route parameters such as `{slug:post}`.
+- Known route checks now include `/blog`, `/blog/posts/{slug}`, `/blog/comment/{postSlug}/new`, `/admin/post`, and `/profile/edit`.
+- The 20-sample evaluation gate remains green at quality score 1.0.
+
 ### 2026-06-24 FastAPI Test Decorator False Positive Guard Run
 
 Command:

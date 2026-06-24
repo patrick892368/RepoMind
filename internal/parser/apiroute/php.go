@@ -16,6 +16,11 @@ var laravelResourceExceptPattern = regexp.MustCompile(`->except\(\s*(\[[^\]]*\]|
 var laravelResourceParametersPattern = regexp.MustCompile(`->parameters\(\s*\[([^\]]*)\]\s*\)`)
 var laravelAssocStringPairPattern = regexp.MustCompile(`["']([^"']+)["']\s*=>\s*["']([^"']+)["']`)
 var laravelStringPattern = regexp.MustCompile(`["']([^"']+)["']`)
+var symfonyRouteAttributePattern = regexp.MustCompile(`#\[\s*Route\(\s*["']([^"']*)["']([^)]*)\)`)
+var symfonyRouteMethodsPattern = regexp.MustCompile(`methods\s*:\s*(\[[^\]]*\]|["'][^"']+["'])`)
+var symfonyClassPattern = regexp.MustCompile(`\bclass\s+([A-Za-z_][A-Za-z0-9_]*)\b`)
+var symfonyMethodPattern = regexp.MustCompile(`\bfunction\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(`)
+var symfonyTypedParameterPattern = regexp.MustCompile(`\{([A-Za-z_][A-Za-z0-9_]*):[^}]+\}`)
 
 type laravelRouteGroup struct {
 	Prefix string
@@ -27,6 +32,13 @@ type laravelRouteDefinition struct {
 	Method  string
 	Path    string
 	Handler string
+}
+
+type symfonyRouteAttribute struct {
+	Path    string
+	Methods []string
+	Line    int
+	Raw     string
 }
 
 func parseLaravel(path string, content string) []ir.APIRoute {
@@ -70,6 +82,79 @@ func parseLaravel(path string, content string) []ir.APIRoute {
 		}
 	}
 	return routes
+}
+
+func parseSymfony(path string, content string) []ir.APIRoute {
+	var routes []ir.APIRoute
+	var pending []symfonyRouteAttribute
+	classPrefix := ""
+	for index, line := range strings.Split(content, "\n") {
+		pending = append(pending, symfonyRouteAttributes(line, index+1)...)
+		if len(pending) == 0 {
+			continue
+		}
+		if symfonyClassPattern.MatchString(line) {
+			classPrefix = pending[0].Path
+			pending = nil
+			continue
+		}
+		if match := symfonyMethodPattern.FindStringSubmatch(line); len(match) == 2 {
+			handler := match[1]
+			for _, attribute := range pending {
+				for _, method := range attribute.Methods {
+					routes = append(routes, ir.APIRoute{
+						Method:     method,
+						Path:       symfonyRoutePath(classPrefix, attribute.Path),
+						Handler:    handler,
+						File:       path,
+						Line:       attribute.Line,
+						Source:     "symfony",
+						Confidence: "high",
+						Evidence:   evidenceFromLine(attribute.Raw),
+					})
+				}
+			}
+			pending = nil
+		}
+	}
+	return routes
+}
+
+func symfonyRouteAttributes(line string, lineNumber int) []symfonyRouteAttribute {
+	matches := symfonyRouteAttributePattern.FindAllStringSubmatch(line, -1)
+	attributes := make([]symfonyRouteAttribute, 0, len(matches))
+	for _, match := range matches {
+		if len(match) != 3 {
+			continue
+		}
+		attributes = append(attributes, symfonyRouteAttribute{
+			Path:    match[1],
+			Methods: symfonyRouteMethods(match[2]),
+			Line:    lineNumber,
+			Raw:     line,
+		})
+	}
+	return attributes
+}
+
+func symfonyRouteMethods(args string) []string {
+	if match := symfonyRouteMethodsPattern.FindStringSubmatch(args); len(match) == 2 {
+		methods := make([]string, 0, 2)
+		for _, part := range laravelStringPattern.FindAllStringSubmatch(match[1], -1) {
+			if len(part) == 2 && part[1] != "" {
+				methods = append(methods, strings.ToUpper(part[1]))
+			}
+		}
+		if len(methods) > 0 {
+			return methods
+		}
+	}
+	return []string{"ANY"}
+}
+
+func symfonyRoutePath(classPrefix string, routePath string) string {
+	joined := joinRoutePath(classPrefix, routePath)
+	return symfonyTypedParameterPattern.ReplaceAllString(joined, `{$1}`)
 }
 
 func laravelResourceStatement(lines []string, start int) (string, int) {

@@ -517,6 +517,38 @@ func TestAnalyzeIncludesLaravelEloquentModels(t *testing.T) {
 	}
 }
 
+func TestAnalyzeIncludesSymfonyAttributeRoutes(t *testing.T) {
+	repoPath := filepath.Join("..", "..", "testdata", "fixtures", "symfony-attribute-repo")
+	outputDir := t.TempDir()
+
+	result, err := Analyze(context.Background(), Options{
+		RepoPath:  repoPath,
+		OutputDir: outputDir,
+	})
+	if err != nil {
+		t.Fatalf("Analyze returned error: %v", err)
+	}
+
+	analysis := result.Analysis
+	if analysis.Stack.Backend != "Symfony" {
+		t.Fatalf("Backend = %q, want Symfony", analysis.Stack.Backend)
+	}
+	if analysis.Diagrams.API == "" {
+		t.Fatal("expected non-empty API diagram")
+	}
+	for _, want := range []ir.APIRoute{
+		{Method: "GET", Path: "/blog", Handler: "index", Source: "symfony"},
+		{Method: "GET", Path: "/blog/posts/{slug}", Handler: "postShow", Source: "symfony"},
+		{Method: "POST", Path: "/blog/comment/{postSlug}/new", Handler: "commentNew", Source: "symfony"},
+	} {
+		if !slices.ContainsFunc(analysis.Routes, func(route ir.APIRoute) bool {
+			return route.Method == want.Method && route.Path == want.Path && route.Handler == want.Handler && route.Source == want.Source
+		}) {
+			t.Fatalf("routes did not contain %#v: %+v", want, analysis.Routes)
+		}
+	}
+}
+
 func TestAnalyzeIncludesSpringMappingArrays(t *testing.T) {
 	repoPath := filepath.Join("..", "..", "testdata", "fixtures", "spring-array-repo")
 	outputDir := t.TempDir()
