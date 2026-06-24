@@ -4,6 +4,18 @@
 
 `scripts/evaluate-ask.ps1` validates `repomind ask` with repeatable repository questions. It checks expected files, handlers, routes, models, call-chain edges, evidence types, and evidence counts.
 
+Run the cross-platform Go CLI evaluator:
+
+```bash
+repomind eval ask --cases docs/examples/ask-cases.example.json --strict
+```
+
+From source:
+
+```bash
+go run ./cmd/repomind eval ask --cases docs/examples/ask-cases.example.json --strict
+```
+
 Run the built-in cases:
 
 ```powershell

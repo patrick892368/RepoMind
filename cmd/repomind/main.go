@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/patrick892368/RepoMind/internal/analyzer"
+	"github.com/patrick892368/RepoMind/internal/askeval"
 	"github.com/patrick892368/RepoMind/internal/diagnose"
 	"github.com/patrick892368/RepoMind/internal/exporter"
 	"github.com/patrick892368/RepoMind/internal/ir"
@@ -36,6 +37,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return runAnalyze(args[1:], stdout, stderr)
 	case "export":
 		return runExport(args[1:], stdout, stderr)
+	case "eval":
+		return runEval(args[1:], stdout, stderr)
 	case "ask":
 		return runAsk(args[1:], stdout, stderr)
 	case "trace":
@@ -53,6 +56,79 @@ func run(args []string, stdout, stderr io.Writer) int {
 		printHelp(stderr)
 		return 1
 	}
+}
+
+func runEval(args []string, stdout, stderr io.Writer) int {
+	if len(args) == 0 {
+		fmt.Fprintln(stderr, "eval target is required: ask")
+		return 1
+	}
+	switch args[0] {
+	case "ask":
+		return runEvalAsk(args[1:], stdout, stderr)
+	default:
+		fmt.Fprintf(stderr, "unknown eval target: %s\n", args[0])
+		return 1
+	}
+}
+
+func runEvalAsk(args []string, stdout, stderr io.Writer) int {
+	fs := flag.NewFlagSet("eval ask", flag.ContinueOnError)
+	fs.SetOutput(stderr)
+
+	outputDir := fs.String("output", filepath.Join("eval", "ask"), "directory for ask evaluation output")
+	casesPath := fs.String("cases", "", "optional ask evaluation cases JSON file")
+	aiProvider := fs.String("ai", "offline", "AI provider for ask evaluation: offline, mock, grok, openai, claude, gemini")
+	aiModel := fs.String("ai-model", "", "AI model name for network providers")
+	strict := fs.Bool("strict", false, "require local evidence for ask answers")
+	minimumScore := fs.Float64("minimum-score", 1.0, "minimum score required for every case and overall result")
+	limit := fs.Int("limit", 8, "maximum candidates per ask answer")
+
+	if err := fs.Parse(args); err != nil {
+		return 1
+	}
+	if fs.NArg() > 0 {
+		fmt.Fprintln(stderr, "eval ask does not accept positional arguments; use --cases for a case file")
+		return 1
+	}
+	if *minimumScore < 0 || *minimumScore > 1 {
+		fmt.Fprintln(stderr, "--minimum-score must be between 0 and 1")
+		return 1
+	}
+	if *limit <= 0 {
+		fmt.Fprintln(stderr, "--limit must be a positive integer")
+		return 1
+	}
+
+	summary, err := askeval.Run(askeval.Options{
+		OutputDir:    *outputDir,
+		CasesPath:    *casesPath,
+		Provider:     *aiProvider,
+		Model:        *aiModel,
+		Strict:       *strict,
+		MinimumScore: *minimumScore,
+		Limit:        *limit,
+	})
+	if err != nil {
+		fmt.Fprintf(stderr, "eval ask failed: %v\n", err)
+		return 1
+	}
+
+	fmt.Fprintln(stdout, "RepoMind ask evaluation complete")
+	if summary.OK {
+		fmt.Fprintln(stdout, "Status: PASS")
+	} else {
+		fmt.Fprintln(stdout, "Status: FAIL")
+	}
+	fmt.Fprintf(stdout, "Cases: %d\n", summary.CaseCount)
+	fmt.Fprintf(stdout, "Overall score: %g\n", summary.OverallScore)
+	for _, path := range summary.WrittenFiles {
+		fmt.Fprintln(stdout, path)
+	}
+	if !summary.OK {
+		return 1
+	}
+	return 0
 }
 
 func runAnalyze(args []string, stdout, stderr io.Writer) int {
@@ -622,6 +698,7 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "Usage:")
 	fmt.Fprintln(w, "  repomind analyze [path|git-url] [--output .repomind] [--ref main] [--repo-cache .repomind/repo-cache] [--ai offline] [--ai-model grok-4.3] [--lang en|zh] [--max-files 50000]")
 	fmt.Fprintln(w, "  repomind ask [path] --question \"where is order created?\" [--ai offline|grok|openai|claude|gemini|mock] [--ai-model grok-4.3] [--output .repomind/ask] [--strict]")
+	fmt.Fprintln(w, "  repomind eval ask [--cases docs/examples/ask-cases.example.json] [--output eval/ask] [--ai offline|mock|grok] [--strict]")
 	fmt.Fprintln(w, "  repomind trace [path] --symbol pay_callback")
 	fmt.Fprintln(w, "  repomind diagnose [path] --issue \"order status error\"")
 	fmt.Fprintln(w, "  repomind export <codex|claude|cursor> [path] [--analysis .repomind/analysis.json]")

@@ -94,6 +94,7 @@ Ask 问答评估：
 .\scripts\evaluate-ask.ps1 -Provider offline -Strict
 .\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider mock -AskStrict
 .\scripts\evaluate-ask.ps1 -Provider offline -Strict -CasesPath docs\examples\ask-cases.example.json
+go run ./cmd/repomind eval ask --cases docs/examples/ask-cases.example.json --strict
 ```
 
 通过标准：
@@ -102,6 +103,7 @@ Ask 问答评估：
 - 英文和中文 ask case 都通过。
 - 预期证据类型存在。
 - 使用自定义 case 文件时能够成功加载。
+- Go CLI `eval ask` 自定义 case 路径通过。
 - strict 模式下每个 ask case 都有本地证据。
 - 生成 `summary.json` 和 `summary.md`。
 

@@ -59,6 +59,12 @@ Run ask evaluation with fixed repository questions:
 .\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider mock -AskStrict -AskCasesPath docs\examples\ask-cases.example.json
 ```
 
+Cross-platform Go CLI equivalent:
+
+```bash
+go run ./cmd/repomind eval ask --cases docs/examples/ask-cases.example.json --strict
+```
+
 Ask evaluation validates English and Chinese questions for expected files, handlers, routes, models, call-chain edges, evidence types, and evidence counts. It writes:
 
 ```txt

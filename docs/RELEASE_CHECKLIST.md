@@ -98,6 +98,7 @@ Ask evaluation:
 .\scripts\evaluate-ask.ps1 -Provider offline -Strict
 .\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider mock -AskStrict
 .\scripts\evaluate-ask.ps1 -Provider offline -Strict -CasesPath docs\examples\ask-cases.example.json
+go run ./cmd/repomind eval ask --cases docs/examples/ask-cases.example.json --strict
 ```
 
 Pass criteria:
@@ -106,6 +107,7 @@ Pass criteria:
 - [ ] English and Chinese ask cases both pass.
 - [ ] Expected evidence types are present.
 - [ ] Custom case files load successfully when used.
+- [ ] Go CLI `eval ask` path passes for custom case files.
 - [ ] Strict mode returns local evidence for every ask case.
 - [ ] `summary.json` and `summary.md` are generated.
 

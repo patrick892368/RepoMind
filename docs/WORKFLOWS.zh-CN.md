@@ -59,6 +59,12 @@ eval/preflight/summary.md
 .\scripts\preflight.ps1 -IncludeAskEvaluation -AskProvider mock -AskStrict -AskCasesPath docs\examples\ask-cases.example.json
 ```
 
+跨平台 Go CLI 等价命令：
+
+```bash
+go run ./cmd/repomind eval ask --cases docs/examples/ask-cases.example.json --strict
+```
+
 ask evaluation 会用英文和中文问题检查预期文件、处理函数、路由、模型、调用链、证据类型和证据数量，并输出：
 
 ```txt

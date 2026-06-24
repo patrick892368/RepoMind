@@ -4,6 +4,18 @@
 
 `scripts/evaluate-ask.ps1` 用可重复的仓库问题验证 `repomind ask`。它会检查预期文件、处理函数、路由、模型、调用链、证据类型和证据数量。
 
+运行跨平台 Go CLI 评估器：
+
+```bash
+repomind eval ask --cases docs/examples/ask-cases.example.json --strict
+```
+
+从源码运行：
+
+```bash
+go run ./cmd/repomind eval ask --cases docs/examples/ask-cases.example.json --strict
+```
+
 运行内置 case：
 
 ```powershell

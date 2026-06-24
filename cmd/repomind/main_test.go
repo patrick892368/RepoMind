@@ -465,6 +465,92 @@ func TestRunAskRejectsInvalidLimit(t *testing.T) {
 	}
 }
 
+func TestRunEvalAskWithCasesFile(t *testing.T) {
+	repoPath := filepath.Join("..", "..", "testdata", "fixtures", "api-repo")
+	casesPath := filepath.Join(t.TempDir(), "ask-cases.json")
+	cases := map[string]any{
+		"cases": []map[string]any{
+			{
+				"name":                    "api-login-cli",
+				"repo_path":               repoPath,
+				"question":                "where is login handled?",
+				"expected_files":          []string{"fastapi_app/main.py", "django_project/urls.py"},
+				"expected_handlers":       []string{"login", "views.login_view"},
+				"expected_routes":         []string{"POST /login", "ANY /login/"},
+				"expected_evidence_types": []string{"route"},
+				"minimum_evidence":        2,
+			},
+		},
+	}
+	raw, err := json.Marshal(cases)
+	if err != nil {
+		t.Fatalf("marshal cases: %v", err)
+	}
+	if err := os.WriteFile(casesPath, raw, 0o644); err != nil {
+		t.Fatalf("write cases: %v", err)
+	}
+
+	outputDir := t.TempDir()
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	exitCode := run([]string{"eval", "ask", "--cases", casesPath, "--output", outputDir, "--strict"}, &stdout, &stderr)
+	if exitCode != 0 {
+		t.Fatalf("exit code = %d, want 0; stderr: %s", exitCode, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "RepoMind ask evaluation complete") {
+		t.Fatalf("stdout did not contain completion message: %s", stdout.String())
+	}
+	if !strings.Contains(stdout.String(), "Status: PASS") {
+		t.Fatalf("stdout did not contain PASS status: %s", stdout.String())
+	}
+
+	rawSummary, err := os.ReadFile(filepath.Join(outputDir, "summary.json"))
+	if err != nil {
+		t.Fatalf("read summary.json: %v", err)
+	}
+	var summary struct {
+		OK           bool    `json:"ok"`
+		CaseCount    int     `json:"case_count"`
+		OverallScore float64 `json:"overall_score"`
+	}
+	if err := json.Unmarshal(rawSummary, &summary); err != nil {
+		t.Fatalf("unmarshal summary: %v", err)
+	}
+	if !summary.OK || summary.CaseCount != 1 || summary.OverallScore != 1 {
+		t.Fatalf("summary = %#v, want ok one-case perfect score", summary)
+	}
+}
+
+func TestRunEvalAskRejectsCurrentDirectoryOutput(t *testing.T) {
+	originalCWD, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("get cwd: %v", err)
+	}
+	tempDir := t.TempDir()
+	if err := os.Chdir(tempDir); err != nil {
+		t.Fatalf("chdir temp: %v", err)
+	}
+	defer func() {
+		if err := os.Chdir(originalCWD); err != nil {
+			t.Fatalf("restore cwd: %v", err)
+		}
+	}()
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	exitCode := run([]string{"eval", "ask", "--output", "."}, &stdout, &stderr)
+	if exitCode == 0 {
+		t.Fatalf("exit code = 0, want failure")
+	}
+	if !strings.Contains(stderr.String(), "refusing to clean current working directory") {
+		t.Fatalf("stderr did not contain dangerous output warning: %s", stderr.String())
+	}
+	if _, err := os.Stat(tempDir); err != nil {
+		t.Fatalf("temp directory should still exist: %v", err)
+	}
+}
+
 func TestRunTracePrintsCallChain(t *testing.T) {
 	repoPath := t.TempDir()
 	analysisPath := filepath.Join(repoPath, ".repomind", "analysis.json")

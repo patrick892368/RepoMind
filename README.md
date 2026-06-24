@@ -171,6 +171,12 @@ Evaluate ask quality with fixed repository questions:
 .\scripts\evaluate-ask.ps1 -Provider offline -Strict -CasesPath docs\examples\ask-cases.example.json
 ```
 
+Cross-platform Go CLI equivalent:
+
+```bash
+go run ./cmd/repomind eval ask --cases docs/examples/ask-cases.example.json --strict
+```
+
 The evaluator checks English and Chinese questions across API routes, database models, call-chain edges, handlers, evidence types, and local evidence counts, then writes `summary.json` and `summary.md`. See [Ask Evaluation](docs/ASK_EVALUATION.md) for custom case files.
 
 ## Supported Detection
