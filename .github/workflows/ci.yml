@@ -37,7 +37,7 @@ jobs:
             echo ".env.example must remain trackable"
             exit 1
           fi
-          forbidden="$(git ls-files .env '.env.*' .repomind dist eval benchmark repomind repomind.exe)"
+          forbidden="$(git ls-files .env '.env.*' .repomind dist eval benchmark repomind repomind.exe | grep -v '^\.env\.example$' || true)"
           if [ -n "$forbidden" ]; then
             echo "Forbidden generated or secret files are tracked:"
             echo "$forbidden"
