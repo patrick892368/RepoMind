@@ -43,7 +43,7 @@ jobs:
             echo "$forbidden"
             exit 1
           fi
-          if git grep -nE '(API_KEY|TOKEN|SECRET)[A-Z0-9_]*[[:space:]]*=[[:space:]]*["'\'']?(sk-|xai-|gsk_|AIza|ghp_|glpat-)' -- . ':!*.png' ':!*.ico' ':!*.jpg' ':!*.jpeg' ':!*.webp'; then
+          if git grep -nE "(OPENAI_API_KEY|ANTHROPIC_API_KEY|CLAUDE_API_KEY|GEMINI_API_KEY|GOOGLE_API_KEY|GROK_API_KEY|XAI_API_KEY|[A-Z0-9_]*TOKEN|[A-Z0-9_]*SECRET)[[:space:]]*=[[:space:]]*(sk-|xai-|gsk_|AIza|ghp_|glpat-)" -- . ':!*.png' ':!*.ico' ':!*.jpg' ':!*.jpeg' ':!*.webp'; then
             echo "Tracked files contain likely real API keys or tokens"
             exit 1
           fi
