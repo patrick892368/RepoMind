@@ -262,6 +262,43 @@ func TestAnalyzeIncludesDRFCustomActionRoutes(t *testing.T) {
 	}
 }
 
+func TestAnalyzeIncludesLaravelRouteGroups(t *testing.T) {
+	repoPath := filepath.Join("..", "..", "testdata", "fixtures", "laravel-group-repo")
+	outputDir := t.TempDir()
+
+	result, err := Analyze(context.Background(), Options{
+		RepoPath:  repoPath,
+		OutputDir: outputDir,
+	})
+	if err != nil {
+		t.Fatalf("Analyze returned error: %v", err)
+	}
+
+	analysis := result.Analysis
+	if analysis.Stack.Backend != "Laravel" {
+		t.Fatalf("Backend = %q, want Laravel", analysis.Stack.Backend)
+	}
+	if analysis.Diagrams.API == "" {
+		t.Fatal("expected non-empty API diagram")
+	}
+	for _, want := range []ir.APIRoute{
+		{Method: "POST", Path: "/api/v1/orders", Handler: "OrderController@store", Source: "laravel"},
+		{Method: "GET", Path: "/api/v1/wallet/info", Handler: "WalletController@info", Source: "laravel"},
+		{Method: "DELETE", Path: "/admin/orders/{id}", Handler: "OrderController@destroy", Source: "laravel"},
+	} {
+		if !slices.ContainsFunc(analysis.Routes, func(route ir.APIRoute) bool {
+			return route.Method == want.Method && route.Path == want.Path && route.Handler == want.Handler && route.Source == want.Source
+		}) {
+			t.Fatalf("routes did not contain %#v: %+v", want, analysis.Routes)
+		}
+	}
+	if slices.ContainsFunc(analysis.Routes, func(route ir.APIRoute) bool {
+		return route.Method == "POST" && route.Path == "/orders" && route.Handler == "OrderController@store" && route.Source == "laravel"
+	}) {
+		t.Fatalf("routes contained unprefixed group route: %+v", analysis.Routes)
+	}
+}
+
 func TestAnalyzeIncludesCrossFileDRFCustomActionRoutes(t *testing.T) {
 	repoPath := filepath.Join("..", "..", "testdata", "fixtures", "drf-crossfile-repo")
 	outputDir := t.TempDir()

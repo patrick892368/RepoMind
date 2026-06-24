@@ -91,12 +91,13 @@ Backlog：
 当前覆盖：
 
 - Laravel routes。
+- Laravel 静态 route groups 和 prefixes，覆盖链式 `Route::prefix(...)->group(...)` 与数组式 `Route::group(["prefix" => ...], ...)`。
 - Laravel/Symfony/ThinkPHP stack detection。
 
 Backlog：
 
-- Laravel route groups 和 prefixes。
-- Laravel controller array syntax。
+- 超出静态字符串 prefix 的 Laravel dynamic route groups 和 prefixes。
+- 超出直接 `[Controller::class, "method"]` handler 的 Laravel controller array syntax 边界。
 - Laravel resource routes。
 - Laravel Eloquent models。
 - Symfony controller attributes。

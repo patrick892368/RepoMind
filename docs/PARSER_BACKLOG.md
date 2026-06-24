@@ -92,12 +92,13 @@ Backlog:
 Current coverage:
 
 - Laravel routes.
+- Laravel static route groups and prefixes for chained `Route::prefix(...)->group(...)` and array `Route::group(["prefix" => ...], ...)` forms.
 - Laravel/Symfony/ThinkPHP stack detection.
 
 Backlog:
 
-- Laravel route groups and prefixes.
-- Laravel controller array syntax.
+- Laravel dynamic route groups and prefixes beyond static string prefixes.
+- Laravel controller array syntax edge cases beyond direct `[Controller::class, "method"]` handlers.
 - Laravel resource routes.
 - Laravel Eloquent models.
 - Symfony controller attributes.

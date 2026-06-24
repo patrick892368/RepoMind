@@ -49,6 +49,36 @@ func TestExtractPHPJavaAndGoRoutes(t *testing.T) {
 	assertRoute(t, routes, "GET", "/wallet/info", "walletInfo", "go")
 }
 
+func TestParseLaravelRouteGroupsAndControllerArrayHandlers(t *testing.T) {
+	content := `<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\WalletController;
+
+Route::prefix('api/v1')->group(function () {
+    Route::post('/orders', [OrderController::class, 'store']);
+    Route::middleware('auth:sanctum')->prefix('wallet')->group(function () {
+        Route::get('/info', [WalletController::class, 'info']);
+    });
+});
+
+Route::group(['prefix' => 'admin'], function () {
+    Route::delete('/orders/{id}', [OrderController::class, 'destroy']);
+});
+
+Route::post('/login', [AuthController::class, 'login']);
+`
+	routes := parseLaravel("routes/api.php", content)
+
+	assertRoute(t, routes, "POST", "/api/v1/orders", "OrderController@store", "laravel")
+	assertRoute(t, routes, "GET", "/api/v1/wallet/info", "WalletController@info", "laravel")
+	assertRoute(t, routes, "DELETE", "/admin/orders/{id}", "OrderController@destroy", "laravel")
+	assertRoute(t, routes, "POST", "/login", "AuthController@login", "laravel")
+	assertNoRoute(t, routes, "POST", "/orders", "OrderController@store", "laravel")
+	assertNoRoute(t, routes, "GET", "/wallet/info", "WalletController@info", "laravel")
+}
+
 func TestParseGoRoutesWithASTHandlers(t *testing.T) {
 	content := `package main
 
