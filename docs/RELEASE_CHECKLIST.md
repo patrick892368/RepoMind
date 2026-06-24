@@ -179,8 +179,7 @@ Pass criteria:
 - [ ] `README.zh-CN.md` is current and linked from `README.md`.
 - [ ] `docs/README.md` and `docs/README.zh-CN.md` list current bilingual documentation.
 - [ ] `docs/PROJECT_PLAN.md` has the latest completed milestone.
-- [ ] `docs/PROJECT_PLAN.en.md` summarizes the latest completed milestone range.
-- [ ] Every public docs page has a language switch and a matching English or Simplified Chinese counterpart.
+- [ ] Public user-facing docs, excluding `docs/PROJECT_PLAN.md`, have language switches and matching English or Simplified Chinese counterparts.
 - [ ] `docs/REMOTE_REPOSITORIES.md` matches current remote URL, proxy, ref, cache, and private repository behavior.
 - [ ] `docs/WORKFLOWS.md` matches the current local, CI, and release checks.
 - [ ] `docs/RELEASE_GATE_RESULTS.md` records the latest release gate run.

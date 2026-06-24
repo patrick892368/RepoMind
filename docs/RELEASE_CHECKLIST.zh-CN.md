@@ -148,7 +148,7 @@ go run ./cmd/repomind analyze --lang zh --output .repomind .
 - `README.zh-CN.md` 当前有效。
 - `docs/README.md` 和 `docs/README.zh-CN.md` 列出当前文档。
 - `docs/PROJECT_PLAN.md` 有最新 milestone。
-- `docs/PROJECT_PLAN.en.md` 有英文概览。
+- 除 `docs/PROJECT_PLAN.md` 外，公开用户文档都有语言切换和对应英文或简体中文版本。
 - release gate、parser backlog、evaluation、benchmark 文档已更新。
 
 ## 9. Tag Release

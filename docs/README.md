@@ -4,7 +4,7 @@
 
 Core documents:
 
-- `PROJECT_PLAN.md` / `PROJECT_PLAN.en.md`: goals, scope, milestones, completed features, and test record.
+- `PROJECT_PLAN.md`: goals, scope, milestones, completed features, and test record.
 - `INSTALL.md` / `INSTALL.zh-CN.md`: source, Go install, release binary, and PATH setup.
 - `REMOTE_REPOSITORIES.md` / `REMOTE_REPOSITORIES.zh-CN.md`: GitHub/Git URL analysis, ref selection, clone cache, proxy, and private repository authentication.
 - `WORKFLOWS.md` / `WORKFLOWS.zh-CN.md`: local preflight, CI, release, benchmark, evaluation, and AI smoke mapping.

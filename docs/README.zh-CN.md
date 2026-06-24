@@ -4,7 +4,7 @@
 
 核心文档：
 
-- `PROJECT_PLAN.md` / `PROJECT_PLAN.en.md`：项目目标、范围、里程碑、已完成功能和测试记录。
+- `PROJECT_PLAN.md`：项目目标、范围、里程碑、已完成功能和测试记录。
 - `INSTALL.md` / `INSTALL.zh-CN.md`：源码运行、Go 安装、release binary 和 PATH 配置。
 - `REMOTE_REPOSITORIES.md` / `REMOTE_REPOSITORIES.zh-CN.md`：GitHub/Git URL 分析、ref 选择、clone cache、代理和私有仓库认证。
 - `WORKFLOWS.md` / `WORKFLOWS.zh-CN.md`：本地 preflight、CI、release、benchmark、evaluation 和 AI smoke 的对应关系。
