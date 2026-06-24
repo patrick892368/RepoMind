@@ -2,7 +2,7 @@
 
 **Language:** English | [简体中文](RELEASE_GATE_RESULTS.zh-CN.md)
 
-This document records local release gate runs that combine default preflight, safety boundary verification, core report content smoke, ask evaluation, remote Git URL analyze smoke, release binary smoke, release manifest verification, real repository benchmark, and real repository evaluation quality checks.
+This document records local release gate runs that combine default preflight, safety boundary verification, core report content smoke, ask evaluation, remote Git URL analyze smoke, release binary smoke, release version injection, release manifest verification, real repository benchmark, and real repository evaluation quality checks.
 
 ## Latest Run
 
@@ -11,7 +11,7 @@ Date: 2026-06-24
 Command:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 -OutputDir eval\m106-release-gate -Proxy http://127.0.0.1:10809 -TimeoutSeconds 300 -CloneRetries 5 -RepoCacheDir eval\release-gate\repo-cache -AskCasesPath docs\examples\ask-cases.example.json
+powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 -OutputDir eval\m110-release-gate -Proxy http://127.0.0.1:10809 -TimeoutSeconds 300 -CloneRetries 5 -RepoCacheDir eval\release-gate\repo-cache -AskCasesPath docs\examples\ask-cases.example.json
 ```
 
 Status: PASS
@@ -20,18 +20,18 @@ Status: PASS
 
 | Step | Status | Seconds |
 |---|---:|---:|
-| Safety boundary | PASS | 0.70 |
-| `go test ./...` | PASS | 4.30 |
-| `go vet ./...` | PASS | 3.21 |
-| English analyze smoke | PASS | 0.31 |
-| Chinese analyze smoke | PASS | 0.31 |
-| Trace and diagnose smoke | PASS | 0.51 |
-| Real repository benchmark | PASS | 1.91 |
-| Real repository evaluation | PASS | 6.09 |
-| Ask evaluation | PASS | 0.22 |
-| Remote repository analyze smoke | PASS | 2.82 |
-| Release artifact smoke | PASS | 9.30 |
-| Release manifest build and verification | PASS | 12.68 |
+| Safety boundary | PASS | 0.71 |
+| `go test ./...` | PASS | 4.44 |
+| `go vet ./...` | PASS | 3.29 |
+| English analyze smoke | PASS | 7.18 |
+| Chinese analyze smoke | PASS | 2.01 |
+| Trace and diagnose smoke | PASS | 0.49 |
+| Real repository benchmark | PASS | 1.93 |
+| Real repository evaluation | PASS | 5.95 |
+| Ask evaluation | PASS | 0.21 |
+| Remote repository analyze smoke | PASS | 1.43 |
+| Release artifact smoke | PASS | 9.06 |
+| Release manifest build and verification | PASS | 12.22 |
 
 ## Ask Evaluation Summary
 
@@ -54,11 +54,11 @@ Target: 30 seconds per repository.
 
 | Repository | Seconds | Under Target | Routes | Models | Call Edges |
 |---|---:|---:|---:|---:|---:|
-| Laravel | 0.23 | true | 1 | 0 | 0 |
-| Spring REST service | 0.16 | true | 1 | 0 | 0 |
-| Gin examples | 0.20 | true | 69 | 0 | 748 |
-| FastAPI full-stack template | 0.24 | true | 23 | 2 | 851 |
-| Prisma examples | 0.58 | true | 42 | 145 | 1764 |
+| Laravel | 0.22 | true | 1 | 0 | 0 |
+| Spring REST service | 0.17 | true | 1 | 0 | 0 |
+| Gin examples | 0.19 | true | 69 | 0 | 748 |
+| FastAPI full-stack template | 0.25 | true | 23 | 2 | 851 |
+| Prisma examples | 0.55 | true | 42 | 145 | 1764 |
 
 ## Evaluation Summary
 
@@ -108,5 +108,6 @@ Release manifest build and verification passed for all six archives:
 - The latest run includes 20 real repository evaluation samples.
 - The latest run includes safety boundary verification for ignored generated files and likely secret patterns.
 - The latest run verifies English and Chinese HTML reports contain project summary, database model, API route, call graph, and Mermaid content.
+- The latest run verifies release artifact smoke version injection with `repomind dev-smoke`.
 - The latest run includes offline strict ask evaluation with 2 external example cases.
-- Raw run outputs are under ignored `eval/m106-release-gate/`.
+- Raw run outputs are under ignored `eval/m110-release-gate/`.

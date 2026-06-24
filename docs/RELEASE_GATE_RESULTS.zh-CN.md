@@ -2,7 +2,7 @@
 
 **语言：** [English](RELEASE_GATE_RESULTS.md) | 简体中文
 
-本文记录组合 release gate 的本地运行结果。release gate 覆盖默认 preflight、safety boundary verification、核心报告内容 smoke、ask evaluation、远程 Git URL analyze smoke、release binary smoke、release manifest verification、真实仓库 benchmark 和真实仓库 evaluation quality gate。
+本文记录组合 release gate 的本地运行结果。release gate 覆盖默认 preflight、safety boundary verification、核心报告内容 smoke、ask evaluation、远程 Git URL analyze smoke、release binary smoke、release version injection、release manifest verification、真实仓库 benchmark 和真实仓库 evaluation quality gate。
 
 ## 最新运行
 
@@ -11,7 +11,7 @@
 命令：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 -OutputDir eval\m106-release-gate -Proxy http://127.0.0.1:10809 -TimeoutSeconds 300 -CloneRetries 5 -RepoCacheDir eval\release-gate\repo-cache -AskCasesPath docs\examples\ask-cases.example.json
+powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 -OutputDir eval\m110-release-gate -Proxy http://127.0.0.1:10809 -TimeoutSeconds 300 -CloneRetries 5 -RepoCacheDir eval\release-gate\repo-cache -AskCasesPath docs\examples\ask-cases.example.json
 ```
 
 状态：PASS
@@ -20,18 +20,18 @@ powershell -ExecutionPolicy Bypass -File scripts\release-gate.ps1 -OutputDir eva
 
 | 步骤 | 状态 | 秒 |
 |---|---:|---:|
-| Safety boundary | PASS | 0.70 |
-| `go test ./...` | PASS | 4.30 |
-| `go vet ./...` | PASS | 3.21 |
-| 英文 analyze smoke | PASS | 0.31 |
-| 中文 analyze smoke | PASS | 0.31 |
-| Trace and diagnose smoke | PASS | 0.51 |
-| 真实仓库 benchmark | PASS | 1.91 |
-| 真实仓库 evaluation | PASS | 6.09 |
-| Ask evaluation | PASS | 0.22 |
-| Remote repository analyze smoke | PASS | 2.82 |
-| Release artifact smoke | PASS | 9.30 |
-| Release manifest build and verification | PASS | 12.68 |
+| Safety boundary | PASS | 0.71 |
+| `go test ./...` | PASS | 4.44 |
+| `go vet ./...` | PASS | 3.29 |
+| 英文 analyze smoke | PASS | 7.18 |
+| 中文 analyze smoke | PASS | 2.01 |
+| Trace and diagnose smoke | PASS | 0.49 |
+| 真实仓库 benchmark | PASS | 1.93 |
+| 真实仓库 evaluation | PASS | 5.95 |
+| Ask evaluation | PASS | 0.21 |
+| Remote repository analyze smoke | PASS | 1.43 |
+| Release artifact smoke | PASS | 9.06 |
+| Release manifest build and verification | PASS | 12.22 |
 
 ## Ask Evaluation 摘要
 
@@ -54,11 +54,11 @@ Overall score：1.0。
 
 | 仓库 | 秒 | 低于目标 | Routes | Models | Call Edges |
 |---|---:|---:|---:|---:|---:|
-| Laravel | 0.23 | true | 1 | 0 | 0 |
-| Spring REST service | 0.16 | true | 1 | 0 | 0 |
-| Gin examples | 0.20 | true | 69 | 0 | 748 |
-| FastAPI full-stack template | 0.24 | true | 23 | 2 | 851 |
-| Prisma examples | 0.58 | true | 42 | 145 | 1764 |
+| Laravel | 0.22 | true | 1 | 0 | 0 |
+| Spring REST service | 0.17 | true | 1 | 0 | 0 |
+| Gin examples | 0.19 | true | 69 | 0 | 748 |
+| FastAPI full-stack template | 0.25 | true | 23 | 2 | 851 |
+| Prisma examples | 0.55 | true | 42 | 145 | 1764 |
 
 ## Evaluation 摘要
 
@@ -108,5 +108,6 @@ Release manifest build and verification 已通过，覆盖全部 6 个归档：
 - 最新运行包含 20 个真实仓库 evaluation 样本。
 - 最新运行包含 safety boundary verification，检查 ignored 生成物路径和疑似真实密钥模式。
 - 最新运行验证英文和中文 HTML 报告包含项目总结、数据库模型、API 路由、调用图和 Mermaid 内容。
+- 最新运行验证 release artifact smoke version injection，输出 `repomind dev-smoke`。
 - 最新运行包含 offline strict ask evaluation，共 2 个外部示例 case。
-- 原始输出位于被 Git 忽略的 `eval/m106-release-gate/`。
+- 原始输出位于被 Git 忽略的 `eval/m110-release-gate/`。

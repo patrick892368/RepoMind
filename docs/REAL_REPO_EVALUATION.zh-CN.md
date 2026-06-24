@@ -71,7 +71,7 @@ eval/repos/
 
 ## 最新有效结果
 
-2026-06-24 M106 release gate 中，20 个固定样本仍全部通过 `MinimumQualityScore 1.0`。同一轮 gate 还验证了核心报告内容、ask evaluation、trace/diagnose smoke、远程仓库 analyze smoke、安全边界、release artifact smoke 和 release manifest verification。
+2026-06-24 M110 release gate 中，20 个固定样本仍全部通过 `MinimumQualityScore 1.0`。同一轮 gate 还验证了核心报告内容、ask evaluation、trace/diagnose smoke、远程仓库 analyze smoke、安全边界、release artifact smoke、release version injection 和 release manifest verification。
 
 | Repo | Quality | Routes | Models | Call Edges |
 |---|---:|---:|---:|---:|
@@ -105,7 +105,7 @@ eval/repos/
 - M99 后 TypeORM `@Entity()` 无显式表名模型可识别，TypeORM sample models 从 0 提升到 2。
 - M100 后 Next SaaS Starter routes 从 0 提升到 4，覆盖 Next.js `app/api/**/route.ts` route handlers。
 - M101 后支持 SQLAlchemy 2.0 typed `Mapped[] = mapped_column(...)`，并移除 Django Oscar 中 9 个非 DB `class X(Base)` SQLAlchemy 误报。
-- M106 后 release gate 同时覆盖核心报告内容、远程仓库 smoke、trace/diagnose smoke、安全边界和 release artifact smoke。
+- M110 后 release gate 同时覆盖核心报告内容、远程仓库 smoke、trace/diagnose smoke、安全边界、release artifact smoke 和 release version injection。
 - FastAPI 多行 decorator 支持后，FastAPI full-stack template routes 从 18 提升到 23。
 - Express 多行 route 支持后，node-express-realworld routes 从 8 提升到 20。
 - Go middleware-wrapped handler 支持后，gin-examples routes 从 66 提升到 69。

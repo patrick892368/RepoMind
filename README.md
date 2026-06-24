@@ -42,11 +42,11 @@ The latest combined gate evaluated 20 real repositories at minimum quality score
 
 | Repository | Time |
 |---|---:|
-| Laravel | 0.23s |
-| Spring REST service | 0.16s |
-| Gin examples | 0.20s |
-| FastAPI full-stack template | 0.24s |
-| Prisma examples | 0.58s |
+| Laravel | 0.22s |
+| Spring REST service | 0.17s |
+| Gin examples | 0.19s |
+| FastAPI full-stack template | 0.25s |
+| Prisma examples | 0.55s |
 
 Details:
 

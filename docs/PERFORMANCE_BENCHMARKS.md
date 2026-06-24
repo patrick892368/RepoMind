@@ -63,11 +63,11 @@ Target: 30 seconds per repository.
 
 | Repository | Seconds | Under Target | Routes | Models | Call Edges |
 |---|---:|---:|---:|---:|---:|
-| Laravel | 0.23 | true | 1 | 0 | 0 |
-| Spring REST service | 0.16 | true | 1 | 0 | 0 |
-| Gin examples | 0.20 | true | 69 | 0 | 748 |
-| FastAPI full-stack template | 0.24 | true | 23 | 2 | 851 |
-| Prisma examples | 0.58 | true | 42 | 145 | 1764 |
+| Laravel | 0.22 | true | 1 | 0 | 0 |
+| Spring REST service | 0.17 | true | 1 | 0 | 0 |
+| Gin examples | 0.19 | true | 69 | 0 | 748 |
+| FastAPI full-stack template | 0.25 | true | 23 | 2 | 851 |
+| Prisma examples | 0.55 | true | 42 | 145 | 1764 |
 
 ## Pass Criteria
 

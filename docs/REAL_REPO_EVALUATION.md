@@ -67,7 +67,7 @@ The summary includes a `quality_score` from 0 to 1. The current score checks exp
 
 ## Latest Valid Result
 
-The 2026-06-24 M106 release gate kept all 20 fixed samples at `MinimumQualityScore 1.0` while also verifying the core report content, ask evaluation, trace/diagnose smoke, remote repository analyze smoke, safety boundary, release artifact smoke, and release manifest verification.
+The 2026-06-24 M110 release gate kept all 20 fixed samples at `MinimumQualityScore 1.0` while also verifying the core report content, ask evaluation, trace/diagnose smoke, remote repository analyze smoke, safety boundary, release artifact smoke, release version injection, and release manifest verification.
 
 | Repository | Quality | Routes | Models | Call Edges |
 |---|---:|---:|---:|---:|
