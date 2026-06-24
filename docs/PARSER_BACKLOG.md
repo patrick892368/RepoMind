@@ -41,7 +41,7 @@ Current coverage:
 - Express composed router prefix for `Router().use("/api", api)` wrapping imported controller routers.
 - Express route false-positive guard for frontend HTTP client wrappers when no Express app/router signal exists in the file.
 - NestJS controllers.
-- TypeORM entities.
+- TypeORM entities, including `@Entity()` without an explicit table name.
 - Lightweight callgraph.
 
 Backlog:

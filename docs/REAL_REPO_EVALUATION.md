@@ -67,6 +67,27 @@ The summary includes a `quality_score` from 0 to 1. The current score checks exp
 
 ## Evaluation Notes
 
+### 2026-06-24 TypeORM Empty Entity Decorator Run
+
+Command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\evaluate-repos.ps1 -OutputDir eval\m99-evaluation -TimeoutSeconds 300 -Proxy http://127.0.0.1:10809 -RepoCacheDir eval\m95-repo-cache -MinimumQualityScore 1.0
+```
+
+Status: PASS with `-MinimumQualityScore 1.0`.
+
+| Repo | M98 Models | M99 Models | Finding |
+|---|---:|---:|---|
+| `typeorm-sample` | 0 | 2 | `@Entity()` without explicit table names now extracts `Post` and `Category`. |
+| `prisma-examples` | 143 | 145 | TypeORM sample entities inside the monorepo now contribute models. |
+
+Findings:
+
+- TypeORM parser now keeps an empty `@Entity()` decorator pending until the following class declaration.
+- Multiline relation decorator options no longer create fake fields from object literal option keys.
+- The 20-sample evaluation gate remains green at quality score 1.0.
+
 ### 2026-06-24 Symfony Controller Attribute Route Run
 
 Command:

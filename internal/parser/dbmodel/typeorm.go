@@ -10,21 +10,24 @@ import (
 var (
 	typeORMEntityPattern   = regexp.MustCompile(`@Entity(?:\(([^)]*)\))?`)
 	typeORMClassPattern    = regexp.MustCompile(`\bclass\s+([A-Za-z_][A-Za-z0-9_]*)`)
-	typeORMPropertyPattern = regexp.MustCompile(`^\s*(?:public\s+|private\s+|readonly\s+)?([A-Za-z_][A-Za-z0-9_]*)(\?)?\s*:\s*([^;=]+)`)
+	typeORMPropertyPattern = regexp.MustCompile(`^\s*(?:public\s+|private\s+|protected\s+|readonly\s+)?([A-Za-z_][A-Za-z0-9_]*)(\?)?\s*:\s*([^;=]+);?\s*$`)
 	typeORMTargetPattern   = regexp.MustCompile(`=>\s*([A-Za-z_][A-Za-z0-9_]*)`)
 )
 
 func parseTypeORM(path string, content string) []ir.DBModel {
 	lines := strings.Split(content, "\n")
 	var models []ir.DBModel
+	pendingEntity := false
 	var pendingEntityTable string
 	var current *ir.DBModel
 	var decorators []string
+	decoratorDepth := 0
 
 	for index, line := range lines {
 		trimmed := strings.TrimSpace(line)
 
 		if match := typeORMEntityPattern.FindStringSubmatch(trimmed); len(match) >= 1 {
+			pendingEntity = true
 			pendingEntityTable = ""
 			if len(match) == 2 {
 				pendingEntityTable = cleanIdentifier(firstArg(match[1]))
@@ -32,7 +35,7 @@ func parseTypeORM(path string, content string) []ir.DBModel {
 			continue
 		}
 
-		if pendingEntityTable != "" || strings.Contains(trimmed, "@Entity") {
+		if pendingEntity || strings.Contains(trimmed, "@Entity") {
 			if match := typeORMClassPattern.FindStringSubmatch(trimmed); len(match) == 2 {
 				if current != nil {
 					models = append(models, *current)
@@ -47,31 +50,11 @@ func parseTypeORM(path string, content string) []ir.DBModel {
 					Evidence:   evidenceFromLine(line),
 					Fields:     []ir.DBField{},
 				}
+				pendingEntity = false
 				pendingEntityTable = ""
 				decorators = nil
 				continue
 			}
-		}
-
-		if pendingEntityTable != "" {
-			if match := typeORMClassPattern.FindStringSubmatch(trimmed); len(match) == 2 {
-				if current != nil {
-					models = append(models, *current)
-				}
-				current = &ir.DBModel{
-					Name:       match[1],
-					Table:      pendingEntityTable,
-					File:       path,
-					Line:       index + 1,
-					Source:     "typeorm",
-					Confidence: "high",
-					Evidence:   evidenceFromLine(line),
-					Fields:     []ir.DBField{},
-				}
-				pendingEntityTable = ""
-				decorators = nil
-			}
-			continue
 		}
 
 		if current == nil {
@@ -80,15 +63,29 @@ func parseTypeORM(path string, content string) []ir.DBModel {
 
 		if strings.HasPrefix(trimmed, "@") {
 			decorators = append(decorators, trimmed)
+			decoratorDepth = parenthesisDelta(trimmed)
+			if decoratorDepth < 0 {
+				decoratorDepth = 0
+			}
 			continue
 		}
 
-		if strings.HasPrefix(trimmed, "}") {
+		if decoratorDepth > 0 {
+			decorators = append(decorators, trimmed)
+			decoratorDepth += parenthesisDelta(trimmed)
+			if decoratorDepth < 0 {
+				decoratorDepth = 0
+			}
+			continue
+		}
+
+		if trimmed == "}" {
 			if current != nil {
 				models = append(models, *current)
 			}
 			current = nil
 			decorators = nil
+			decoratorDepth = 0
 			continue
 		}
 
@@ -126,6 +123,7 @@ func parseTypeORM(path string, content string) []ir.DBModel {
 			})
 		}
 		decorators = nil
+		decoratorDepth = 0
 	}
 
 	if current != nil {
@@ -133,6 +131,10 @@ func parseTypeORM(path string, content string) []ir.DBModel {
 	}
 
 	return models
+}
+
+func parenthesisDelta(value string) int {
+	return strings.Count(value, "(") - strings.Count(value, ")")
 }
 
 func typeORMRelationType(decorator string) string {

@@ -41,7 +41,7 @@ Go 优先使用标准库 AST，除非 tree-sitter 有明确优势。
 - Express composed router prefix。
 - 文件中没有 Express app/router 信号时，避免把前端 HTTP client wrapper 误识别为 Express routes。
 - NestJS controllers。
-- TypeORM entities。
+- TypeORM entities，包括没有显式表名的 `@Entity()`。
 - 轻量 callgraph。
 
 Backlog：

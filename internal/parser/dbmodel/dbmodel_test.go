@@ -134,6 +134,52 @@ type Payload struct {
 	}
 }
 
+func TestParseTypeORMEntityWithoutExplicitTableName(t *testing.T) {
+	content := `import {Entity, PrimaryGeneratedColumn, Column, ManyToMany} from "typeorm";
+import {Category} from "./Category";
+
+@Entity()
+export class Post {
+    @PrimaryGeneratedColumn()
+    id: number;
+
+    @Column()
+    title: string;
+
+    @Column("text")
+    text: string;
+
+    @Column({
+        nullable: true,
+        unique: true
+    })
+    slug?: string
+
+    @ManyToMany(type => Category, {
+        cascade: true
+    })
+    @JoinTable()
+    categories: Category[];
+}
+`
+	models := parseTypeORM("src/entity/Post.ts", content)
+
+	assertModel(t, models, "Post", "typeorm", "src/entity/Post.ts")
+	post := findModel(models, "Post", "typeorm")
+	if !hasField(post.Fields, "id", true, false) {
+		t.Fatalf("Post fields = %+v, want id primary key", post.Fields)
+	}
+	if !hasField(post.Fields, "title", false, false) {
+		t.Fatalf("Post fields = %+v, want title", post.Fields)
+	}
+	if !hasField(post.Fields, "slug", false, true) {
+		t.Fatalf("Post fields = %+v, want unique optional slug", post.Fields)
+	}
+	if !hasRelation(post.Relations, "categories", "Category", "many-to-many") {
+		t.Fatalf("Post relations = %+v, want categories -> Category", post.Relations)
+	}
+}
+
 func TestParseLaravelEloquentModels(t *testing.T) {
 	content := `<?php
 

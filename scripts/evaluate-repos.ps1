@@ -134,7 +134,7 @@ $repos = @(
     @{ Name = "next-saas-starter"; Url = "https://github.com/leerob/next-saas-starter.git"; Expected = "Next.js, React"; ExpectedStack = @("Next.js", "React", "Postgres"); MinRoutes = 0; MinModels = 0; ExpectedRoutes = @(); ExpectedModels = @() },
     @{ Name = "vue-realworld"; Url = "https://github.com/gothinkster/vue-realworld-example-app.git"; Expected = "Vue"; ExpectedStack = @("Vue"); MinRoutes = 0; MinModels = 0; ExpectedRoutes = @(); ExpectedModels = @() },
     @{ Name = "react-realworld"; Url = "https://github.com/gothinkster/react-redux-realworld-example-app.git"; Expected = "React"; ExpectedStack = @("React"); MinRoutes = 0; MinModels = 0; ExpectedRoutes = @(); ExpectedModels = @() },
-    @{ Name = "typeorm-sample"; Url = "https://github.com/typeorm/typescript-express-example.git"; Expected = "Express, TypeORM"; ExpectedStack = @("Express", "MySQL"); MinRoutes = 0; MinModels = 0; ExpectedRoutes = @(); ExpectedModels = @() },
+    @{ Name = "typeorm-sample"; Url = "https://github.com/typeorm/typescript-express-example.git"; Expected = "Express, TypeORM"; ExpectedStack = @("Express", "MySQL"); MinRoutes = 0; MinModels = 2; ExpectedRoutes = @(); ExpectedModels = @("Post", "Category") },
     @{ Name = "cookiecutter-django"; Url = "https://github.com/cookiecutter/cookiecutter-django.git"; Expected = "Django template"; ExpectedStack = @("Django"); MinRoutes = 1; MinModels = 0; ExpectedRoutes = @("/api/"); ExpectedModels = @() }
 )
 
