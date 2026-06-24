@@ -93,6 +93,7 @@ Backlog：
 - Laravel routes。
 - Laravel 静态 route groups 和 prefixes，覆盖链式 `Route::prefix(...)->group(...)` 与数组式 `Route::group(["prefix" => ...], ...)`。
 - Laravel 静态 `Route::resource(...)` 和 `Route::apiResource(...)` 展开。
+- Laravel 静态 resource route `only` / `except` options。
 - Laravel Eloquent models，覆盖 `$table`、`$fillable`、`$casts` 和常见 relation methods。
 - Laravel/Symfony/ThinkPHP stack detection。
 
@@ -100,7 +101,7 @@ Backlog：
 
 - 超出静态字符串 prefix 的 Laravel dynamic route groups 和 prefixes。
 - 超出直接 `[Controller::class, "method"]` handler 的 Laravel controller array syntax 边界。
-- Laravel resource route options，例如 `only`、`except`、`names` 和自定义 `parameters`。
+- Laravel resource route options，例如 `names` 和自定义 `parameters`。
 - Laravel 从 migrations 推断 columns、accessors/mutators、pivot models 和 polymorphic relations。
 - Symfony controller attributes。
 - ThinkPHP route definitions。

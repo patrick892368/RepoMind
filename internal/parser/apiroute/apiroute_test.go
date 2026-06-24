@@ -108,6 +108,33 @@ Route::prefix('api/v1')->group(function () {
 	assertNoRoute(t, routes, "GET", "/api/v1/wallets/create", "WalletController@create", "laravel")
 }
 
+func TestParseLaravelResourceRouteOptions(t *testing.T) {
+	content := `<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\WalletController;
+use App\Http\Controllers\ReportController;
+
+Route::resource('/orders', OrderController::class)->only(['index', 'show']);
+
+Route::prefix('api/v1')->group(function () {
+    Route::apiResource('wallets', WalletController::class)->except(['destroy']);
+    Route::resource('reports', ReportController::class)->except('edit');
+});
+`
+	routes := parseLaravel("routes/api.php", content)
+
+	assertRoute(t, routes, "GET", "/orders", "OrderController@index", "laravel")
+	assertRoute(t, routes, "GET", "/orders/{order}", "OrderController@show", "laravel")
+	assertNoRoute(t, routes, "POST", "/orders", "OrderController@store", "laravel")
+	assertNoRoute(t, routes, "DELETE", "/orders/{order}", "OrderController@destroy", "laravel")
+	assertRoute(t, routes, "PATCH", "/api/v1/wallets/{wallet}", "WalletController@update", "laravel")
+	assertNoRoute(t, routes, "DELETE", "/api/v1/wallets/{wallet}", "WalletController@destroy", "laravel")
+	assertRoute(t, routes, "GET", "/api/v1/reports/create", "ReportController@create", "laravel")
+	assertNoRoute(t, routes, "GET", "/api/v1/reports/{report}/edit", "ReportController@edit", "laravel")
+}
+
 func TestParseSpringMappingArraysAndRequestMethods(t *testing.T) {
 	content := `package com.example;
 

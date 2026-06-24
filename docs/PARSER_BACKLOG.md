@@ -94,6 +94,7 @@ Current coverage:
 - Laravel routes.
 - Laravel static route groups and prefixes for chained `Route::prefix(...)->group(...)` and array `Route::group(["prefix" => ...], ...)` forms.
 - Laravel static `Route::resource(...)` and `Route::apiResource(...)` expansion.
+- Laravel static resource route `only` / `except` options.
 - Laravel Eloquent models with `$table`, `$fillable`, `$casts`, and common relation methods.
 - Laravel/Symfony/ThinkPHP stack detection.
 
@@ -101,7 +102,7 @@ Backlog:
 
 - Laravel dynamic route groups and prefixes beyond static string prefixes.
 - Laravel controller array syntax edge cases beyond direct `[Controller::class, "method"]` handlers.
-- Laravel resource route options such as `only`, `except`, `names`, and custom `parameters`.
+- Laravel resource route options such as `names` and custom `parameters`.
 - Laravel Eloquent migration-derived columns, accessors/mutators, pivot models, and polymorphic relations.
 - Symfony controller attributes.
 - ThinkPHP route definitions.

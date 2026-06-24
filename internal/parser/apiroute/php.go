@@ -11,6 +11,9 @@ var laravelRoutePattern = regexp.MustCompile(`Route::(get|post|put|delete|patch|
 var laravelResourceRoutePattern = regexp.MustCompile(`Route::(apiResource|resource)\(\s*["']([^"']+)["']\s*,\s*([^\),]+)`)
 var laravelChainedGroupPrefixPattern = regexp.MustCompile(`Route::.*?prefix\(\s*["']([^"']+)["']\s*\).*?->group\(\s*function\b`)
 var laravelArrayGroupPrefixPattern = regexp.MustCompile(`Route::group\(\s*\[[^\]]*["']prefix["']\s*=>\s*["']([^"']+)["'][^\]]*\]\s*,\s*function\b`)
+var laravelResourceOnlyPattern = regexp.MustCompile(`->only\(\s*(\[[^\]]*\]|["'][^"']+["'])\s*\)`)
+var laravelResourceExceptPattern = regexp.MustCompile(`->except\(\s*(\[[^\]]*\]|["'][^"']+["'])\s*\)`)
+var laravelStringPattern = regexp.MustCompile(`["']([^"']+)["']`)
 
 type laravelRouteGroup struct {
 	Prefix string
@@ -18,6 +21,7 @@ type laravelRouteGroup struct {
 }
 
 type laravelRouteDefinition struct {
+	Action  string
 	Method  string
 	Path    string
 	Handler string
@@ -96,19 +100,20 @@ func laravelResourceRoutes(path string, line int, evidence string, groupPrefix s
 	memberPath := joinRoutePath(resourceBase, resourceParam)
 
 	definitions := []laravelRouteDefinition{
-		{Method: "GET", Path: resourceBase, Handler: controllerName + "@index"},
-		{Method: "POST", Path: resourceBase, Handler: controllerName + "@store"},
-		{Method: "GET", Path: memberPath, Handler: controllerName + "@show"},
-		{Method: "PUT", Path: memberPath, Handler: controllerName + "@update"},
-		{Method: "PATCH", Path: memberPath, Handler: controllerName + "@update"},
-		{Method: "DELETE", Path: memberPath, Handler: controllerName + "@destroy"},
+		{Action: "index", Method: "GET", Path: resourceBase, Handler: controllerName + "@index"},
+		{Action: "store", Method: "POST", Path: resourceBase, Handler: controllerName + "@store"},
+		{Action: "show", Method: "GET", Path: memberPath, Handler: controllerName + "@show"},
+		{Action: "update", Method: "PUT", Path: memberPath, Handler: controllerName + "@update"},
+		{Action: "update", Method: "PATCH", Path: memberPath, Handler: controllerName + "@update"},
+		{Action: "destroy", Method: "DELETE", Path: memberPath, Handler: controllerName + "@destroy"},
 	}
 	if resourceType == "resource" {
 		definitions = append(definitions,
-			laravelRouteDefinition{Method: "GET", Path: joinRoutePath(resourceBase, "create"), Handler: controllerName + "@create"},
-			laravelRouteDefinition{Method: "GET", Path: joinRoutePath(memberPath, "edit"), Handler: controllerName + "@edit"},
+			laravelRouteDefinition{Action: "create", Method: "GET", Path: joinRoutePath(resourceBase, "create"), Handler: controllerName + "@create"},
+			laravelRouteDefinition{Action: "edit", Method: "GET", Path: joinRoutePath(memberPath, "edit"), Handler: controllerName + "@edit"},
 		)
 	}
+	definitions = filterLaravelResourceDefinitions(definitions, evidence)
 
 	routes := make([]ir.APIRoute, 0, len(definitions))
 	for _, definition := range definitions {
@@ -124,6 +129,41 @@ func laravelResourceRoutes(path string, line int, evidence string, groupPrefix s
 		})
 	}
 	return routes
+}
+
+func filterLaravelResourceDefinitions(definitions []laravelRouteDefinition, line string) []laravelRouteDefinition {
+	only := laravelResourceActionSet(laravelResourceOnlyPattern, line)
+	except := laravelResourceActionSet(laravelResourceExceptPattern, line)
+	if len(only) == 0 && len(except) == 0 {
+		return definitions
+	}
+	filtered := make([]laravelRouteDefinition, 0, len(definitions))
+	for _, definition := range definitions {
+		if len(only) > 0 {
+			if _, ok := only[definition.Action]; !ok {
+				continue
+			}
+		}
+		if _, ok := except[definition.Action]; ok {
+			continue
+		}
+		filtered = append(filtered, definition)
+	}
+	return filtered
+}
+
+func laravelResourceActionSet(pattern *regexp.Regexp, line string) map[string]struct{} {
+	match := pattern.FindStringSubmatch(line)
+	if len(match) != 2 {
+		return nil
+	}
+	actions := map[string]struct{}{}
+	for _, part := range laravelStringPattern.FindAllStringSubmatch(match[1], -1) {
+		if len(part) == 2 && part[1] != "" {
+			actions[part[1]] = struct{}{}
+		}
+	}
+	return actions
 }
 
 func singularLaravelResourceName(resourcePath string) string {
