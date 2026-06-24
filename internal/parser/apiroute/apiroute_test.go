@@ -79,6 +79,35 @@ Route::post('/login', [AuthController::class, 'login']);
 	assertNoRoute(t, routes, "GET", "/wallet/info", "WalletController@info", "laravel")
 }
 
+func TestParseLaravelResourceRoutes(t *testing.T) {
+	content := `<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\WalletController;
+
+Route::resource('/orders', OrderController::class);
+
+Route::prefix('api/v1')->group(function () {
+    Route::apiResource('wallets', WalletController::class);
+});
+`
+	routes := parseLaravel("routes/api.php", content)
+
+	assertRoute(t, routes, "GET", "/orders", "OrderController@index", "laravel")
+	assertRoute(t, routes, "POST", "/orders", "OrderController@store", "laravel")
+	assertRoute(t, routes, "GET", "/orders/create", "OrderController@create", "laravel")
+	assertRoute(t, routes, "GET", "/orders/{order}", "OrderController@show", "laravel")
+	assertRoute(t, routes, "PUT", "/orders/{order}", "OrderController@update", "laravel")
+	assertRoute(t, routes, "PATCH", "/orders/{order}", "OrderController@update", "laravel")
+	assertRoute(t, routes, "DELETE", "/orders/{order}", "OrderController@destroy", "laravel")
+	assertRoute(t, routes, "GET", "/orders/{order}/edit", "OrderController@edit", "laravel")
+	assertRoute(t, routes, "GET", "/api/v1/wallets", "WalletController@index", "laravel")
+	assertRoute(t, routes, "GET", "/api/v1/wallets/{wallet}", "WalletController@show", "laravel")
+	assertRoute(t, routes, "PATCH", "/api/v1/wallets/{wallet}", "WalletController@update", "laravel")
+	assertNoRoute(t, routes, "GET", "/api/v1/wallets/create", "WalletController@create", "laravel")
+}
+
 func TestParseGoRoutesWithASTHandlers(t *testing.T) {
 	content := `package main
 
