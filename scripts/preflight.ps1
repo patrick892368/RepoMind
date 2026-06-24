@@ -123,6 +123,23 @@ function Invoke-PreflightStep {
     return [pscustomobject]$item
 }
 
+function Assert-FileContains {
+    param(
+        [string]$Path,
+        [string[]]$Patterns
+    )
+
+    if (-not (Test-Path $Path)) {
+        throw "expected file was not generated: $Path"
+    }
+    $content = Get-Content -Path $Path -Raw
+    foreach ($pattern in $Patterns) {
+        if ($content -notmatch [regex]::Escape($pattern)) {
+            throw "$Path did not contain expected text: $pattern"
+        }
+    }
+}
+
 if (-not $Proxy) {
     if ($env:HTTPS_PROXY) {
         $Proxy = $env:HTTPS_PROXY
@@ -148,10 +165,16 @@ $steps += Invoke-PreflightStep -Name "go vet ./..." -Action {
     Invoke-CapturedCommand -FilePath "go" -ArgumentList @("vet", "./...") -LogPath (Join-Path $outputRoot "go-vet.log") -TimeoutSeconds $TimeoutSeconds
 }
 $steps += Invoke-PreflightStep -Name "analyze smoke en" -Action {
-    Invoke-CapturedCommand -FilePath "go" -ArgumentList @("run", "./cmd/repomind", "analyze", "--output", (Join-Path $outputRoot "analyze-en"), "--lang", "en", ".") -LogPath (Join-Path $outputRoot "analyze-en.log") -TimeoutSeconds $TimeoutSeconds
+    $analyzeOutput = Join-Path $outputRoot "analyze-en"
+    Invoke-CapturedCommand -FilePath "go" -ArgumentList @("run", "./cmd/repomind", "analyze", "--output", $analyzeOutput, "--lang", "en", ".") -LogPath (Join-Path $outputRoot "analyze-en.log") -TimeoutSeconds $TimeoutSeconds
+    Assert-FileContains -Path (Join-Path $analyzeOutput "analysis.json") -Patterns @('"language": "en"')
+    Assert-FileContains -Path (Join-Path $analyzeOutput "report.html") -Patterns @("Project Summary", "Database Models", "API Routes", "Call Graph", "mermaid")
 }
 $steps += Invoke-PreflightStep -Name "analyze smoke zh" -Action {
-    Invoke-CapturedCommand -FilePath "go" -ArgumentList @("run", "./cmd/repomind", "analyze", "--output", (Join-Path $outputRoot "analyze-zh"), "--lang", "zh", ".") -LogPath (Join-Path $outputRoot "analyze-zh.log") -TimeoutSeconds $TimeoutSeconds
+    $analyzeOutput = Join-Path $outputRoot "analyze-zh"
+    Invoke-CapturedCommand -FilePath "go" -ArgumentList @("run", "./cmd/repomind", "analyze", "--output", $analyzeOutput, "--lang", "zh", ".") -LogPath (Join-Path $outputRoot "analyze-zh.log") -TimeoutSeconds $TimeoutSeconds
+    Assert-FileContains -Path (Join-Path $analyzeOutput "analysis.json") -Patterns @('"language": "zh"')
+    Assert-FileContains -Path (Join-Path $analyzeOutput "report.html") -Patterns @("项目总结", "数据库模型", "API 路由", "调用图", "mermaid")
 }
 $steps += Invoke-PreflightStep -Name "trace and diagnose smoke" -Action {
     $smokeDir = Join-Path $outputRoot "trace-diagnose"
