@@ -29,24 +29,7 @@ jobs:
         run: go vet ./...
 
       - name: Safety boundary
-        run: |
-          for path in .env .env.local .env.production .repomind dist eval benchmark repomind repomind.exe; do
-            git check-ignore --quiet -- "$path"
-          done
-          if git check-ignore --quiet -- .env.example; then
-            echo ".env.example must remain trackable"
-            exit 1
-          fi
-          forbidden="$(git ls-files .env '.env.*' .repomind dist eval benchmark repomind repomind.exe | grep -v '^\.env\.example$' || true)"
-          if [ -n "$forbidden" ]; then
-            echo "Forbidden generated or secret files are tracked:"
-            echo "$forbidden"
-            exit 1
-          fi
-          if git grep -nE "(OPENAI_API_KEY|ANTHROPIC_API_KEY|CLAUDE_API_KEY|GEMINI_API_KEY|GOOGLE_API_KEY|GROK_API_KEY|XAI_API_KEY|[A-Z0-9_]*TOKEN|[A-Z0-9_]*SECRET)[[:space:]]*=[[:space:]]*(sk-|xai-|gsk_|AIza|ghp_|glpat-)" -- . ':!*.png' ':!*.ico' ':!*.jpg' ':!*.jpeg' ':!*.webp'; then
-            echo "Tracked files contain likely real API keys or tokens"
-            exit 1
-          fi
+        run: bash scripts/verify-safety-boundary.sh
 
       - name: Analyze smoke English
         run: |
